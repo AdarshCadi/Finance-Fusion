@@ -96,7 +96,7 @@
     <div class="w-full max-w-md glass-panel rounded-xl p-6 text-center">
       <div class="flex justify-between items-center mb-6 border-b pb-4">
         <h2 class="font-bold text-slate-800">Your Portal</h2>
-        <button onclick="logout()" class="text-xs text-red-600">Logout</button>
+        <!-- Student Logout button removed here to prevent re-registration -->
       </div>
       <div id="student-waiting" class="py-8">
         <p class="text-lg font-semibold animate-pulse text-blue-600">Finding your team...</p>
@@ -187,7 +187,6 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
     // --- MASTER ADMIN CONFIG ---
-    // Change this to the email address that should have Master Admin rights.
     const MASTER_ADMIN_EMAIL = 'admin@financeportal.com';
 
     let pollInterval = null;
@@ -246,67 +245,96 @@
       });
     }
 
-    // UPDATED CHECK TEAM MATCH FUNCTION
     async function checkTeamMatch(prn) {
-      const { data: me } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
-      if(!me) return logout();
-
-      // 1. If assigned, update UI and stop polling
-      if(me.team_number) {
-        clearInterval(pollInterval);
-        document.getElementById('student-waiting').classList.add('hidden');
-        document.getElementById('student-assigned').classList.remove('hidden');
-        document.getElementById('assigned-team-number').innerText = me.team_number;
-        document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / myConfig.teams_per_table);
-        
-        const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
-        document.getElementById('assigned-partners-list').innerHTML = mates.map(m => `<li>${m.name}</li>`).join('');
-        return;
-      }
-
-      // 2. Fetch all waiting students in order of arrival
-      const { data: waiting } = await supabaseClient
-        .from('students')
-        .select('*')
-        .is('team_number', null)
-        .order('created_at', { ascending: true });
-
-      if(waiting && waiting.length >= myConfig.team_size) {
-        const group = waiting.slice(0, myConfig.team_size);
-        
-        // Removed the check that required the active user to be in the slice.
-        // Now, any active client keeps the line moving for everyone.
-
-        // Added `.not('team_number', 'is', null)` to prevent Postgres 
-        // from returning NULL as the largest value.
-        const { data: maxTeam } = await supabaseClient
+      try {
+        const { data: me, error: meErr } = await supabaseClient
           .from('students')
-          .select('team_number')
-          .not('team_number', 'is', null) 
-          .order('team_number', { ascending: false })
-          .limit(1);
+          .select('*')
+          .eq('prn', prn)
+          .single();
 
-        const nextTeam = (maxTeam && maxTeam.length) ? maxTeam[0].team_number + 1 : 1;
-        const prns = group.map(g => g.prn);
+        if (meErr || !me) {
+          console.error("Student check failed:", meErr);
+          // If the student record doesn't exist, remove local storage to allow fresh start
+          localStorage.removeItem('fp_prn');
+          switchScreen('login-register-screen');
+          return;
+        }
 
-        // Assign the team number to the oldest waiting group
-        await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
-        
-      } else if (waiting && waiting.length > 0) {
-        // 3. Lone student timeout (3 mins)
-        const waitTime = new Date() - new Date(me.created_at);
-        if(waitTime > 180000 && waiting[0].prn === prn) {
-          const { data: lastTeam } = await supabaseClient
+        // 1. If assigned, show team UI
+        if (me.team_number) {
+          if (pollInterval) clearInterval(pollInterval);
+          document.getElementById('student-waiting').classList.add('hidden');
+          document.getElementById('student-assigned').classList.remove('hidden');
+          document.getElementById('assigned-team-number').innerText = me.team_number;
+          
+          const teamsPerTable = myConfig.teams_per_table || 5;
+          document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
+
+          const { data: mates } = await supabaseClient
+            .from('students')
+            .select('name')
+            .eq('team_number', me.team_number);
+
+          if (mates) {
+            document.getElementById('assigned-partners-list').innerHTML = mates
+              .map(m => `<li>${m.name}</li>`)
+              .join('');
+          }
+          return;
+        }
+
+        // 2. Fetch waiting queue
+        const { data: waiting, error: waitErr } = await supabaseClient
+          .from('students')
+          .select('*')
+          .is('team_number', null)
+          .order('created_at', { ascending: true });
+
+        if (waitErr) {
+          console.error("Error fetching waiting queue:", waitErr);
+          return;
+        }
+
+        const targetTeamSize = myConfig.team_size || 2;
+
+        if (waiting && waiting.length >= targetTeamSize) {
+          const group = waiting.slice(0, targetTeamSize);
+
+          // Get highest existing team number
+          const { data: maxTeam } = await supabaseClient
             .from('students')
             .select('team_number')
             .not('team_number', 'is', null)
             .order('team_number', { ascending: false })
             .limit(1);
 
-          if(lastTeam && lastTeam.length) {
-            await supabaseClient.from('students').update({ team_number: lastTeam[0].team_number }).eq('prn', prn);
+          const nextTeam = (maxTeam && maxTeam.length && maxTeam[0].team_number) ? maxTeam[0].team_number + 1 : 1;
+          const prns = group.map(g => g.prn);
+
+          const { error: updateErr } = await supabaseClient
+            .from('students')
+            .update({ team_number: nextTeam })
+            .in('prn', prns);
+
+          if (updateErr) console.error("Error updating team assignments:", updateErr);
+        } else if (waiting && waiting.length > 0) {
+          // 3. Lone student timeout (3 mins)
+          const waitTime = new Date() - new Date(me.created_at);
+          if (waitTime > 180000 && waiting[0].prn === prn) {
+            const { data: lastTeam } = await supabaseClient
+              .from('students')
+              .select('team_number')
+              .not('team_number', 'is', null)
+              .order('team_number', { ascending: false })
+              .limit(1);
+
+            const fallbackTeam = (lastTeam && lastTeam.length && lastTeam[0].team_number) ? lastTeam[0].team_number : 1;
+            await supabaseClient.from('students').update({ team_number: fallbackTeam }).eq('prn', prn);
           }
         }
+      } catch (err) {
+        console.error("Unexpected error in checkTeamMatch:", err);
       }
     }
 
@@ -319,13 +347,10 @@
       document.getElementById('pending-approval-msg').classList.add('hidden');
 
       if (currentOrganiserMode === 'signup') {
-        // Create account
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) return showToast(error.message);
         
-        // Ensure user is created in public organisers table as unapproved
         if (data.user) {
-          // Check if Master Admin
           const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
           await supabaseClient.from('organisers').upsert({ id: data.user.id, email: email, is_approved: isMaster });
           
@@ -334,16 +359,13 @@
             initOrganizer(email);
           } else {
             document.getElementById('pending-approval-msg').classList.remove('hidden');
-            // Log them out immediately so they don't have session access yet
             await supabaseClient.auth.signOut();
           }
         }
       } else {
-        // Login
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) return showToast(error.message);
         
-        // Check approval status
         const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
         if (isMaster) {
           initOrganizer(email);
@@ -355,7 +377,7 @@
           initOrganizer(email);
         } else {
           document.getElementById('pending-approval-msg').classList.remove('hidden');
-          await supabaseClient.auth.signOut(); // Revoke access
+          await supabaseClient.auth.signOut();
         }
       }
     }
@@ -445,33 +467,38 @@
 
     async function resetEvent() {
       if(!confirm('DELETE ALL DATA? This will wipe the roster completely.')) return;
-      await supabaseClient.from('students').delete().neq('prn', '0'); // deletes everything
+      await supabaseClient.from('students').delete().neq('prn', '0'); 
       fetchRoster();
     }
 
     function logout() {
       if(pollInterval) clearInterval(pollInterval);
-      localStorage.removeItem('fp_prn');
       supabaseClient.auth.signOut();
       switchScreen('login-register-screen');
     }
 
-    // Auto-login
+    // Auto-login (Optimized for instant student redirect)
     window.onload = async () => {
+      // 1. INSTANT STUDENT CHECK
+      const prn = localStorage.getItem('fp_prn');
+      if (prn) {
+        // If a PRN is on the device, force them into the polling screen immediately
+        startStudentPolling(prn);
+        return; // Stop executing so we don't run Organiser checks
+      }
+
+      // 2. ORGANISER CHECK (Only runs if no student is found on the device)
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if(session && session.user) {
+      if (session && session.user) {
         const isMaster = (session.user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
         if (isMaster) {
           return initOrganizer(session.user.email);
         }
-        // Check approval
         const { data: orgData } = await supabaseClient.from('organisers').select('*').eq('id', session.user.id).single();
         if (orgData && orgData.is_approved) {
           return initOrganizer(session.user.email);
         }
       }
-      const prn = localStorage.getItem('fp_prn');
-      if(prn) startStudentPolling(prn);
     };
   </script>
 </body>
