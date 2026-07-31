@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Finance Portal — Real-time student pairing and team assignment for finance events." />
+  <title>Finance Portal — Student Pairing</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Base & Glassmorphism ── */
+    body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; overflow-x: hidden; }
+    .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .input-field { transition: border-color 0.2s, box-shadow 0.2s; }
+    .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); outline: none; }
+    .screen { display: none; animation: fadeUp 0.3s ease-out; }
+    .screen.active { display: flex; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast { padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; animation: toastIn 0.3s ease-out; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    @keyframes toastIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- SCREEN 1: Login / Register -->
+  <div id="login-register-screen" class="screen active min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-slate-900">Finance Fusion Portal</h1>
+      </div>
+      <div class="glass-panel rounded-xl p-6">
+        <div class="flex border-b mb-6">
+          <button class="flex-1 pb-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600" id="tab-student" onclick="switchTab('student')">Student</button>
+          <button class="flex-1 pb-2 text-sm font-semibold text-slate-500" id="tab-organizer" onclick="switchTab('organizer')">Organiser</button>
+        </div>
+
+        <!-- Student Form -->
+        <form id="student-form" onsubmit="handleStudentRegistration(event)">
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+            <input type="text" id="student-name" class="input-field w-full px-3 py-2 rounded-lg border" required />
+          </div>
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">PRN</label>
+            <input type="text" id="student-prn" class="input-field w-full px-3 py-2 rounded-lg border" required />
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-lg bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700">Register</button>
+        </form>
+
+        <!-- Organizer Form -->
+        <div id="organizer-form" class="hidden">
+          <div class="flex justify-center mb-4 space-x-4">
+            <label class="text-sm font-medium cursor-pointer flex items-center">
+              <input type="radio" name="org_mode" value="login" checked onchange="toggleOrgMode()" class="mr-2"> Login
+            </label>
+            <label class="text-sm font-medium cursor-pointer flex items-center">
+              <input type="radio" name="org_mode" value="signup" onchange="toggleOrgMode()" class="mr-2"> Request Access
+            </label>
+          </div>
+
+          <form id="org-auth-form" onsubmit="handleOrganizerAuth(event)">
+            <div class="mb-4">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
+              <input type="email" id="org-email" placeholder="name@example.com" class="input-field w-full px-3 py-2 rounded-lg border" required />
+            </div>
+            <div class="mb-6">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+              <input type="password" id="org-password" placeholder="••••••••" class="input-field w-full px-3 py-2 rounded-lg border" required minlength="6" />
+            </div>
+            <button type="submit" id="org-submit-btn" class="w-full py-2.5 rounded-lg bg-slate-800 text-white font-semibold text-sm hover:bg-slate-900">Login</button>
+          </form>
+          
+          <div id="pending-approval-msg" class="hidden mt-4 text-center text-sm font-medium text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
+            Your account has been created and is pending approval from the Master Admin. You cannot access the dashboard until approved.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Student Dashboard -->
+  <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md glass-panel rounded-xl p-6 text-center">
+      <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h2 class="font-bold text-slate-800">Your Portal</h2>
+        <button onclick="logout()" class="text-xs text-red-600">Logout</button>
+      </div>
+      <div id="student-waiting" class="py-8">
+        <p class="text-lg font-semibold animate-pulse text-blue-600">Finding your team...</p>
+      </div>
+      <div id="student-assigned" class="hidden text-left">
+        <h3 class="text-2xl font-bold text-blue-600 mb-2">Team <span id="assigned-team-number"></span></h3>
+        <p class="text-slate-600 mb-4">Table: <strong class="text-slate-800 text-lg" id="assigned-table-number"></strong></p>
+        <div class="bg-slate-50 p-4 rounded-lg border">
+          <h4 class="text-xs font-semibold text-slate-500 uppercase mb-2">Your Teammates</h4>
+          <ul id="assigned-partners-list" class="space-y-2 text-sm font-medium text-slate-800"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Organizer Dashboard -->
+  <div id="organizer-dashboard-screen" class="screen flex-col min-h-screen p-6">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="flex justify-between items-center mb-6 glass-panel p-4 rounded-xl">
+        <div>
+          <h2 class="font-bold text-lg">Organiser Dashboard</h2>
+          <p id="org-role-badge" class="text-xs font-semibold text-slate-500"></p>
+        </div>
+        <div class="flex gap-4">
+          <button id="admin-panel-btn" onclick="toggleAdminPanel()" class="hidden text-sm px-3 py-1 bg-purple-100 text-purple-700 rounded font-semibold">Master Admin</button>
+          <button onclick="toggleSettings()" class="text-sm px-3 py-1 bg-slate-200 rounded">Settings</button>
+          <button onclick="logout()" class="text-sm px-3 py-1 bg-red-100 text-red-600 rounded">Logout</button>
+        </div>
+      </div>
+
+      <!-- Master Admin Panel (Approvals) -->
+      <div id="master-admin-panel" class="hidden glass-panel p-4 rounded-xl mb-6 border-2 border-purple-200">
+        <h3 class="font-bold text-purple-800 mb-3">Master Admin: Pending Organiser Approvals</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b text-slate-500">
+                <th class="py-2">Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="approvals-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings Panel -->
+      <div id="org-settings" class="hidden glass-panel p-4 rounded-xl mb-6">
+        <h3 class="font-semibold mb-3">Event Settings</h3>
+        <div class="flex gap-4 items-end flex-wrap">
+          <div><label class="text-xs">Team Size</label><input type="number" id="cfg-team-size" class="border p-1 w-20 rounded" /></div>
+          <div><label class="text-xs">Total Tables</label><input type="number" id="cfg-total-tables" class="border p-1 w-20 rounded" /></div>
+          <div><label class="text-xs">Teams per Table</label><input type="number" id="cfg-teams-per-table" class="border p-1 w-20 rounded" /></div>
+          <button onclick="saveSettings()" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm">Save</button>
+          <button onclick="resetEvent()" class="bg-red-600 text-white px-4 py-1.5 rounded text-sm ml-auto">Reset All Data</button>
+        </div>
+      </div>
+
+      <!-- Roster -->
+      <div class="glass-panel p-4 rounded-xl overflow-x-auto">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-semibold">Student Roster</h3>
+        </div>
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b text-slate-500">
+              <th class="py-2">Name</th>
+              <th>PRN</th>
+              <th>Team</th>
+              <th>Table</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // --- SUPABASE CONFIG ---
+    const SUPABASE_URL = 'https://iirmhdhaihrkmeagaugq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // --- MASTER ADMIN CONFIG ---
+    // Change this to the email address that should have Master Admin rights.
+    const MASTER_ADMIN_EMAIL = 'admin@financeportal.com';
+
+    let pollInterval = null;
+    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5 };
+    let currentOrganiserMode = 'login';
+
+    function showToast(msg) {
+      const el = document.createElement('div');
+      el.className = 'toast'; el.innerText = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    function switchTab(tab) {
+      document.getElementById('student-form').classList.toggle('hidden', tab !== 'student');
+      document.getElementById('organizer-form').classList.toggle('hidden', tab === 'student');
+      document.getElementById('tab-student').className = tab === 'student' ? 'flex-1 pb-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600' : 'flex-1 pb-2 text-sm font-semibold text-slate-500';
+      document.getElementById('tab-organizer').className = tab === 'organizer' ? 'flex-1 pb-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600' : 'flex-1 pb-2 text-sm font-semibold text-slate-500';
+    }
+
+    function toggleOrgMode() {
+      const mode = document.querySelector('input[name="org_mode"]:checked').value;
+      currentOrganiserMode = mode;
+      document.getElementById('org-submit-btn').innerText = mode === 'login' ? 'Login' : 'Request Access';
+      document.getElementById('pending-approval-msg').classList.add('hidden');
+    }
+
+    function switchScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    async function loadSettings() {
+      const { data } = await supabaseClient.from('event_settings').select('*').limit(1).single();
+      if(data) myConfig = data;
+    }
+
+    /* --- STUDENT FLOW --- */
+    async function handleStudentRegistration(e) {
+      e.preventDefault();
+      const name = document.getElementById('student-name').value.trim();
+      const prn = document.getElementById('student-prn').value.trim();
+      
+      const { error } = await supabaseClient.from('students').upsert({ prn, name }, { onConflict: 'prn' });
+      if(error) return showToast('Error: ' + error.message);
+      
+      localStorage.setItem('fp_prn', prn);
+      startStudentPolling(prn);
+    }
+
+    function startStudentPolling(prn) {
+      switchScreen('student-dashboard-screen');
+      loadSettings().then(() => {
+        pollInterval = setInterval(() => checkTeamMatch(prn), 3000);
+        checkTeamMatch(prn);
+      });
+    }
+
+    async function checkTeamMatch(prn) {
+      const { data: me } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
+      if(!me) return logout();
+
+      if(me.team_number) {
+        clearInterval(pollInterval);
+        document.getElementById('student-waiting').classList.add('hidden');
+        document.getElementById('student-assigned').classList.remove('hidden');
+        document.getElementById('assigned-team-number').innerText = me.team_number;
+        document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / myConfig.teams_per_table);
+        
+        const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
+        document.getElementById('assigned-partners-list').innerHTML = mates.map(m => `<li>${m.name}</li>`).join('');
+        return;
+      }
+
+      // Matching logic (Client-side trigger for serverless approach)
+      const { data: waiting } = await supabaseClient.from('students').select('*').is('team_number', null).order('created_at', {ascending: true});
+      
+      if(waiting.length >= myConfig.team_size) {
+        const group = waiting.slice(0, myConfig.team_size);
+        if(group.some(s => s.prn === prn)) {
+          const { data: maxTeam } = await supabaseClient.from('students').select('team_number').order('team_number', {ascending: false}).limit(1);
+          const nextTeam = maxTeam.length ? maxTeam[0].team_number + 1 : 1;
+          const prns = group.map(g => g.prn);
+          await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
+        }
+      } else {
+        // Lone student timeout (3 mins)
+        const waitTime = new Date() - new Date(me.created_at);
+        if(waitTime > 180000 && waiting.length > 0 && waiting[0].prn === prn) {
+          const { data: lastTeam } = await supabaseClient.from('students').select('team_number').not('team_number', 'is', null).order('team_number', {ascending: false}).limit(1);
+          if(lastTeam.length) {
+            await supabaseClient.from('students').update({ team_number: lastTeam[0].team_number }).eq('prn', prn);
+          }
+        }
+      }
+    }
+
+    /* --- ORGANISER FLOW --- */
+    async function handleOrganizerAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('org-email').value.trim();
+      const password = document.getElementById('org-password').value.trim();
+      
+      document.getElementById('pending-approval-msg').classList.add('hidden');
+
+      if (currentOrganiserMode === 'signup') {
+        // Create account
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) return showToast(error.message);
+        
+        // Ensure user is created in public organisers table as unapproved
+        if (data.user) {
+          // Check if Master Admin
+          const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
+          await supabaseClient.from('organisers').upsert({ id: data.user.id, email: email, is_approved: isMaster });
+          
+          if (isMaster) {
+            showToast('Master Admin Account created!');
+            initOrganizer(email);
+          } else {
+            document.getElementById('pending-approval-msg').classList.remove('hidden');
+            // Log them out immediately so they don't have session access yet
+            await supabaseClient.auth.signOut();
+          }
+        }
+      } else {
+        // Login
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) return showToast(error.message);
+        
+        // Check approval status
+        const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
+        if (isMaster) {
+          initOrganizer(email);
+          return;
+        }
+
+        const { data: orgData } = await supabaseClient.from('organisers').select('*').eq('id', data.user.id).single();
+        if (orgData && orgData.is_approved) {
+          initOrganizer(email);
+        } else {
+          document.getElementById('pending-approval-msg').classList.remove('hidden');
+          await supabaseClient.auth.signOut(); // Revoke access
+        }
+      }
+    }
+
+    async function initOrganizer(email) {
+      switchScreen('organizer-dashboard-screen');
+      await loadSettings();
+      document.getElementById('cfg-team-size').value = myConfig.team_size;
+      document.getElementById('cfg-total-tables').value = myConfig.total_tables;
+      document.getElementById('cfg-teams-per-table').value = myConfig.teams_per_table;
+      
+      const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
+      document.getElementById('org-role-badge').innerText = isMaster ? 'Master Admin' : 'Organiser';
+      
+      if (isMaster) {
+        document.getElementById('admin-panel-btn').classList.remove('hidden');
+        fetchApprovals();
+      }
+      
+      setInterval(fetchRoster, 5000);
+      fetchRoster();
+    }
+
+    /* --- MASTER ADMIN FUNCTIONS --- */
+    function toggleAdminPanel() {
+      document.getElementById('master-admin-panel').classList.toggle('hidden');
+      fetchApprovals();
+    }
+
+    async function fetchApprovals() {
+      const { data } = await supabaseClient.from('organisers').select('*').eq('is_approved', false);
+      const tbody = document.getElementById('approvals-body');
+      
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400">No pending requests.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(org => `
+        <tr class="border-b">
+          <td class="py-2">${org.email}</td>
+          <td><span class="text-amber-600 bg-amber-50 px-2 py-1 rounded text-xs font-semibold">Pending</span></td>
+          <td><button onclick="approveOrganiser('${org.id}')" class="bg-green-600 text-white px-3 py-1 rounded text-xs">Approve Access</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function approveOrganiser(id) {
+      await supabaseClient.from('organisers').update({ is_approved: true }).eq('id', id);
+      showToast('Organiser approved!');
+      fetchApprovals();
+    }
+
+    /* --- SETTINGS & ROSTER --- */
+    function toggleSettings() {
+      document.getElementById('org-settings').classList.toggle('hidden');
+    }
+
+    async function saveSettings() {
+      myConfig = {
+        team_size: parseInt(document.getElementById('cfg-team-size').value),
+        total_tables: parseInt(document.getElementById('cfg-total-tables').value),
+        teams_per_table: parseInt(document.getElementById('cfg-teams-per-table').value)
+      };
+      await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+      showToast('Settings saved');
+    }
+
+    async function fetchRoster() {
+      const { data } = await supabaseClient.from('students').select('*').order('created_at');
+      document.getElementById('roster-body').innerHTML = data.map(s => `
+        <tr class="border-b">
+          <td class="py-2">${s.name}</td>
+          <td>${s.prn}</td>
+          <td>${s.team_number || 'Waiting'}</td>
+          <td>${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
+          <td><button onclick="deleteStudent('${s.prn}')" class="text-red-500 text-xs font-semibold hover:underline">Remove</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function deleteStudent(prn) {
+      if(!confirm('Delete this student?')) return;
+      await supabaseClient.from('students').delete().eq('prn', prn);
+      fetchRoster();
+    }
+
+    async function resetEvent() {
+      if(!confirm('DELETE ALL DATA? This will wipe the roster completely.')) return;
+      await supabaseClient.from('students').delete().neq('prn', '0'); // deletes everything
+      fetchRoster();
+    }
+
+    function logout() {
+      if(pollInterval) clearInterval(pollInterval);
+      localStorage.removeItem('fp_prn');
+      supabaseClient.auth.signOut();
+      switchScreen('login-register-screen');
+    }
+
+    // Auto-login
+    window.onload = async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if(session && session.user) {
+        const isMaster = (session.user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
+        if (isMaster) {
+          return initOrganizer(session.user.email);
+        }
+        // Check approval
+        const { data: orgData } = await supabaseClient.from('organisers').select('*').eq('id', session.user.id).single();
+        if (orgData && orgData.is_approved) {
+          return initOrganizer(session.user.email);
+        }
+      }
+      const prn = localStorage.getItem('fp_prn');
+      if(prn) startStudentPolling(prn);
+    };
+  </script>
+</body>
+</html>
