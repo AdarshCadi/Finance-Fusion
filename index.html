@@ -246,10 +246,12 @@
       });
     }
 
+    // UPDATED CHECK TEAM MATCH FUNCTION
     async function checkTeamMatch(prn) {
       const { data: me } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
       if(!me) return logout();
 
+      // 1. If assigned, update UI and stop polling
       if(me.team_number) {
         clearInterval(pollInterval);
         document.getElementById('student-waiting').classList.add('hidden');
@@ -262,23 +264,46 @@
         return;
       }
 
-      // Matching logic (Client-side trigger for serverless approach)
-      const { data: waiting } = await supabaseClient.from('students').select('*').is('team_number', null).order('created_at', {ascending: true});
-      
-      if(waiting.length >= myConfig.team_size) {
+      // 2. Fetch all waiting students in order of arrival
+      const { data: waiting } = await supabaseClient
+        .from('students')
+        .select('*')
+        .is('team_number', null)
+        .order('created_at', { ascending: true });
+
+      if(waiting && waiting.length >= myConfig.team_size) {
         const group = waiting.slice(0, myConfig.team_size);
-        if(group.some(s => s.prn === prn)) {
-          const { data: maxTeam } = await supabaseClient.from('students').select('team_number').order('team_number', {ascending: false}).limit(1);
-          const nextTeam = maxTeam.length ? maxTeam[0].team_number + 1 : 1;
-          const prns = group.map(g => g.prn);
-          await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
-        }
-      } else {
-        // Lone student timeout (3 mins)
+        
+        // Removed the check that required the active user to be in the slice.
+        // Now, any active client keeps the line moving for everyone.
+
+        // Added `.not('team_number', 'is', null)` to prevent Postgres 
+        // from returning NULL as the largest value.
+        const { data: maxTeam } = await supabaseClient
+          .from('students')
+          .select('team_number')
+          .not('team_number', 'is', null) 
+          .order('team_number', { ascending: false })
+          .limit(1);
+
+        const nextTeam = (maxTeam && maxTeam.length) ? maxTeam[0].team_number + 1 : 1;
+        const prns = group.map(g => g.prn);
+
+        // Assign the team number to the oldest waiting group
+        await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
+        
+      } else if (waiting && waiting.length > 0) {
+        // 3. Lone student timeout (3 mins)
         const waitTime = new Date() - new Date(me.created_at);
-        if(waitTime > 180000 && waiting.length > 0 && waiting[0].prn === prn) {
-          const { data: lastTeam } = await supabaseClient.from('students').select('team_number').not('team_number', 'is', null).order('team_number', {ascending: false}).limit(1);
-          if(lastTeam.length) {
+        if(waitTime > 180000 && waiting[0].prn === prn) {
+          const { data: lastTeam } = await supabaseClient
+            .from('students')
+            .select('team_number')
+            .not('team_number', 'is', null)
+            .order('team_number', { ascending: false })
+            .limit(1);
+
+          if(lastTeam && lastTeam.length) {
             await supabaseClient.from('students').update({ team_number: lastTeam[0].team_number }).eq('prn', prn);
           }
         }
