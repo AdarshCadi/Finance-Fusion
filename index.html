@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal & Pairing</title>
+    <!-- Load Supabase from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to hide sections easily */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800 font-sans selection:bg-blue-200">
+
+    <nav class="bg-white shadow-sm mb-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex space-x-8">
+                    <button onclick="switchTab('register')" class="tab-btn inline-flex items-center px-1 pt-1 border-b-2 border-blue-500 text-sm font-medium text-gray-900" id="btn-register">
+                        1. Register
+                    </button>
+                    <button onclick="switchTab('submit')" class="tab-btn inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" id="btn-submit">
+                        2. Submit Task
+                    </button>
+                    <button onclick="switchTab('admin')" class="tab-btn inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-purple-500 hover:text-purple-700 hover:border-purple-300" id="btn-admin">
+                        Admin: Generate Teams
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        
+        <!-- TAB 1: REGISTRATION -->
+        <div id="register" class="tab-content active bg-white p-6 sm:p-8 rounded-xl shadow-md border border-gray-100">
+            <h1 class="text-2xl font-bold mb-2 text-gray-900">Student Registration</h1>
+            <p class="text-gray-500 mb-6 text-sm">Register with your PRN to be included in the team pairing.</p>
+            
+            <form id="registrationForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="name" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PRN Number</label>
+                    <input type="text" id="prn" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+
+                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                    Register Me
+                </button>
+            </form>
+            <div id="reg-message" class="mt-4 p-3 rounded-lg text-sm hidden font-medium text-center"></div>
+        </div>
+
+        <!-- TAB 2: TASK SUBMISSION -->
+        <div id="submit" class="tab-content bg-white p-6 sm:p-8 rounded-xl shadow-md border border-gray-100">
+            <h1 class="text-2xl font-bold mb-2 text-gray-900">Submit Team Task</h1>
+            <p class="text-gray-500 mb-6 text-sm">Enter your assigned Team Number and your project link/details.</p>
+            
+            <form id="taskForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Team Number</label>
+                    <input type="number" id="team_number" required min="1" class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Task Link or Notes</label>
+                    <textarea id="task_details" required rows="4" class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Paste your Google Doc, GitHub link, or answers here..."></textarea>
+                </div>
+
+                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all">
+                    Submit Task
+                </button>
+            </form>
+            <div id="task-message" class="mt-4 p-3 rounded-lg text-sm hidden font-medium text-center"></div>
+        </div>
+
+        <!-- TAB 3: ADMIN PAIRING -->
+        <div id="admin" class="tab-content bg-white p-6 sm:p-8 rounded-xl shadow-md border border-purple-100">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold mb-1 text-gray-900">Generate Teams</h1>
+                    <p class="text-gray-500 text-sm">Shuffle all registered students and assign them into pairs.</p>
+                </div>
+                <button id="generateBtn" class="py-2 px-6 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all">
+                    Shuffle & Pair Students
+                </button>
+            </div>
+            
+            <div id="admin-message" class="mb-4 p-3 rounded-lg text-sm hidden font-medium text-center"></div>
+
+            <div class="border rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team No.</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PRN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Table rows populated by JS -->
+                        <tr>
+                            <td colspan="3" class="px-6 py-8 text-center text-gray-400 text-sm">Click the button above to generate teams.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. PASTE YOUR SUPABASE CREDENTIALS HERE ---
+        const SUPABASE_URL = 'https://iirmhdhaihrkmeagaugq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
+        // -----------------------------------------------
+
+        let supabaseClient = null;
+        
+        // Prevent crash if placeholders are still present
+        if (SUPABASE_URL.startsWith('http')) {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.warn("Supabase credentials missing. Please update SUPABASE_URL and SUPABASE_ANON_KEY.");
+        }
+
+        // Simple Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-500', 'text-gray-900', 'border-purple-500');
+                el.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if(tabId === 'admin') {
+                activeBtn.classList.add('border-purple-500', 'text-purple-700');
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            } else {
+                activeBtn.classList.add('border-blue-500', 'text-gray-900');
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            }
+        }
+
+        // Helper to show messages safely without alert()
+        function showMessage(elementId, text, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = text;
+            el.className = `mt-4 p-3 rounded-lg text-sm block font-medium text-center ${type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`;
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        // --- REGISTRATION LOGIC ---
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Registering...';
+
+            if (!supabaseClient) {
+                showMessage('reg-message', 'Please add your Supabase URL and Key in the code to connect.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Register Me';
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.from('students').insert([{ 
+                    name: document.getElementById('name').value, 
+                    prn: document.getElementById('prn').value 
+                }]);
+                
+                if (error) throw error;
+                showMessage('reg-message', 'Successfully registered!', 'success');
+                e.target.reset();
+            } catch (error) {
+                const msg = error.message.includes('unique') ? 'This PRN is already registered.' : error.message;
+                showMessage('reg-message', msg, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Register Me';
+            }
+        });
+
+        // --- TASK SUBMISSION LOGIC ---
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            if (!supabaseClient) {
+                showMessage('task-message', 'Please add your Supabase URL and Key in the code to connect.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Submit Task';
+                return;
+            }
+
+            try {
+                // Upsert allows teams to overwrite their previous submission if they make a mistake
+                const { error } = await supabaseClient.from('tasks').upsert([{ 
+                    team_number: document.getElementById('team_number').value, 
+                    task_details: document.getElementById('task_details').value 
+                }]);
+                
+                if (error) throw error;
+                showMessage('task-message', 'Task submitted successfully!', 'success');
+                e.target.reset();
+            } catch (error) {
+                showMessage('task-message', error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Submit Task';
+            }
+        });
+
+        // --- ADMIN PAIRING LOGIC ---
+        document.getElementById('generateBtn').addEventListener('click', async (e) => {
+            const btn = e.target;
+            btn.disabled = true;
+            btn.textContent = 'Shuffling...';
+            
+            if (!supabaseClient) {
+                showMessage('admin-message', 'Please add your Supabase URL and Key in the code to connect.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Shuffle & Pair Students';
+                return;
+            }
+
+            try {
+                // 1. Fetch all students
+                const { data: students, error: fetchError } = await supabaseClient.from('students').select('*');
+                if (fetchError) throw fetchError;
+                
+                if (!students || students.length < 2) {
+                    throw new Error("Need at least 2 registered students to form teams.");
+                }
+
+                // 2. Fisher-Yates Shuffle Algorithm
+                for (let i = students.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [students[i], students[j]] = [students[j], students[i]];
+                }
+
+                // 3. Assign Team Numbers (Groups of 2)
+                const updates = [];
+                for (let i = 0; i < students.length; i++) {
+                    // Math.floor(i / 2) creates pairs: 0,0, 1,1, 2,2... Add 1 so teams start at 1.
+                    const teamNum = Math.floor(i / 2) + 1;
+                    
+                    // If it's an odd total number, the last person gets added to the last full team
+                    // making it a group of 3, instead of being alone.
+                    const finalTeamNum = (i === students.length - 1 && students.length % 2 !== 0) 
+                        ? teamNum - 1 
+                        : teamNum;
+
+                    students[i].team_number = finalTeamNum;
+                    
+                    // Push to our update array
+                    updates.push({
+                        prn: students[i].prn,
+                        name: students[i].name,
+                        team_number: finalTeamNum
+                    });
+                }
+
+                // 4. Save back to Supabase
+                const { error: updateError } = await supabaseClient.from('students').upsert(updates);
+                if (updateError) throw updateError;
+
+                showMessage('admin-message', `Successfully created ${updates[updates.length-1].team_number} teams!`, 'success');
+                
+                // 5. Render the table
+                renderTeamsTable(updates);
+
+            } catch (error) {
+                showMessage('admin-message', error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Shuffle & Pair Students';
+            }
+        });
+
+        function renderTeamsTable(students) {
+            const tbody = document.getElementById('teamsTableBody');
+            tbody.innerHTML = ''; // Clear table
+            
+            // Sort by team number for neat display
+            students.sort((a, b) => a.team_number - b.team_number);
+
+            students.forEach((student, index) => {
+                // Add a slightly different background color for alternating teams
+                const isEvenTeam = student.team_number % 2 === 0;
+                const row = document.createElement('tr');
+                row.className = isEvenTeam ? 'bg-white' : 'bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600">Team ${student.team_number}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.prn}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
