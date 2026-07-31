@@ -335,14 +335,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Future Task Area -->
-            <div id="task-submission-area" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hidden">
-                <h3 class="font-semibold text-slate-900 mb-2">Team Task Submission</h3>
-                <p class="text-sm text-slate-500 mb-4">Once your task is complete, submit your details here.</p>
-                <input type="text" placeholder="Enter task URL or notes" class="finance-input w-full px-4 py-2.5 text-sm mb-3">
-                <button class="finance-btn w-full py-2.5 text-sm">Submit Task</button>
-            </div>
 
         </div>
     </div>
@@ -399,7 +391,6 @@
                 if (!student.team_number) {
                     document.getElementById('status-waiting').classList.remove('hidden');
                     document.getElementById('status-assigned').classList.add('hidden');
-                    document.getElementById('task-submission-area').classList.add('hidden');
 
                     // Set up the local timer so it survives page refreshes
                     const storageKey = 'match_start_' + prn;
@@ -445,6 +436,12 @@
                     let targetTeam = 1;
                     if (maxTeamData && maxTeamData.length > 0 && maxTeamData[0].team_number) {
                         targetTeam = maxTeamData[0].team_number;
+                        
+                        // CRITICAL FIX: Ensure we don't put more than 3 people in a team due to timeouts
+                        const { count } = await supabaseClient.from('students').select('*', { count: 'exact', head: true }).eq('team_number', targetTeam);
+                        if (count >= 3) {
+                            targetTeam += 1; // The last team is full, create a new one
+                        }
                     }
 
                     await supabaseClient.from('students').update({ team_number: targetTeam }).eq('prn', prn);
@@ -463,6 +460,17 @@
                 if (availableStudents && availableStudents.length > 0) {
                     // Pick a random available student
                     const partner = availableStudents[Math.floor(Math.random() * availableStudents.length)];
+                    
+                    // CRITICAL FIX: Stagger concurrent clients to prevent race conditions during testing
+                    await new Promise(r => setTimeout(r, Math.random() * 800));
+                    
+                    // Re-verify I am still not assigned (another tab might have grabbed me)
+                    const { data: checkMe } = await supabaseClient.from('students').select('team_number').eq('prn', prn).single();
+                    if(checkMe.team_number) return; 
+
+                    // Re-verify partner is still available
+                    const { data: checkPartner } = await supabaseClient.from('students').select('team_number').eq('prn', partner.prn).single();
+                    if(checkPartner.team_number) return; // Partner got snatched up! Cancel and wait for next loop.
                     
                     // Find the current highest team number so we can make the next one
                     const { data: maxTeamData } = await supabaseClient.from('students').select('team_number').order('team_number', { ascending: false }).limit(1);
@@ -486,7 +494,6 @@
         async function showAssignedState(myPrn, teamNum) {
             document.getElementById('status-waiting').classList.add('hidden');
             document.getElementById('status-assigned').classList.remove('hidden');
-            document.getElementById('task-submission-area').classList.remove('hidden');
             
             // Calculate table number (5 teams per table)
             const tableNum = Math.ceil(teamNum / 5); 
