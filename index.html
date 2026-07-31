@@ -13,13 +13,6 @@
       theme: {
         extend: {
           fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
-          colors: {
-            brand: {
-              400: '#60a5fa',
-              500: '#3b82f6',
-              600: '#2563eb',
-            }
-          }
         },
       },
     };
@@ -27,60 +20,57 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* ── Base & Premium Dark Theme ── */
+    /* ── Base & Light Theme (Gemini-Inspired) ── */
     body { 
       font-family: 'Inter', sans-serif; 
-      background: radial-gradient(circle at top right, #1e293b, #0f172a); 
-      color: #f8fafc; 
+      background-color: #f8fafc; /* Very light slate */
+      color: #0f172a; 
       min-height: 100vh; 
       overflow-x: hidden; 
     }
     
-    /* ── Glassmorphism Panels ── */
-    .glass-panel { 
-      background: rgba(30, 41, 59, 0.7); 
-      backdrop-filter: blur(20px); 
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08); 
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+    /* ── Clean White Panels ── */
+    .clean-panel { 
+      background: #ffffff; 
+      border: 1px solid #e2e8f0; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
+      border-radius: 1.5rem;
     }
     
-    /* ── Inputs ── */
+    /* ── Soft Inputs ── */
     .input-field { 
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #f8fafc;
-      transition: all 0.3s ease; 
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      transition: all 0.2s ease; 
     }
     .input-field:focus { 
+      background: #ffffff;
       border-color: #3b82f6; 
-      background: rgba(15, 23, 42, 0.9);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); 
+      box-shadow: 0 0 0 4px #eff6ff; 
       outline: none; 
     }
     
     /* ── Screen Transitions ── */
-    .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(15px); }
+    .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
     .screen.active { display: flex; opacity: 1; transform: translateY(0); }
     
-    /* ── Radar Pulse Animation for Waiting Screen ── */
+    /* ── Light Radar Pulse Animation ── */
     .radar-container {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       margin: 0 auto 24px auto;
-      border-radius: 50%;
-      border: 2px solid rgba(59, 130, 246, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .radar-core {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       background: #3b82f6;
       border-radius: 50%;
-      box-shadow: 0 0 15px #3b82f6;
+      box-shadow: 0 0 0 4px #eff6ff;
     }
     .radar-ripple {
       position: absolute;
@@ -88,7 +78,7 @@
       left: 50%;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle, rgba(59,130,246,0.6) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
       border-radius: 50%;
       transform: translate(-50%, -50%) scale(0.1);
       animation: ripple 2s cubic-bezier(0.21, 0.53, 0.56, 1) infinite;
@@ -98,17 +88,17 @@
       100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
     }
 
-    /* ── Toast Notifications ── */
+    /* ── Minimal Toasts ── */
     .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
     .toast { 
       padding: 14px 24px; 
-      border-radius: 10px; 
+      border-radius: 12px; 
       font-size: 14px; 
       font-weight: 500; 
-      background: rgba(30, 41, 59, 0.95); 
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-      color: white;
+      background: #ffffff; 
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); 
+      color: #0f172a;
       animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
     }
     @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -116,8 +106,8 @@
     /* ── Scrollbar customization ── */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body>
@@ -126,28 +116,28 @@
   <div id="login-register-screen" class="screen active min-h-screen items-center justify-center p-4">
     <div class="w-full max-w-md">
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">Finance Fusion</h1>
-        <p class="text-slate-400 text-sm font-medium">Event Coordination Portal</p>
+        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2 tracking-tight">Finance Fusion</h1>
+        <p class="text-slate-500 text-sm font-medium">Event Coordination Portal</p>
       </div>
       
-      <div class="glass-panel rounded-2xl p-8">
-        <!-- iOS Style Segmented Control -->
-        <div class="flex p-1 bg-slate-800/80 rounded-xl mb-8 border border-slate-700/50">
-          <button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm transition-all" id="tab-student" onclick="switchTab('student')">Student</button>
-          <button class="flex-1 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 transition-all" id="tab-organizer" onclick="switchTab('organizer')">Organiser</button>
+      <div class="clean-panel p-8">
+        <!-- Sleek Segmented Control -->
+        <div class="flex p-1 bg-slate-100 rounded-xl mb-8 border border-slate-200">
+          <button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-slate-800 shadow-sm transition-all border border-slate-200/50" id="tab-student" onclick="switchTab('student')">Student</button>
+          <button class="flex-1 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 transition-all" id="tab-organizer" onclick="switchTab('organizer')">Organiser</button>
         </div>
 
         <!-- Student Form -->
         <form id="student-form" onsubmit="handleStudentRegistration(event)">
           <div class="mb-5">
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">Full Name</label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name</label>
             <input type="text" id="student-name" class="input-field w-full px-4 py-3 rounded-xl" placeholder="e.g. John Doe" required />
           </div>
           <div class="mb-8">
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">PRN</label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">PRN</label>
             <input type="text" id="student-prn" class="input-field w-full px-4 py-3 rounded-xl" placeholder="University ID" required />
           </div>
-          <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-brand-600 text-white font-semibold text-sm hover:from-blue-400 hover:to-blue-500 shadow-lg hover:shadow-blue-500/25 transition-all active:scale-[0.98]">
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-sm hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-[0.98]">
             Join Event Queue
           </button>
         </form>
@@ -155,29 +145,29 @@
         <!-- Organizer Form -->
         <div id="organizer-form" class="hidden">
           <div class="flex justify-center mb-6 space-x-6">
-            <label class="text-sm font-medium cursor-pointer flex items-center text-slate-300 hover:text-white transition-colors">
-              <input type="radio" name="org_mode" value="login" checked onchange="toggleOrgMode()" class="mr-2 accent-blue-500"> Login
+            <label class="text-sm font-medium cursor-pointer flex items-center text-slate-600 hover:text-slate-900 transition-colors">
+              <input type="radio" name="org_mode" value="login" checked onchange="toggleOrgMode()" class="mr-2 accent-blue-600"> Login
             </label>
-            <label class="text-sm font-medium cursor-pointer flex items-center text-slate-300 hover:text-white transition-colors">
-              <input type="radio" name="org_mode" value="signup" onchange="toggleOrgMode()" class="mr-2 accent-blue-500"> Request Access
+            <label class="text-sm font-medium cursor-pointer flex items-center text-slate-600 hover:text-slate-900 transition-colors">
+              <input type="radio" name="org_mode" value="signup" onchange="toggleOrgMode()" class="mr-2 accent-blue-600"> Request Access
             </label>
           </div>
 
           <form id="org-auth-form" onsubmit="handleOrganizerAuth(event)">
             <div class="mb-5">
-              <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">Email Address</label>
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Email Address</label>
               <input type="email" id="org-email" placeholder="name@example.com" class="input-field w-full px-4 py-3 rounded-xl" required />
             </div>
             <div class="mb-8">
-              <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">Password</label>
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Password</label>
               <input type="password" id="org-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl" required minlength="6" />
             </div>
-            <button type="submit" id="org-submit-btn" class="w-full py-3.5 rounded-xl bg-slate-100 text-slate-900 font-bold text-sm hover:bg-white shadow-lg transition-all active:scale-[0.98]">
+            <button type="submit" id="org-submit-btn" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
               Login to Dashboard
             </button>
           </form>
           
-          <div id="pending-approval-msg" class="hidden mt-6 text-center text-sm font-medium text-amber-200 bg-amber-900/30 p-4 rounded-xl border border-amber-700/50">
+          <div id="pending-approval-msg" class="hidden mt-6 text-center text-sm font-medium text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200">
             Account created. Pending Master Admin approval.
           </div>
         </div>
@@ -187,12 +177,10 @@
 
   <!-- SCREEN 2: Student Dashboard -->
   <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-4">
-    <div class="w-full max-w-md glass-panel rounded-2xl p-8 text-center relative overflow-hidden">
-      <!-- Decorative background blur -->
-      <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    <div class="w-full max-w-md clean-panel p-8 text-center relative overflow-hidden">
       
-      <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4 relative z-10">
-        <h2 class="font-bold text-lg text-white tracking-wide">Your Portal</h2>
+      <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-4 relative z-10">
+        <h2 class="font-semibold text-lg text-slate-800 tracking-tight">Your Portal</h2>
       </div>
       
       <!-- Waiting State -->
@@ -201,26 +189,27 @@
           <div class="radar-ripple"></div>
           <div class="radar-core"></div>
         </div>
-        <p class="text-lg font-medium text-blue-300 animate-pulse mt-6 tracking-wide">Synchronizing Team...</p>
-        <p class="text-xs text-slate-400 mt-2">Please wait while we match you with your partners.</p>
+        <p class="text-lg font-medium text-blue-600 mt-6 tracking-tight">Finding your team...</p>
+        <p class="text-sm text-slate-500 mt-2">Please wait while we match you with your partners.</p>
       </div>
 
       <!-- Assigned State -->
       <div id="student-assigned" class="hidden text-left relative z-10">
         <div class="text-center mb-8">
-          <p class="text-slate-400 text-sm font-semibold uppercase tracking-widest mb-1">Assignment Complete</p>
-          <h3 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-400 mb-2">
-            Team <span id="assigned-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400"></span>
+          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Assignment Complete</p>
+          <h3 class="text-5xl font-extrabold text-slate-800 mb-3 tracking-tight">
+            Team <span id="assigned-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span>
           </h3>
-          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm mt-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Table <strong class="text-white ml-1 text-base" id="assigned-table-number"></strong>
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-sm mt-2 shadow-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-slate-600 font-medium">Table</span>
+            <strong class="text-slate-800 text-base" id="assigned-table-number"></strong>
           </div>
         </div>
         
-        <div class="bg-slate-800/50 p-5 rounded-xl border border-white/5">
-          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Your Teammates</h4>
-          <ul id="assigned-partners-list" class="space-y-2.5 text-sm font-medium text-slate-200">
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Your Teammates</h4>
+          <ul id="assigned-partners-list" class="space-y-3 text-sm font-medium text-slate-800">
             <!-- Populated dynamically via JS -->
           </ul>
         </div>
@@ -233,82 +222,82 @@
     <div class="max-w-7xl mx-auto w-full space-y-6">
       
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-panel p-5 rounded-2xl">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 clean-panel p-5">
         <div>
-          <h2 class="font-bold text-xl text-white">Organiser Command Center</h2>
-          <div class="flex items-center gap-2 mt-1">
+          <h2 class="font-bold text-xl text-slate-800 tracking-tight">Organiser Command Center</h2>
+          <div class="flex items-center gap-2 mt-1.5">
             <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-            <p id="org-role-badge" class="text-xs font-semibold text-blue-300 uppercase tracking-wider"></p>
+            <p id="org-role-badge" class="text-xs font-semibold text-slate-500 uppercase tracking-wider"></p>
           </div>
         </div>
         <div class="flex flex-wrap gap-3">
-          <button id="admin-panel-btn" onclick="toggleAdminPanel()" class="hidden text-sm px-4 py-2 bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 rounded-lg font-semibold transition-all">Approvals</button>
-          <button onclick="toggleSettings()" class="text-sm px-4 py-2 bg-white/10 text-white border border-white/10 hover:bg-white/20 rounded-lg transition-all">Settings</button>
-          <button onclick="logout()" class="text-sm px-4 py-2 bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 rounded-lg transition-all">Logout</button>
+          <button id="admin-panel-btn" onclick="toggleAdminPanel()" class="hidden text-sm px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all">Approvals</button>
+          <button onclick="toggleSettings()" class="text-sm px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
+          <button onclick="logout()" class="text-sm px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all">Logout</button>
         </div>
       </div>
 
       <!-- Master Admin Panel -->
-      <div id="master-admin-panel" class="hidden glass-panel p-6 rounded-2xl border-l-4 border-l-purple-500">
-        <h3 class="font-bold text-purple-300 mb-4 tracking-wide">Pending Access Requests</h3>
-        <div class="overflow-x-auto rounded-xl border border-white/10">
+      <div id="master-admin-panel" class="hidden clean-panel p-6 border-l-4 border-l-indigo-500">
+        <h3 class="font-bold text-slate-800 mb-4 tracking-tight">Pending Access Requests</h3>
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-white/5 border-b border-white/10">
-              <tr class="text-slate-400">
-                <th class="py-3 px-4 font-medium">Email Address</th>
-                <th class="py-3 px-4 font-medium">Status</th>
-                <th class="py-3 px-4 font-medium text-right">Actions</th>
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr class="text-slate-600">
+                <th class="py-3 px-4 font-semibold">Email Address</th>
+                <th class="py-3 px-4 font-semibold">Status</th>
+                <th class="py-3 px-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="approvals-body" class="divide-y divide-white/5"></tbody>
+            <tbody id="approvals-body" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </div>
 
       <!-- Settings Panel -->
-      <div id="org-settings" class="hidden glass-panel p-6 rounded-2xl border-l-4 border-l-blue-500">
-        <h3 class="font-semibold text-white mb-5 tracking-wide">Event Configurations</h3>
+      <div id="org-settings" class="hidden clean-panel p-6 border-l-4 border-l-blue-500">
+        <h3 class="font-semibold text-slate-800 mb-5 tracking-tight">Event Configurations</h3>
         <div class="flex flex-wrap gap-5 items-end">
           <div class="flex-1 min-w-[120px]">
-            <label class="block text-xs text-slate-400 mb-2 uppercase tracking-wider">Team Size</label>
-            <input type="number" id="cfg-team-size" class="input-field w-full p-2.5 rounded-lg text-center" />
+            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Team Size</label>
+            <input type="number" id="cfg-team-size" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
           </div>
           <div class="flex-1 min-w-[120px]">
-            <label class="block text-xs text-slate-400 mb-2 uppercase tracking-wider">Total Tables</label>
-            <input type="number" id="cfg-total-tables" class="input-field w-full p-2.5 rounded-lg text-center" />
+            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Total Tables</label>
+            <input type="number" id="cfg-total-tables" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
           </div>
           <div class="flex-1 min-w-[120px]">
-            <label class="block text-xs text-slate-400 mb-2 uppercase tracking-wider">Teams / Table</label>
-            <input type="number" id="cfg-teams-per-table" class="input-field w-full p-2.5 rounded-lg text-center" />
+            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Teams / Table</label>
+            <input type="number" id="cfg-teams-per-table" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
           </div>
           <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-            <button onclick="saveSettings()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all">Save Changes</button>
-            <button onclick="resetEvent()" class="flex-1 md:flex-none bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-500/30 px-6 py-2.5 rounded-lg text-sm transition-all">Purge Data</button>
+            <button onclick="saveSettings()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save</button>
+            <button onclick="resetEvent()" class="flex-1 md:flex-none bg-white hover:bg-red-50 text-red-600 border border-red-200 px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Purge Data</button>
           </div>
         </div>
       </div>
 
       <!-- Live Roster -->
-      <div class="glass-panel p-0 rounded-2xl overflow-hidden flex flex-col h-[600px]">
-        <div class="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
-          <h3 class="font-semibold text-white tracking-wide">Live Student Roster</h3>
+      <div class="clean-panel p-0 overflow-hidden flex flex-col h-[600px]">
+        <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white">
+          <h3 class="font-semibold text-slate-800 tracking-tight">Live Student Roster</h3>
           <span class="flex h-3 w-3 relative">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
           </span>
         </div>
-        <div class="overflow-auto flex-1 p-5">
+        <div class="overflow-auto flex-1 bg-white">
           <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="sticky top-0 bg-[#1e293b] z-10 outline outline-1 outline-white/10 rounded-t-lg">
-              <tr class="text-slate-400">
-                <th class="py-3 px-4 font-medium rounded-tl-lg">Participant Name</th>
-                <th class="py-3 px-4 font-medium">PRN</th>
-                <th class="py-3 px-4 font-medium text-center">Assigned Team</th>
-                <th class="py-3 px-4 font-medium text-center">Table No.</th>
-                <th class="py-3 px-4 font-medium text-right rounded-tr-lg">Manage</th>
+            <thead class="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
+              <tr class="text-slate-600">
+                <th class="py-3 px-5 font-semibold">Participant Name</th>
+                <th class="py-3 px-5 font-semibold">PRN</th>
+                <th class="py-3 px-5 font-semibold text-center">Assigned Team</th>
+                <th class="py-3 px-5 font-semibold text-center">Table No.</th>
+                <th class="py-3 px-5 font-semibold text-right">Manage</th>
               </tr>
             </thead>
-            <tbody id="roster-body" class="divide-y divide-white/5 mt-2"></tbody>
+            <tbody id="roster-body" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </div>
@@ -342,8 +331,8 @@
       document.getElementById('student-form').classList.toggle('hidden', tab !== 'student');
       document.getElementById('organizer-form').classList.toggle('hidden', tab === 'student');
       
-      const activeClass = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm transition-all';
-      const inactiveClass = 'flex-1 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 transition-all';
+      const activeClass = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-slate-800 shadow-sm transition-all border border-slate-200/50';
+      const inactiveClass = 'flex-1 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 transition-all';
       
       document.getElementById('tab-student').className = tab === 'student' ? activeClass : inactiveClass;
       document.getElementById('tab-organizer').className = tab === 'organizer' ? activeClass : inactiveClass;
@@ -421,8 +410,14 @@
 
           if (mates) {
             document.getElementById('assigned-partners-list').innerHTML = mates
-              .map(m => `<li class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5"><div class="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">${m.name.charAt(0).toUpperCase()}</div>${m.name}</li>`)
-              .join('');
+              .map(m => `
+                <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                  <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                    ${m.name.charAt(0).toUpperCase()}
+                  </div>
+                  ${m.name}
+                </li>
+              `).join('');
           }
           return;
         }
@@ -546,15 +541,15 @@
       const tbody = document.getElementById('approvals-body');
       
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="py-6 px-4 text-center text-slate-500 italic">No pending requests at this time.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="py-6 px-4 text-center text-slate-400 italic">No pending requests at this time.</td></tr>';
         return;
       }
 
       tbody.innerHTML = data.map(org => `
-        <tr class="hover:bg-white/5 transition-colors">
-          <td class="py-3 px-4">${org.email}</td>
-          <td class="py-3 px-4"><span class="text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md text-xs font-semibold border border-amber-400/20">Pending</span></td>
-          <td class="py-3 px-4 text-right"><button onclick="approveOrganiser('${org.id}')" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs transition-all">Grant Access</button></td>
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="py-3 px-4 text-slate-700">${org.email}</td>
+          <td class="py-3 px-4"><span class="text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md text-xs font-semibold border border-amber-200">Pending</span></td>
+          <td class="py-3 px-4 text-right"><button onclick="approveOrganiser('${org.id}')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm">Grant Access</button></td>
         </tr>
       `).join('');
     }
@@ -583,17 +578,17 @@
     async function fetchRoster() {
       const { data } = await supabaseClient.from('students').select('*').order('created_at');
       document.getElementById('roster-body').innerHTML = data.map(s => `
-        <tr class="hover:bg-white/5 transition-colors">
-          <td class="py-3 px-4 font-medium">${s.name}</td>
-          <td class="py-3 px-4 text-slate-400">${s.prn}</td>
-          <td class="py-3 px-4 text-center">
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="py-3 px-5 font-medium text-slate-800">${s.name}</td>
+          <td class="py-3 px-5 text-slate-500">${s.prn}</td>
+          <td class="py-3 px-5 text-center">
             ${s.team_number 
-              ? `<span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
-              : `<span class="text-slate-500 italic text-xs">Waiting...</span>`}
+              ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
+              : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
           </td>
-          <td class="py-3 px-4 text-center text-slate-300">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
-          <td class="py-3 px-4 text-right">
-            <button onclick="deleteStudent('${s.prn}')" class="text-red-400 hover:text-red-300 text-xs font-semibold px-3 py-1 rounded bg-red-400/10 hover:bg-red-400/20 transition-all">Revoke</button>
+          <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
+          <td class="py-3 px-5 text-right">
+            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
           </td>
         </tr>
       `).join('');
