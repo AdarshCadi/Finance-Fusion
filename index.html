@@ -303,12 +303,13 @@
             <!-- Waiting State -->
             <div id="status-waiting" class="bg-white rounded-2xl p-10 border border-slate-200 shadow-sm text-center mb-6 hidden">
                 <div class="animate-spin w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full mx-auto mb-5"></div>
-                <h3 class="text-xl font-semibold text-slate-900">Waiting for Assignment</h3>
-                <p class="text-slate-500 mt-2 max-w-md mx-auto">The organizer has not finalized teams yet. Please stand by while the system pairs you with a partner.</p>
-                <button onclick="checkAssignmentStatus()" class="mt-8 finance-btn px-6 py-2.5 text-sm inline-flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    Check Status Now
-                </button>
+                <h3 class="text-xl font-semibold text-slate-900">Finding a Partner...</h3>
+                <p class="text-slate-500 mt-2 max-w-md mx-auto">The system is actively looking for an available student to pair you with.</p>
+                
+                <!-- Live Countdown Timer -->
+                <div id="wait-timer" class="mt-6 text-sm font-mono font-medium text-blue-600 bg-blue-50 py-2 px-4 rounded-full inline-block">
+                    Timeout in: 180s
+                </div>
             </div>
 
             <!-- Assigned State -->
@@ -325,7 +326,7 @@
                 
                 <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div class="bg-slate-50 p-5 rounded-xl border border-slate-100">
-                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Your Partner</p>
+                        <p id="partner-title" class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Your Partner</p>
                         <p class="text-xl font-semibold text-slate-900" id="dash-partner">Searching...</p>
                     </div>
                     <div class="bg-slate-50 p-5 rounded-xl border border-slate-100">
@@ -357,6 +358,9 @@
 
         // --- View & Session Management --- //
         
+        let matchmakingInterval;
+        let matchStartTime;
+
         function switchScreen(screenId) {
             document.querySelectorAll('.app-screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -368,8 +372,8 @@
 
         function logout() {
             localStorage.removeItem('student_prn');
+            if(matchmakingInterval) clearInterval(matchmakingInterval);
             switchScreen('auth-screen');
-            // Reset the registration form
             document.getElementById('form-student').reset();
             document.getElementById('student-msg-container').classList.add('hidden');
         }
@@ -379,7 +383,7 @@
             document.getElementById('dash-prn').innerText = `PRN: ${prn}`;
             
             try {
-                // 1. Fetch this student's data
+                // Fetch this student's data
                 const { data: student, error } = await supabaseClient
                     .from('students')
                     .select('*')
@@ -388,55 +392,123 @@
 
                 if (error) throw error;
 
-                // Extract first name for greeting
                 const firstName = student.name.split(' ')[0];
                 document.getElementById('dash-greeting').innerText = `Welcome, ${firstName}`;
 
-                // 2. Check if they have a team assigned yet
+                // Check if they already have a team
                 if (!student.team_number) {
-                    // Show waiting state
                     document.getElementById('status-waiting').classList.remove('hidden');
                     document.getElementById('status-assigned').classList.add('hidden');
                     document.getElementById('task-submission-area').classList.add('hidden');
-                } else {
-                    // Show assigned state
-                    document.getElementById('status-waiting').classList.add('hidden');
-                    document.getElementById('status-assigned').classList.remove('hidden');
-                    document.getElementById('task-submission-area').classList.remove('hidden');
-                    
-                    const teamNum = student.team_number;
-                    
-                    // Logic: 5 teams per table (Teams 1-5 = Table 1, Teams 6-10 = Table 2, etc.)
-                    const tableNum = Math.ceil(teamNum / 5); 
-                    
-                    document.getElementById('dash-team').innerText = teamNum;
-                    document.getElementById('dash-table').innerText = tableNum;
 
-                    // 3. Fetch their partner's name
-                    const { data: partnerData } = await supabaseClient
-                        .from('students')
-                        .select('name')
-                        .eq('team_number', teamNum)
-                        .neq('prn', prn) // Don't get their own name
-                        .single();
-
-                    if (partnerData) {
-                        document.getElementById('dash-partner').innerText = partnerData.name;
-                    } else {
-                        // In case of an odd number of total students, one person gets a solo team
-                        document.getElementById('dash-partner').innerText = "Solo Team (Odd Count)";
+                    // Set up the local timer so it survives page refreshes
+                    const storageKey = 'match_start_' + prn;
+                    if (!localStorage.getItem(storageKey)) {
+                        localStorage.setItem(storageKey, Date.now());
                     }
+                    matchStartTime = parseInt(localStorage.getItem(storageKey));
+
+                    // Start the real-time matchmaking loop (Runs every 3 seconds)
+                    if(matchmakingInterval) clearInterval(matchmakingInterval);
+                    matchmakingInterval = setInterval(() => performMatchmaking(prn), 3000);
+                    performMatchmaking(prn); 
+
+                } else {
+                    showAssignedState(prn, student.team_number);
                 }
             } catch (err) {
                 console.error("Dashboard Load Error:", err);
-                alert("Could not load your profile. Please log in again.");
-                logout();
             }
         }
 
-        function checkAssignmentStatus() {
-            const prn = localStorage.getItem('student_prn');
-            if (prn) loadStudentDashboard(prn);
+        async function performMatchmaking(prn) {
+            try {
+                // 1. Check if another student's browser already matched with me
+                const { data: me } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
+                if (me.team_number) {
+                    clearInterval(matchmakingInterval);
+                    localStorage.removeItem('match_start_' + prn);
+                    showAssignedState(prn, me.team_number);
+                    return;
+                }
+
+                // 2. Check the 3-minute (180,000 ms) timer
+                const elapsed = Date.now() - matchStartTime;
+                const timeLeft = Math.max(0, 180 - Math.floor(elapsed / 1000));
+                document.getElementById('wait-timer').innerText = `Timeout in: ${timeLeft}s`;
+
+                if (elapsed >= 180000) {
+                    // TIMEOUT: Find the highest existing team and join it
+                    clearInterval(matchmakingInterval);
+                    const { data: maxTeamData } = await supabaseClient.from('students').select('team_number').order('team_number', { ascending: false }).limit(1);
+                    
+                    let targetTeam = 1;
+                    if (maxTeamData && maxTeamData.length > 0 && maxTeamData[0].team_number) {
+                        targetTeam = maxTeamData[0].team_number;
+                    }
+
+                    await supabaseClient.from('students').update({ team_number: targetTeam }).eq('prn', prn);
+                    localStorage.removeItem('match_start_' + prn);
+                    showAssignedState(prn, targetTeam);
+                    return;
+                }
+
+                // 3. LOOK FOR A PARTNER: Find anyone else who doesn't have a team
+                const { data: availableStudents } = await supabaseClient
+                    .from('students')
+                    .select('*')
+                    .is('team_number', null)
+                    .neq('prn', prn);
+
+                if (availableStudents && availableStudents.length > 0) {
+                    // Pick a random available student
+                    const partner = availableStudents[Math.floor(Math.random() * availableStudents.length)];
+                    
+                    // Find the current highest team number so we can make the next one
+                    const { data: maxTeamData } = await supabaseClient.from('students').select('team_number').order('team_number', { ascending: false }).limit(1);
+                    let nextTeam = 1;
+                    if (maxTeamData && maxTeamData.length > 0 && maxTeamData[0].team_number) {
+                        nextTeam = maxTeamData[0].team_number + 1;
+                    }
+
+                    // Update BOTH myself and the selected partner to the new team simultaneously
+                    await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', [prn, partner.prn]);
+                    
+                    clearInterval(matchmakingInterval);
+                    localStorage.removeItem('match_start_' + prn);
+                    showAssignedState(prn, nextTeam);
+                }
+            } catch(e) {
+                console.error("Matchmaking error:", e);
+            }
+        }
+
+        async function showAssignedState(myPrn, teamNum) {
+            document.getElementById('status-waiting').classList.add('hidden');
+            document.getElementById('status-assigned').classList.remove('hidden');
+            document.getElementById('task-submission-area').classList.remove('hidden');
+            
+            // Calculate table number (5 teams per table)
+            const tableNum = Math.ceil(teamNum / 5); 
+            
+            document.getElementById('dash-team').innerText = teamNum;
+            document.getElementById('dash-table').innerText = tableNum;
+
+            // Fetch partner(s) on the same team
+            const { data: teamMembers } = await supabaseClient
+                .from('students')
+                .select('name')
+                .eq('team_number', teamNum)
+                .neq('prn', myPrn);
+
+            if (teamMembers && teamMembers.length > 0) {
+                // If they got appended via timeout, they might have more than one partner
+                const partnerNames = teamMembers.map(m => m.name).join(', ');
+                document.getElementById('dash-partner').innerText = partnerNames;
+                document.getElementById('partner-title').innerText = teamMembers.length > 1 ? 'YOUR PARTNERS' : 'YOUR PARTNER';
+            } else {
+                document.getElementById('dash-partner').innerText = "Solo Team (You are the first!)";
+            }
         }
 
         // Check if student is already logged in when they open the page
