@@ -380,14 +380,14 @@
     </div>
   </div>
 
-  <!-- Admin Modal for Viewing Answers -->
+  <!-- Admin Modal for Viewing Answers (Fixed with max height and internal scrollbar) -->
   <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fadeUp">
-      <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
+      <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
         <h3 class="font-bold text-slate-800 text-lg">Allocation Strategy Review</h3>
         <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
-      <div class="p-6">
+      <div class="p-6 overflow-y-auto flex-1">
         <div class="mb-5 border-b border-slate-100 pb-4">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student / Team ID</span>
           <p id="modal-student-name" class="font-semibold text-indigo-900 mt-1"></p>
@@ -395,7 +395,7 @@
         <!-- Rendered JSON content will go here -->
         <div id="modal-student-answer" class="text-sm"></div>
       </div>
-      <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end">
+      <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
         <button onclick="closeAnswerModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Done Reading</button>
       </div>
     </div>
@@ -414,7 +414,6 @@
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '' };
     let globalRosterData = [];
     
-    // Safety flags to prevent 3-second polling from overwriting active typing
     let isBudgetRendered = false;
     let initialAnswerLoaded = false;
 
@@ -469,7 +468,6 @@
         document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
         document.getElementById('student-case-content').innerText = myConfig.case_content || '';
         
-        // Render the builder ONLY ONCE so the 3-second poll doesn't wipe active typing
         if(myConfig.case_content && myConfig.case_content.trim() !== '') {
           document.getElementById('student-submission-section').classList.remove('hidden');
           
@@ -490,7 +488,6 @@
       let grandTotal = 0;
 
       budgetCategories.forEach(cat => {
-        // Crash protection fallback just in case data was corrupted
         if (!budgetState[cat] || !Array.isArray(budgetState[cat])) {
             budgetState[cat] = [{ desc: '', amount: '' }];
         }
@@ -538,7 +535,6 @@
       budgetState[cat].push({ desc: '', amount: '' });
       renderBudgetBuilder();
       
-      // Auto-focus the newly created description row
       if(focusIndex >= 0) {
         setTimeout(() => {
             const list = document.getElementById(`list-${cat}`);
@@ -607,16 +603,14 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          // Populate existing budget logic ONLY ONCE on initial load
           if (me.case_answer && !initialAnswerLoaded) {
             initialAnswerLoaded = true;
             try {
               const parsedData = JSON.parse(me.case_answer);
-              // Strict validation: Only accept if it's the new JSON format
               if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
                   budgetState = parsedData;
                   if (isBudgetRendered) {
-                      renderBudgetBuilder(); // Overwrite the blanks with saved data
+                      renderBudgetBuilder();
                   }
               }
             } catch (e) {
