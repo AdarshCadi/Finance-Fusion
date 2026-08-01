@@ -579,11 +579,29 @@
 
       if (currentOrganiserMode === 'signup') {
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) return showToast(error.message);
+        
+        // 1. Catch standard Auth errors
+        if (error) return showToast('Auth Error: ' + error.message);
+        
+        // 2. Catch the Supabase "Fake Signup" security feature
+        if (!data.user || (data.user.identities && data.user.identities.length === 0)) {
+          return showToast('Error: Email already exists in Auth. Use a brand new email or Login.');
+        }
         
         if (data.user) {
           const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
-          await supabaseClient.from('organisers').upsert({ id: data.user.id, email: email, is_approved: isMaster });
+          
+          // 3. Catch Database Insert Errors explicitly
+          const { error: dbError } = await supabaseClient.from('organisers').upsert({ 
+            id: data.user.id, 
+            email: email, 
+            is_approved: isMaster 
+          });
+          
+          if (dbError) {
+            console.error("DB Insert Error:", dbError);
+            return showToast('Database Error: ' + dbError.message);
+          }
           
           if (isMaster) {
             showToast('Master Admin Account created!');
@@ -594,8 +612,9 @@
           }
         }
       } else {
+        // LOGIN FLOW
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) return showToast(error.message);
+        if (error) return showToast('Login Error: ' + error.message);
         
         const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
         if (isMaster) {
@@ -603,7 +622,14 @@
           return;
         }
 
-        const { data: orgData } = await supabaseClient.from('organisers').select('*').eq('id', data.user.id).single();
+        const { data: orgData, error: fetchErr } = await supabaseClient.from('organisers').select('*').eq('id', data.user.id).single();
+        
+        if (fetchErr) {
+          console.error("Fetch Error:", fetchErr);
+          await supabaseClient.auth.signOut();
+          return showToast('Error checking approval status.');
+        }
+
         if (orgData && orgData.is_approved) {
           initOrganizer(email);
         } else {
@@ -645,8 +671,14 @@
     }
 
     async function fetchApprovals() {
-      const { data } = await supabaseClient.from('organisers').select('*').eq('is_approved', false);
+      const { data, error } = await supabaseClient.from('organisers').select('*').eq('is_approved', false);
       const tbody = document.getElementById('approvals-body');
+      
+      if (error) {
+        console.error("Approvals Fetch Error:", error);
+        tbody.innerHTML = `<tr><td colspan="3" class="py-6 px-4 text-center text-red-500 italic">Error loading requests: ${error.message}</td></tr>`;
+        return;
+      }
       
       if (!data || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" class="py-6 px-4 text-center text-slate-400 italic">No pending requests at this time.</td></tr>';
