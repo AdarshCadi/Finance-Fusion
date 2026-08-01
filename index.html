@@ -229,9 +229,7 @@
               <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
               
               <!-- Interactive Budget Tool Container -->
-              <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <!-- Injected dynamically by JS -->
-              </div>
+              <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm"></div>
 
               <div class="flex justify-end mt-5">
                 <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
@@ -415,6 +413,10 @@
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '' };
     let globalRosterData = [];
+    
+    // Safety flags to prevent 3-second polling from overwriting active typing
+    let isBudgetRendered = false;
+    let initialAnswerLoaded = false;
 
     // --- STUDENT BUDGET STATE ---
     const budgetCategories = ['Needs', 'Wants', 'Investments'];
@@ -467,12 +469,13 @@
         document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
         document.getElementById('student-case-content').innerText = myConfig.case_content || '';
         
+        // Render the builder ONLY ONCE so the 3-second poll doesn't wipe active typing
         if(myConfig.case_content && myConfig.case_content.trim() !== '') {
           document.getElementById('student-submission-section').classList.remove('hidden');
           
-          const container = document.getElementById('budget-builder-container');
-          if (container && container.innerHTML.trim() === '') {
+          if (!isBudgetRendered) {
             renderBudgetBuilder();
+            isBudgetRendered = true;
           }
         }
       }
@@ -604,18 +607,17 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          // Populate existing budget logic if any, fully protected against old/bad data
-          if (me.case_answer) {
+          // Populate existing budget logic ONLY ONCE on initial load
+          if (me.case_answer && !initialAnswerLoaded) {
+            initialAnswerLoaded = true;
             try {
-              let isStateEmpty = budgetCategories.every(cat => budgetState[cat].length === 1 && budgetState[cat][0].desc === '' && budgetState[cat][0].amount === '');
-              if (isStateEmpty) {
-                const parsedData = JSON.parse(me.case_answer);
-                
-                // Strict validation: Only accept if it's the new JSON format
-                if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
-                    budgetState = parsedData;
-                    renderBudgetBuilder(); // Overwrite the blanks with saved data
-                }
+              const parsedData = JSON.parse(me.case_answer);
+              // Strict validation: Only accept if it's the new JSON format
+              if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
+                  budgetState = parsedData;
+                  if (isBudgetRendered) {
+                      renderBudgetBuilder(); // Overwrite the blanks with saved data
+                  }
               }
             } catch (e) {
               console.warn("Ignored old text format submission.");
