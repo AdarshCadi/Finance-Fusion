@@ -50,6 +50,11 @@
       box-shadow: 0 0 0 4px #eff6ff; 
       outline: none; 
     }
+    .input-field:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
     
     /* ── Screen Transitions ── */
     .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
@@ -234,15 +239,19 @@
 
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
-            <!-- Dynamic Allocation Strategy Builder -->
+            <!-- Dynamic Allocation Strategy Builder (Locked by default until timer starts) -->
             <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
               <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
               
+              <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-sm font-medium mb-4">
+                ⏳ Waiting for Master Admin to start the submission timer... Inputs are currently locked.
+              </div>
+
               <!-- Interactive Budget Tool Container -->
-              <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm"></div>
+              <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
 
               <div class="flex justify-end mt-5">
-                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
+                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-slate-400 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed" disabled>
                   Submit Strategy
                 </button>
               </div>
@@ -344,7 +353,7 @@
         </div>
 
         <div class="flex justify-between items-center pt-4 border-t border-slate-200">
-          <span class="text-xs text-slate-500 font-medium">* Use "Publish Case Details" to make text visible. Use "Start Timer" when submission countdown begins.</span>
+          <span class="text-xs text-slate-500 font-medium">* Use "Publish Case Details" to make text visible. Use "Start Timer" to unlock inputs and start countdown.</span>
           <button onclick="saveEventContentOnly()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
             Publish Case Details
           </button>
@@ -442,7 +451,6 @@
     let myTeamNumber = null;
     
     let isBudgetRendered = false;
-    let initialAnswerLoaded = false;
     let studentClockInterval = null;
 
     // --- STUDENT BUDGET STATE ---
@@ -514,9 +522,16 @@
       const clock = document.getElementById('student-timer-clock');
       const builder = document.getElementById('budget-builder-container');
       const submitBtn = document.getElementById('submit-answer-btn');
+      const notice = document.getElementById('timer-waiting-notice');
 
       if (!myConfig.timer_end_time) {
         badge.classList.add('hidden');
+        if (notice) notice.classList.remove('hidden');
+        if (builder) builder.classList.add('opacity-50', 'pointer-events-none');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
         return;
       }
 
@@ -533,10 +548,12 @@
           clearInterval(studentClockInterval);
           clock.innerText = "TIME'S UP";
           clock.className = "text-sm font-extrabold text-slate-400";
+          if (notice) notice.classList.add('hidden');
           
           if(builder && !submitBtn.classList.contains('bg-emerald-500')) {
             builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
             builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            builder.classList.add('opacity-50', 'pointer-events-none');
           }
           if(submitBtn && !submitBtn.classList.contains('bg-emerald-500')) {
             submitBtn.disabled = true;
@@ -546,6 +563,14 @@
           const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((distance % (1000 * 60)) / 1000);
           clock.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+          // Timer is active! Unlock the builder for typing
+          if (notice) notice.classList.add('hidden');
+          if (builder) builder.classList.remove('opacity-50', 'pointer-events-none');
+          if (submitBtn && !submitBtn.classList.contains('bg-emerald-500')) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
         }
       }, 1000);
     }
@@ -675,12 +700,15 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          // Check team-level submission status
+          // Check team-level submission status dynamically during poll
           const { data: teamData } = await supabaseClient
             .from('teams')
             .select('case_answer')
             .eq('team_number', me.team_number)
             .single();
+
+          const btn = document.getElementById('submit-answer-btn');
+          const builder = document.getElementById('budget-builder-container');
 
           if (teamData && teamData.case_answer) {
             try {
@@ -695,12 +723,12 @@
               console.warn("Failed to parse team answer.");
             }
             
-            const btn = document.getElementById('submit-answer-btn');
-            btn.innerText = 'Submitted by Team ✓';
-            btn.className = 'bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed';
-            btn.disabled = true;
+            if (btn) {
+              btn.innerText = 'Submitted by Team ✓';
+              btn.className = 'bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed';
+              btn.disabled = true;
+            }
 
-            const builder = document.getElementById('budget-builder-container');
             if(builder) {
               builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
               builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
@@ -750,7 +778,6 @@
           const prns = group.map(g => g.prn);
 
           await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
-          // Initialize team row
           await supabaseClient.from('teams').upsert({ team_number: nextTeam, case_answer: null });
         } else if (waiting && waiting.length > 0) {
           const waitTime = new Date() - new Date(me.created_at);
@@ -773,6 +800,21 @@
     }
 
     async function submitCaseAnswer() {
+      if (!myTeamNumber) {
+        return showToast('Team assignment is still pending.');
+      }
+
+      // Check one more time before submitting to prevent double-submissions
+      const { data: currentTeam } = await supabaseClient
+        .from('teams')
+        .select('case_answer')
+        .eq('team_number', myTeamNumber)
+        .single();
+
+      if (currentTeam && currentTeam.case_answer) {
+        return showToast('Your team has already submitted a strategy!');
+      }
+
       let hasData = false;
       budgetCategories.forEach(cat => {
           budgetState[cat].forEach(item => {
@@ -784,15 +826,10 @@
         return showToast('Please add at least one component before submitting.');
       }
 
-      if (!myTeamNumber) {
-        return showToast('Team assignment is still pending.');
-      }
-
       const btn = document.getElementById('submit-answer-btn');
       btn.innerText = 'Submitting...';
       btn.disabled = true;
 
-      // Save to shared team table
       const { error } = await supabaseClient.from('teams').upsert({ 
         team_number: myTeamNumber, 
         case_answer: JSON.stringify(budgetState) 
@@ -959,7 +996,6 @@
       const { data: students } = await supabaseClient.from('students').select('*').order('created_at');
       const { data: teams } = await supabaseClient.from('teams').select('*');
       
-      // Build a lookup map for team answers
       const teamAnswers = {};
       if (teams) {
         teams.forEach(t => { teamAnswers[t.team_number] = t.case_answer; });
