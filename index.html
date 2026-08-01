@@ -246,7 +246,7 @@
 
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
-            <!-- Dynamic Allocation Strategy Builder (Mobile Responsive) -->
+            <!-- Dynamic Allocation Strategy Builder (Mobile Responsive & No 50-30-20 label) -->
             <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
               <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
               
@@ -837,20 +837,8 @@
         const targetTeamSize = myConfig.team_size || 2;
 
         if (waiting && waiting.length >= targetTeamSize) {
-          const group = waiting.slice(0, targetTeamSize);
-
-          const { data: maxTeam } = await supabaseClient
-            .from('students')
-            .select('team_number')
-            .not('team_number', 'is', null)
-            .order('team_number', { ascending: false })
-            .limit(1);
-
-          const nextTeam = (maxTeam && maxTeam.length && maxTeam[0].team_number) ? maxTeam[0].team_number + 1 : 1;
-          const prns = group.map(g => g.prn);
-
-          await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
-          await supabaseClient.from('teams').upsert({ team_number: nextTeam, case_answer: null });
+          // Use secure DB transaction locking function to avoid race conditions
+          await supabaseClient.rpc('match_students_safely', { target_size: targetTeamSize });
         } else if (waiting && waiting.length > 0) {
           const waitTime = new Date() - new Date(me.created_at);
           if (waitTime > 180000 && waiting[0].prn === prn) {
