@@ -219,9 +219,19 @@
             <p id="student-subject-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the subject brief yet.</p>
           </div>
 
-          <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100">
-            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
-            <h4 id="student-case-title" class="text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Case Details...</h4>
+          <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100 relative">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
+                <h4 id="student-case-title" class="text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Case Details...</h4>
+              </div>
+              <!-- Timer Display Corner Widget -->
+              <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Remaining</span>
+                <span id="student-timer-clock" class="text-sm font-extrabold text-rose-600">--:--</span>
+              </div>
+            </div>
+
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
             <!-- Dynamic Allocation Strategy Builder -->
@@ -304,23 +314,28 @@
             </div>
           </div>
 
-          <!-- Case 1 Section -->
+          <!-- Case 1 Section & Timer Config -->
           <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
-            <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Case 1 Details</h4>
+            <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Case 1 Details & Timer</h4>
             <div>
               <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
               <input type="text" id="org-case-title" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="e.g. Portfolio Allocation Dilemma" />
             </div>
             <div>
               <label class="block text-xs font-medium text-slate-500 mb-1">Case Problem Statement & Context</label>
-              <textarea id="org-case-content" rows="4" class="input-field w-full p-3 rounded-xl font-medium" placeholder="Enter scenario details and questions..."></textarea>
+              <textarea id="org-case-content" rows="3" class="input-field w-full p-3 rounded-xl font-medium" placeholder="Enter scenario details and questions..."></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Submission Timer Duration (Minutes)</label>
+              <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="e.g. 10" />
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end">
-          <button onclick="saveEventContent()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
-            Publish to All Students
+        <div class="flex justify-end items-center gap-4">
+          <div id="admin-timer-status" class="text-xs font-semibold text-slate-500"></div>
+          <button onclick="saveEventContentWithTimer()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
+            Publish & Start Timer
           </button>
         </div>
       </div>
@@ -380,7 +395,7 @@
     </div>
   </div>
 
-  <!-- Admin Modal for Viewing Answers (Fixed with max height and internal scrollbar) -->
+  <!-- Admin Modal for Viewing Answers -->
   <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
       <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
@@ -411,11 +426,12 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
     let pollInterval = null;
-    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '' };
+    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null };
     let globalRosterData = [];
     
     let isBudgetRendered = false;
     let initialAnswerLoaded = false;
+    let studentClockInterval = null;
 
     // --- STUDENT BUDGET STATE ---
     const budgetCategories = ['Needs', 'Wants', 'Investments'];
@@ -475,8 +491,53 @@
             renderBudgetBuilder();
             isBudgetRendered = true;
           }
+
+          // Handle Timer Logic on Student Screen
+          manageStudentTimer();
         }
       }
+    }
+
+    function manageStudentTimer() {
+      const badge = document.getElementById('student-timer-badge');
+      const clock = document.getElementById('student-timer-clock');
+      const builder = document.getElementById('budget-builder-container');
+      const submitBtn = document.getElementById('submit-answer-btn');
+
+      if (!myConfig.timer_end_time) {
+        badge.classList.add('hidden');
+        return;
+      }
+
+      badge.classList.remove('hidden');
+
+      if (studentClockInterval) clearInterval(studentClockInterval);
+
+      studentClockInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const endTime = new Date(myConfig.timer_end_time).getTime();
+        const distance = endTime - now;
+
+        if (distance < 0) {
+          clearInterval(studentClockInterval);
+          clock.innerText = "TIME'S UP";
+          clock.className = "text-sm font-extrabold text-slate-400";
+          
+          // Lock down inputs
+          if(builder) {
+            builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
+            builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
+          }
+          if(submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          }
+        } else {
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          clock.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+      }, 1000);
     }
 
     // --- INTERACTIVE BUDGET BUILDER LOGIC ---
@@ -795,11 +856,17 @@
       showToast('Event settings updated successfully.');
     }
 
-    async function saveEventContent() {
+    async function saveEventContentWithTimer() {
       myConfig.subject_title = document.getElementById('org-subject-title').value.trim();
       myConfig.subject_content = document.getElementById('org-subject-content').value.trim();
       myConfig.case_title = document.getElementById('org-case-title').value.trim();
       myConfig.case_content = document.getElementById('org-case-content').value.trim();
+
+      const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
+      
+      // Calculate exact ending timestamp
+      const endTime = new Date(new Date().getTime() + mins * 60000).toISOString();
+      myConfig.timer_end_time = endTime;
 
       const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
       
@@ -807,7 +874,7 @@
         console.error("Content Save Error:", error);
         showToast('Database Error: ' + error.message);
       } else {
-        showToast('Subject & Case context broadcasted successfully.');
+        showToast(`Case published! Timer set for ${mins} minutes.`);
       }
     }
 
