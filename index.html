@@ -467,7 +467,6 @@
         document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
         document.getElementById('student-case-content').innerText = myConfig.case_content || '';
         
-        // CRITICAL FIX: Only render the builder ONCE so the 3-second poll doesn't wipe active typing
         if(myConfig.case_content && myConfig.case_content.trim() !== '') {
           document.getElementById('student-submission-section').classList.remove('hidden');
           
@@ -488,6 +487,11 @@
       let grandTotal = 0;
 
       budgetCategories.forEach(cat => {
+        // Crash protection fallback just in case data was corrupted
+        if (!budgetState[cat] || !Array.isArray(budgetState[cat])) {
+            budgetState[cat] = [{ desc: '', amount: '' }];
+        }
+
         let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
         grandTotal += catTotal;
         
@@ -600,27 +604,26 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          // Populate existing budget logic if any
+          // Populate existing budget logic if any, fully protected against old/bad data
           if (me.case_answer) {
             try {
-              // Only load it into the state if they haven't started typing yet
               let isStateEmpty = budgetCategories.every(cat => budgetState[cat].length === 1 && budgetState[cat][0].desc === '' && budgetState[cat][0].amount === '');
               if (isStateEmpty) {
-                budgetState = JSON.parse(me.case_answer);
+                const parsedData = JSON.parse(me.case_answer);
                 
-                // Only re-render if the container is empty to prevent overwriting active typing
-                const container = document.getElementById('budget-builder-container');
-                if (container && container.innerHTML.trim() === '') {
-                    renderBudgetBuilder();
+                // Strict validation: Only accept if it's the new JSON format
+                if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
+                    budgetState = parsedData;
+                    renderBudgetBuilder(); // Overwrite the blanks with saved data
                 }
-                
-                const btn = document.getElementById('submit-answer-btn');
-                btn.innerText = 'Update Strategy';
-                btn.classList.replace('bg-indigo-600', 'bg-indigo-500');
               }
             } catch (e) {
-              console.error("Failed to parse previous answer", e);
+              console.warn("Ignored old text format submission.");
             }
+            
+            const btn = document.getElementById('submit-answer-btn');
+            btn.innerText = 'Update Strategy';
+            btn.classList.replace('bg-indigo-600', 'bg-indigo-500');
           }
 
           const { data: mates } = await supabaseClient
@@ -686,7 +689,6 @@
     }
 
     async function submitCaseAnswer() {
-      // Validate that at least one item has data
       let hasData = false;
       budgetCategories.forEach(cat => {
           budgetState[cat].forEach(item => {
@@ -704,7 +706,6 @@
       btn.innerText = 'Submitting...';
       btn.disabled = true;
 
-      // Save the state as a stringified JSON object so the Master Admin viewer can perfectly render it
       const { error } = await supabaseClient.from('students').update({ case_answer: JSON.stringify(budgetState) }).eq('prn', prn);
       
       btn.disabled = false;
@@ -731,13 +732,10 @@
         return showToast('Please enter a valid Master Admin ID (1 - 50).');
       }
 
-      // Map ID to a hidden email structure
       const email = `admin${adminNum}@financefusion.local`;
 
-      // 1. Attempt to Login first
       let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       
-      // 2. If login fails because user doesn't exist, we immediately Register them
       if (error && error.message.includes("Invalid login credentials")) {
         const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
         
@@ -860,11 +858,21 @@
           </td>
           <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
           <td class="py-3 px-5 text-right whitespace-nowrap">
-            ${s.case_answer ? `<button onclick="openAnswerModal('${s.prn}')" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>` : ''}
+            ${s.case_answer ? `
+              <button onclick="clearStudentAnswer('${s.prn}')" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Answer from Database">Clear Answer</button>
+              <button onclick="openAnswerModal('${s.prn}')" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
+            ` : ''}
             <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
           </td>
         </tr>
       `).join('');
+    }
+
+    async function clearStudentAnswer(prn) {
+      if(!confirm('Are you sure you want to completely delete this answer from the database? The team will have to submit a new strategy.')) return;
+      await supabaseClient.from('students').update({ case_answer: null }).eq('prn', prn);
+      fetchRoster();
+      showToast('Answer deleted from the database.');
     }
 
     // Modal Controller Functions (JSON Viewer)
