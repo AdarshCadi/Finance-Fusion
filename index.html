@@ -217,8 +217,11 @@
         </div>
 
         <!-- Results Banner (Hidden until Admin publishes results) -->
-        <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2">
-          <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
+        <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
+            <span id="student-chocolate-badge" class="hidden bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-sm">🍫 Virtual Chocolates Awarded!</span>
+          </div>
           <h4 id="student-result-status" class="text-2xl font-extrabold tracking-tight mt-1"></h4>
           <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
         </div>
@@ -246,7 +249,7 @@
 
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
-            <!-- Dynamic Allocation Strategy Builder (Mobile Responsive & No 50-30-20 label) -->
+            <!-- Dynamic Allocation Strategy Builder -->
             <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
               <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
               
@@ -313,7 +316,7 @@
         </div>
       </div>
 
-      <!-- Evaluation & Leaderboard Panel -->
+      <!-- Evaluation & Leaderboard Panel (With Send Chocolates Button) -->
       <div id="org-evaluation-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -321,11 +324,14 @@
             <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
           </div>
           <div class="flex flex-wrap gap-2 w-full md:w-auto">
-            <button onclick="runEvaluation()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
+            <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
               Compute Rankings
             </button>
-            <button onclick="publishResults()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
-              Publish Results to Students
+            <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
+              Publish Results
+            </button>
+            <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm">
+              🍫 Send Chocolates
             </button>
           </div>
         </div>
@@ -494,7 +500,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
     let pollInterval = null;
-    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false };
+    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false, chocolates_sent: false };
     let globalTeamsData = [];
     let myTeamNumber = null;
     
@@ -575,16 +581,24 @@
         const banner = document.getElementById('student-results-banner');
         const statusEl = document.getElementById('student-result-status');
         const detailsEl = document.getElementById('student-result-details');
+        const chocBadge = document.getElementById('student-chocolate-badge');
         
         banner.classList.remove('hidden');
         if (team.disqualified) {
           statusEl.innerText = `Disqualified`;
           detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable budget limit ($${myConfig.max_budget}).`;
           banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2";
+          chocBadge.classList.add('hidden');
         } else {
           statusEl.innerText = `Rank #${team.ranking} Overall 🎉`;
           detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
           banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2";
+          
+          if (myConfig.chocolates_sent) {
+            chocBadge.classList.remove('hidden');
+          } else {
+            chocBadge.classList.add('hidden');
+          }
         }
       }
     }
@@ -837,7 +851,6 @@
         const targetTeamSize = myConfig.team_size || 2;
 
         if (waiting && waiting.length >= targetTeamSize) {
-          // Use secure DB transaction locking function to avoid race conditions
           await supabaseClient.rpc('match_students_safely', { target_size: targetTeamSize });
         } else if (waiting && waiting.length > 0) {
           const waitTime = new Date() - new Date(me.created_at);
@@ -1087,6 +1100,16 @@
         showToast('Error publishing results: ' + error.message);
       } else {
         showToast('Results published successfully to all students!');
+      }
+    }
+
+    async function sendVirtualChocolates() {
+      myConfig.chocolates_sent = true;
+      const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+      if (error) {
+        showToast('Error sending chocolates: ' + error.message);
+      } else {
+        showToast('🍫 Virtual chocolates sent to all qualified winners successfully!');
       }
     }
 
