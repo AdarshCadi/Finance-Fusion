@@ -296,7 +296,7 @@
         </div>
       </div>
 
-      <!-- Subject 1 & Case 1 Content Broadcasting Panel (Separated Publish & Timer) -->
+      <!-- Subject 1 & Case 1 Content Broadcasting Panel -->
       <div id="org-content-panel" class="hidden clean-panel p-6 border-l-4 border-l-blue-600 mb-6 space-y-6">
         <h3 class="font-bold text-slate-800 text-lg tracking-tight">Broadcast Subject & Case Context</h3>
         
@@ -344,7 +344,7 @@
         </div>
 
         <div class="flex justify-between items-center pt-4 border-t border-slate-200">
-          <span class="text-xs text-slate-500 font-medium">* Use "Publish Case" to make text visible. Use "Start Timer" when you want submission countdown to begin.</span>
+          <span class="text-xs text-slate-500 font-medium">* Use "Publish Case Details" to make text visible. Use "Start Timer" when submission countdown begins.</span>
           <button onclick="saveEventContentOnly()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
             Publish Case Details
           </button>
@@ -406,20 +406,20 @@
     </div>
   </div>
 
-  <!-- Admin Modal for Viewing Answers -->
+  <!-- Admin Modal for Viewing Team Answers -->
   <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
       <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
-        <h3 class="font-bold text-slate-800 text-lg">Allocation Strategy Review</h3>
+        <h3 class="font-bold text-slate-800 text-lg">Team Strategy Review</h3>
         <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
       <div class="p-6 overflow-y-auto flex-1">
         <div class="mb-5 border-b border-slate-100 pb-4">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student / Team ID</span>
-          <p id="modal-student-name" class="font-semibold text-indigo-900 mt-1"></p>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team ID</span>
+          <p id="modal-team-heading" class="font-semibold text-indigo-900 mt-1"></p>
         </div>
         <!-- Rendered JSON content will go here -->
-        <div id="modal-student-answer" class="text-sm"></div>
+        <div id="modal-team-answer" class="text-sm"></div>
       </div>
       <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
         <button onclick="closeAnswerModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Done Reading</button>
@@ -438,7 +438,8 @@
 
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null };
-    let globalRosterData = [];
+    let globalTeamsData = [];
+    let myTeamNumber = null;
     
     let isBudgetRendered = false;
     let initialAnswerLoaded = false;
@@ -533,11 +534,11 @@
           clock.innerText = "TIME'S UP";
           clock.className = "text-sm font-extrabold text-slate-400";
           
-          if(builder) {
+          if(builder && !submitBtn.classList.contains('bg-emerald-500')) {
             builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
             builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
           }
-          if(submitBtn) {
+          if(submitBtn && !submitBtn.classList.contains('bg-emerald-500')) {
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
           }
@@ -666,6 +667,7 @@
         }
 
         if (me.team_number) {
+          myTeamNumber = me.team_number;
           document.getElementById('student-waiting').classList.add('hidden');
           document.getElementById('student-assigned').classList.remove('hidden');
           document.getElementById('assigned-team-number').innerText = me.team_number;
@@ -673,10 +675,16 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          if (me.case_answer && !initialAnswerLoaded) {
-            initialAnswerLoaded = true;
+          // Check team-level submission status
+          const { data: teamData } = await supabaseClient
+            .from('teams')
+            .select('case_answer')
+            .eq('team_number', me.team_number)
+            .single();
+
+          if (teamData && teamData.case_answer) {
             try {
-              const parsedData = JSON.parse(me.case_answer);
+              const parsedData = JSON.parse(teamData.case_answer);
               if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
                   budgetState = parsedData;
                   if (isBudgetRendered) {
@@ -684,12 +692,19 @@
                   }
               }
             } catch (e) {
-              console.warn("Ignored old text format submission.");
+              console.warn("Failed to parse team answer.");
             }
             
             const btn = document.getElementById('submit-answer-btn');
-            btn.innerText = 'Update Strategy';
-            btn.classList.replace('bg-indigo-600', 'bg-indigo-500');
+            btn.innerText = 'Submitted by Team ✓';
+            btn.className = 'bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed';
+            btn.disabled = true;
+
+            const builder = document.getElementById('budget-builder-container');
+            if(builder) {
+              builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
+              builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            }
           }
 
           const { data: mates } = await supabaseClient
@@ -735,6 +750,8 @@
           const prns = group.map(g => g.prn);
 
           await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
+          // Initialize team row
+          await supabaseClient.from('teams').upsert({ team_number: nextTeam, case_answer: null });
         } else if (waiting && waiting.length > 0) {
           const waitTime = new Date() - new Date(me.created_at);
           if (waitTime > 180000 && waiting[0].prn === prn) {
@@ -747,6 +764,7 @@
 
             const fallbackTeam = (lastTeam && lastTeam.length && lastTeam[0].team_number) ? lastTeam[0].team_number : 1;
             await supabaseClient.from('students').update({ team_number: fallbackTeam }).eq('prn', prn);
+            await supabaseClient.from('teams').upsert({ team_number: fallbackTeam, case_answer: null });
           }
         }
       } catch (err) {
@@ -766,25 +784,35 @@
         return showToast('Please add at least one component before submitting.');
       }
 
-      const prn = localStorage.getItem('fp_prn');
+      if (!myTeamNumber) {
+        return showToast('Team assignment is still pending.');
+      }
+
       const btn = document.getElementById('submit-answer-btn');
-      
       btn.innerText = 'Submitting...';
       btn.disabled = true;
 
-      const { error } = await supabaseClient.from('students').update({ case_answer: JSON.stringify(budgetState) }).eq('prn', prn);
-      
-      btn.disabled = false;
+      // Save to shared team table
+      const { error } = await supabaseClient.from('teams').upsert({ 
+        team_number: myTeamNumber, 
+        case_answer: JSON.stringify(budgetState) 
+      });
       
       if (error) {
         console.error("Answer submit error:", error);
         showToast('Error saving answer: ' + error.message);
         btn.innerText = 'Submit Strategy';
+        btn.disabled = false;
       } else {
-        showToast('Allocation strategy submitted successfully!');
-        btn.innerText = 'Submitted ✓';
-        btn.classList.remove('bg-indigo-600', 'bg-indigo-500', 'hover:bg-indigo-700');
-        btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+        showToast('Team strategy submitted successfully!');
+        btn.innerText = 'Submitted by Team ✓';
+        btn.className = 'bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed';
+        
+        const builder = document.getElementById('budget-builder-container');
+        if(builder) {
+          builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
+          builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        }
       }
     }
 
@@ -865,7 +893,6 @@
       showToast('Event settings updated successfully.');
     }
 
-    // 1. Publish Case Only (Does not change or start the timer)
     async function saveEventContentOnly() {
       myConfig.subject_title = document.getElementById('org-subject-title').value.trim();
       myConfig.subject_content = document.getElementById('org-subject-content').value.trim();
@@ -882,7 +909,6 @@
       }
     }
 
-    // 2. Start Timer Only (Updates the timer without overwriting typing)
     async function startCaseTimerOnly() {
       const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
       const endTime = new Date(new Date().getTime() + mins * 60000).toISOString();
@@ -918,6 +944,9 @@
       if (error) {
         showToast('Error: ' + error.message);
       } else {
+        if(team_number) {
+          await supabaseClient.from('teams').upsert({ team_number, case_answer: null });
+        }
         showToast('Participant added successfully.');
         document.getElementById('manual-name').value = '';
         document.getElementById('manual-prn').value = '';
@@ -927,46 +956,56 @@
     }
 
     async function fetchRoster() {
-      const { data } = await supabaseClient.from('students').select('*').order('created_at');
-      globalRosterData = data; 
+      const { data: students } = await supabaseClient.from('students').select('*').order('created_at');
+      const { data: teams } = await supabaseClient.from('teams').select('*');
       
-      document.getElementById('roster-body').innerHTML = data.map(s => `
-        <tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-5 font-medium text-slate-800">${s.name}</td>
-          <td class="py-3 px-5 text-slate-500">${s.prn}</td>
-          <td class="py-3 px-5 text-center">
-            ${s.team_number 
-              ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
-              : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
-          </td>
-          <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
-          <td class="py-3 px-5 text-right whitespace-nowrap">
-            ${s.case_answer ? `
-              <button onclick="clearStudentAnswer('${s.prn}')" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Answer from Database">Clear Answer</button>
-              <button onclick="openAnswerModal('${s.prn}')" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
-            ` : ''}
-            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
-          </td>
-        </tr>
-      `).join('');
+      // Build a lookup map for team answers
+      const teamAnswers = {};
+      if (teams) {
+        teams.forEach(t => { teamAnswers[t.team_number] = t.case_answer; });
+      }
+      globalTeamsData = teams || [];
+      
+      document.getElementById('roster-body').innerHTML = students.map(s => {
+        const hasTeamAnswer = s.team_number && teamAnswers[s.team_number];
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-5 font-medium text-slate-800">${s.name}</td>
+            <td class="py-3 px-5 text-slate-500">${s.prn}</td>
+            <td class="py-3 px-5 text-center">
+              ${s.team_number 
+                ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
+                : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
+            </td>
+            <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
+            <td class="py-3 px-5 text-right whitespace-nowrap">
+              ${hasTeamAnswer && s.team_number ? `
+                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Team Answer</button>
+                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Team Sheet</button>
+              ` : ''}
+              <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    async function clearStudentAnswer(prn) {
-      if(!confirm('Are you sure you want to completely delete this answer from the database? The team will have to submit a new strategy.')) return;
-      await supabaseClient.from('students').update({ case_answer: null }).eq('prn', prn);
+    async function clearTeamAnswer(teamNumber) {
+      if(!confirm(`Are you sure you want to completely delete the submission for Team ${teamNumber}? The team will be able to submit a new strategy.`)) return;
+      await supabaseClient.from('teams').update({ case_answer: null }).eq('team_number', teamNumber);
       fetchRoster();
-      showToast('Answer deleted from the database.');
+      showToast(`Team ${teamNumber} answer cleared.`);
     }
 
-    // Modal Controller Functions (JSON Viewer)
-    function openAnswerModal(prn) {
-      const student = globalRosterData.find(s => s.prn === prn);
-      if(student) {
-        document.getElementById('modal-student-name').innerText = `${student.name} (PRN: ${student.prn}) - Team ${student.team_number}`;
+    // Modal Controller Functions (Team JSON Viewer)
+    function openAnswerModal(teamNumber) {
+      const team = globalTeamsData.find(t => t.team_number === teamNumber);
+      if(team && team.case_answer) {
+        document.getElementById('modal-team-heading').innerText = `Team ${team.team_number} Strategy Submission`;
         
         let displayHTML = '';
         try {
-            const parsed = JSON.parse(student.case_answer);
+            const parsed = JSON.parse(team.case_answer);
             let grandTotal = 0;
             displayHTML = `<div class="space-y-4">`;
             
@@ -1000,10 +1039,10 @@
                 </div>
             </div>`;
         } catch(e) {
-            displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200">${student.case_answer}</div>`;
+            displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200">${team.case_answer}</div>`;
         }
 
-        document.getElementById('modal-student-answer').innerHTML = displayHTML;
+        document.getElementById('modal-team-answer').innerHTML = displayHTML;
         document.getElementById('answer-modal').classList.remove('hidden');
       }
     }
@@ -1020,10 +1059,11 @@
     }
 
     async function deleteAllStudents() {
-      if(!confirm('DANGER: Are you sure you want to delete ALL participants? This action cannot be undone.')) return;
+      if(!confirm('DANGER: Are you sure you want to delete ALL participants and team submissions? This action cannot be undone.')) return;
       await supabaseClient.from('students').delete().neq('prn', '0'); 
+      await supabaseClient.from('teams').delete().neq('team_number', 0);
       fetchRoster();
-      showToast('All participants have been deleted.');
+      showToast('All participants and submissions have been deleted.');
     }
 
     function logout() {
