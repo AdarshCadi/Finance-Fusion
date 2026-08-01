@@ -129,7 +129,7 @@
         <p class="text-slate-500 text-sm font-medium">Event Coordination Portal</p>
       </div>
       
-      <div class="clean-panel p-8">
+      <div class="clean-panel p-6 sm:p-8">
         <!-- Sleek Segmented Control -->
         <div class="flex p-1 bg-slate-100 rounded-xl mb-8 border border-slate-200">
           <button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-slate-800 shadow-sm transition-all border border-slate-200/50" id="tab-student" onclick="switchTab('student')">Student</button>
@@ -140,13 +140,13 @@
         <form id="student-form" onsubmit="handleStudentRegistration(event)">
           <div class="mb-5">
             <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name</label>
-            <input type="text" id="student-name" class="input-field w-full px-4 py-3 rounded-xl" placeholder="e.g. John Doe" required />
+            <input type="text" id="student-name" class="input-field w-full px-4 py-3 rounded-xl text-base" placeholder="e.g. John Doe" required />
           </div>
           <div class="mb-8">
             <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">PRN</label>
-            <input type="text" id="student-prn" class="input-field w-full px-4 py-3 rounded-xl" placeholder="University ID" required />
+            <input type="text" id="student-prn" class="input-field w-full px-4 py-3 rounded-xl text-base" placeholder="University ID" required />
           </div>
-          <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-sm hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-[0.98]">
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-base hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-[0.98]">
             Join Event Queue
           </button>
         </form>
@@ -156,14 +156,14 @@
           <form id="admin-auth-form" onsubmit="handleAdminAuth(event)">
             <div class="mb-5">
               <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Master Admin ID (1 - 50)</label>
-              <input type="number" id="admin-id" min="1" max="50" placeholder="e.g. 1" class="input-field w-full px-4 py-3 rounded-xl font-medium" required />
+              <input type="number" id="admin-id" min="1" max="50" placeholder="e.g. 1" class="input-field w-full px-4 py-3 rounded-xl font-medium text-base" required />
             </div>
             <div class="mb-8">
               <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Password</label>
-              <input type="password" id="admin-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl" required minlength="6" />
+              <input type="password" id="admin-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-base" required minlength="6" />
               <p class="text-[11px] text-slate-400 mt-3 leading-tight">*If this is your first time using this ID, the password you type now will become your permanent password.</p>
             </div>
-            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-base hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
               Access Command Center
             </button>
           </form>
@@ -173,8 +173,8 @@
   </div>
 
   <!-- SCREEN 2: Student Dashboard -->
-  <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-4">
-    <div class="w-full max-w-2xl clean-panel p-8 relative overflow-hidden my-6">
+  <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-2xl clean-panel p-4 sm:p-8 relative overflow-hidden my-4 sm:my-6">
       
       <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
         <h2 class="font-semibold text-lg text-slate-800 tracking-tight">Student Event Hub</h2>
@@ -194,10 +194,10 @@
       <!-- Assigned State -->
       <div id="student-assigned" class="hidden space-y-6 relative z-10">
         <!-- Team & Table Card -->
-        <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-5 rounded-2xl border border-slate-200 gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 gap-4">
           <div>
             <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Your Allocation</p>
-            <h3 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
               Team <span id="assigned-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span>
             </h3>
           </div>
@@ -209,7 +209,7 @@
         </div>
 
         <!-- Teammates Grid -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200">
           <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Your Teammates</h4>
           <ul id="assigned-partners-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium text-slate-800">
             <!-- Populated dynamically via JS -->
@@ -217,7 +217,7 @@
         </div>
 
         <!-- Results Banner (Hidden until Admin publishes results) -->
-        <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-lg space-y-2">
+        <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2">
           <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
           <h4 id="student-result-status" class="text-2xl font-extrabold tracking-tight mt-1"></h4>
           <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
@@ -225,40 +225,40 @@
 
         <!-- Live Content Stream (Subject & Case 1) -->
         <div class="space-y-4 pt-2 border-t border-slate-100">
-          <div class="bg-blue-50/60 p-5 rounded-2xl border border-blue-100">
+          <div class="bg-blue-50/60 p-4 sm:p-5 rounded-2xl border border-blue-100">
             <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Subject 1 Basics</span>
-            <h4 id="student-subject-title" class="text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Subject Brief...</h4>
+            <h4 id="student-subject-title" class="text-base sm:text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Subject Brief...</h4>
             <p id="student-subject-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the subject brief yet.</p>
           </div>
 
-          <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100 relative">
+          <div class="bg-indigo-50/60 p-4 sm:p-5 rounded-2xl border border-indigo-100 relative">
             <div class="flex justify-between items-start mb-2">
               <div>
                 <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
-                <h4 id="student-case-title" class="text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Case Details...</h4>
+                <h4 id="student-case-title" class="text-base sm:text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Case Details...</h4>
               </div>
               <!-- Timer Display Corner Widget -->
-              <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Remaining</span>
-                <span id="student-timer-clock" class="text-sm font-extrabold text-rose-600">--:--</span>
+              <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right flex-shrink-0 ml-2">
+                <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Left</span>
+                <span id="student-timer-clock" class="text-xs sm:text-sm font-extrabold text-rose-600">--:--</span>
               </div>
             </div>
 
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
-            <!-- Dynamic Allocation Strategy Builder -->
+            <!-- Dynamic Allocation Strategy Builder (Mobile Responsive) -->
             <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
-              <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy (50-30-20 Rule)</label>
+              <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
               
-              <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-sm font-medium mb-4">
+              <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs sm:text-sm font-medium mb-4">
                 ⏳ Waiting for Master Admin to start the submission timer... Inputs are currently locked.
               </div>
 
               <!-- Interactive Budget Tool Container -->
-              <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
+              <div id="budget-builder-container" class="space-y-4 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
 
               <div class="flex justify-end mt-5">
-                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-slate-400 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed" disabled>
+                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="w-full sm:w-auto bg-slate-400 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed" disabled>
                   Submit Strategy
                 </button>
               </div>
@@ -270,11 +270,11 @@
   </div>
 
   <!-- SCREEN 3: Master Admin Dashboard -->
-  <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-4 md:p-8">
+  <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-3 sm:p-4 md:p-8">
     <div class="max-w-7xl mx-auto w-full space-y-6">
       
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 clean-panel p-5">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 clean-panel p-4 sm:p-5">
         <div>
           <h2 class="font-bold text-xl text-slate-800 tracking-tight">Master Admin Command Center</h2>
           <div class="flex items-center gap-2 mt-1.5">
@@ -282,19 +282,19 @@
             <p id="admin-role-badge" class="text-xs font-semibold text-slate-500 uppercase tracking-wider"></p>
           </div>
         </div>
-        <div class="flex flex-wrap gap-3">
-          <button onclick="toggleManualAdd()" class="text-sm px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg font-medium transition-all shadow-sm">Add Student</button>
-          <button onclick="toggleContentPanel()" class="text-sm px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case</button>
-          <button onclick="toggleEvaluationPanel()" class="text-sm px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all shadow-sm">Evaluate & Rank</button>
-          <button onclick="toggleSettings()" class="text-sm px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
-          <button onclick="logout()" class="text-sm px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all">Logout</button>
+        <div class="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
+          <button onclick="toggleManualAdd()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg font-medium transition-all shadow-sm">Add Student</button>
+          <button onclick="toggleContentPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case</button>
+          <button onclick="toggleEvaluationPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all shadow-sm">Evaluate & Rank</button>
+          <button onclick="toggleSettings()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
+          <button onclick="logout()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all">Logout</button>
         </div>
       </div>
 
       <!-- Settings Panel -->
-      <div id="org-settings" class="hidden clean-panel p-6 border-l-4 border-l-blue-500 mb-6 space-y-4">
+      <div id="org-settings" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-blue-500 mb-6 space-y-4">
         <h3 class="font-semibold text-slate-800 tracking-tight">Event Configurations</h3>
-        <div class="flex flex-wrap gap-5 items-end">
+        <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
           <div class="flex-1 min-w-[120px]">
             <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Team Size</label>
             <input type="number" id="cfg-team-size" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
@@ -308,23 +308,23 @@
             <input type="number" id="cfg-teams-per-table" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
           </div>
           <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-            <button onclick="saveSettings()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
+            <button onclick="saveSettings()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
           </div>
         </div>
       </div>
 
       <!-- Evaluation & Leaderboard Panel -->
-      <div id="org-evaluation-panel" class="hidden clean-panel p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
+      <div id="org-evaluation-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h3 class="font-bold text-slate-800 text-lg tracking-tight">Automated Leaderboard & Evaluation (50-30-20 Rule)</h3>
             <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
           </div>
-          <div class="flex gap-3">
-            <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">
+          <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <button onclick="runEvaluation()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
               Compute Rankings
             </button>
-            <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">
+            <button onclick="publishResults()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
               Publish Results to Students
             </button>
           </div>
@@ -349,13 +349,13 @@
         </div>
       </div>
 
-      <!-- Subject 1 & Case 1 Content Broadcasting Panel (Now includes Max Allocatable Budget) -->
-      <div id="org-content-panel" class="hidden clean-panel p-6 border-l-4 border-l-blue-600 mb-6 space-y-6">
+      <!-- Subject 1 & Case 1 Content Broadcasting Panel -->
+      <div id="org-content-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-blue-600 mb-6 space-y-6">
         <h3 class="font-bold text-slate-800 text-lg tracking-tight">Broadcast Subject & Case Context</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Subject 1 Section -->
-          <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+          <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
             <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Subject 1 Basics</h4>
             <div>
               <label class="block text-xs font-medium text-slate-500 mb-1">Subject Name</label>
@@ -366,14 +366,14 @@
               <textarea id="org-subject-content" rows="4" class="input-field w-full p-3 rounded-xl font-medium" placeholder="Enter fundamental concepts or notes..."></textarea>
             </div>
             <div class="flex justify-end pt-2">
-              <button onclick="saveEventContentOnly()" class="bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">
+              <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">
                 Publish Subject Only
               </button>
             </div>
           </div>
 
           <!-- Case 1 Section, Timer Control & Max Allocatable Budget -->
-          <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+          <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
             <h4 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Case Study 1, Budget & Timer</h4>
             <div>
               <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
@@ -388,7 +388,7 @@
               <input type="number" id="org-max-budget" class="input-field w-full p-2.5 rounded-xl font-bold text-rose-600" placeholder="e.g. 10000" />
             </div>
             
-            <div class="flex gap-3 items-end pt-1">
+            <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end pt-1">
               <div class="flex-1">
                 <label class="block text-xs font-medium text-slate-500 mb-1">Timer Duration (Mins)</label>
                 <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
@@ -400,18 +400,18 @@
           </div>
         </div>
 
-        <div class="flex justify-between items-center pt-4 border-t border-slate-200">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
           <span class="text-xs text-slate-500 font-medium">* Use "Publish Case Details" to make text visible. Use "Start Timer & Budget" to lock in rules and open submissions.</span>
-          <button onclick="saveEventContentOnly()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
+          <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
             Publish Case Details
           </button>
         </div>
       </div>
 
       <!-- Manual Entry Panel -->
-      <div id="manual-add-panel" class="hidden clean-panel p-6 border-l-4 border-l-emerald-500 mb-6">
+      <div id="manual-add-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-emerald-500 mb-6">
         <h3 class="font-semibold text-slate-800 mb-5 tracking-tight">Manual Student Entry</h3>
-        <div class="flex flex-wrap gap-5 items-end">
+        <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
           <div class="flex-1 min-w-[150px]">
             <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Full Name</label>
             <input type="text" id="manual-name" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="Student Name" />
@@ -425,7 +425,7 @@
             <input type="number" id="manual-team" class="input-field w-full p-2.5 rounded-xl text-center font-medium" placeholder="e.g. 1" />
           </div>
           <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-            <button onclick="addStudentManually()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Add Participant</button>
+            <button onclick="addStudentManually()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Add Participant</button>
           </div>
         </div>
         <p class="text-xs text-slate-500 mt-3">* Table number will be automatically calculated based on the assigned Team and your Event Settings.</p>
@@ -433,7 +433,7 @@
 
       <!-- Live Roster -->
       <div class="clean-panel p-0 overflow-hidden flex flex-col h-[600px]">
-        <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-white">
           <div class="flex items-center gap-3">
             <h3 class="font-semibold text-slate-800 tracking-tight">Live Student Roster</h3>
             <span class="flex h-3 w-3 relative">
@@ -449,11 +449,11 @@
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead class="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
               <tr class="text-slate-600">
-                <th class="py-3 px-5 font-semibold">Participant Name</th>
-                <th class="py-3 px-5 font-semibold">PRN</th>
-                <th class="py-3 px-5 font-semibold text-center">Assigned Team</th>
-                <th class="py-3 px-5 font-semibold text-center">Table No.</th>
-                <th class="py-3 px-5 font-semibold text-right">Manage</th>
+                <th class="py-3 px-4 sm:px-5 font-semibold">Participant Name</th>
+                <th class="py-3 px-4 sm:px-5 font-semibold">PRN</th>
+                <th class="py-3 px-4 sm:px-5 font-semibold text-center">Assigned Team</th>
+                <th class="py-3 px-4 sm:px-5 font-semibold text-center">Table No.</th>
+                <th class="py-3 px-4 sm:px-5 font-semibold text-right">Manage</th>
               </tr>
             </thead>
             <tbody id="roster-body" class="divide-y divide-slate-100"></tbody>
@@ -464,13 +464,13 @@
   </div>
 
   <!-- Admin Modal for Viewing Team Answers -->
-  <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
-      <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
-        <h3 class="font-bold text-slate-800 text-lg">Team Strategy Review</h3>
+      <div class="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
+        <h3 class="font-bold text-slate-800 text-base sm:text-lg">Team Strategy Review</h3>
         <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
-      <div class="p-6 overflow-y-auto flex-1">
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1">
         <div class="mb-5 border-b border-slate-100 pb-4">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team ID</span>
           <p id="modal-team-heading" class="font-semibold text-indigo-900 mt-1"></p>
@@ -478,8 +478,8 @@
         <!-- Rendered JSON content will go here -->
         <div id="modal-team-answer" class="text-sm"></div>
       </div>
-      <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
-        <button onclick="closeAnswerModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Done Reading</button>
+      <div class="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
+        <button onclick="closeAnswerModal()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Done Reading</button>
       </div>
     </div>
   </div>
@@ -580,11 +580,11 @@
         if (team.disqualified) {
           statusEl.innerText = `Disqualified`;
           detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable budget limit ($${myConfig.max_budget}).`;
-          banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-6 rounded-2xl text-white shadow-lg space-y-2";
+          banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2";
         } else {
           statusEl.innerText = `Rank #${team.ranking} Overall 🎉`;
-          detailsEl.innerText = `Score Variance: ${team.score}% off the 50-30-20 rule | Total: $${team.grand_total}`;
-          banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-6 rounded-2xl text-white shadow-lg space-y-2";
+          detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
+          banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2";
         }
       }
     }
@@ -646,7 +646,7 @@
       }, 1000);
     }
 
-    // --- INTERACTIVE BUDGET BUILDER LOGIC ---
+    // --- INTERACTIVE BUDGET BUILDER LOGIC (Mobile Stacked Inputs) ---
     function renderBudgetBuilder() {
       const container = document.getElementById('budget-builder-container');
       if(!container) return;
@@ -663,27 +663,29 @@
         grandTotal += catTotal;
         
         html += `
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <div class="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">
             <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-200/60">
                 <h5 class="font-bold text-slate-700 uppercase tracking-widest text-xs">${cat}</h5>
-                <span class="font-semibold text-slate-500 text-sm">Total: <span id="total-${cat}" class="text-indigo-600 font-bold">$${catTotal.toLocaleString()}</span></span>
+                <span class="font-semibold text-slate-500 text-xs sm:text-sm">Total: <span id="total-${cat}" class="text-indigo-600 font-bold">$${catTotal.toLocaleString()}</span></span>
             </div>
-            <div id="list-${cat}" class="space-y-2">
+            <div id="list-${cat}" class="space-y-3">
         `;
         
         budgetState[cat].forEach((item, index) => {
             html += `
-                <div class="flex gap-2 items-center">
+                <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white p-2.5 sm:p-2 rounded-xl border border-slate-200/80 shadow-xs">
                     <input type="text" class="input-field flex-1 p-2.5 rounded-lg text-sm font-medium" placeholder="Component Name (e.g. Rent)" value="${item.desc}" oninput="updateBudget('${cat}', ${index}, 'desc', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
-                    <input type="number" class="input-field w-28 p-2.5 rounded-lg text-sm text-right font-semibold text-indigo-700" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
-                    ${budgetState[cat].length > 1 ? `<button onclick="removeBudgetRow('${cat}', ${index})" class="text-slate-300 hover:text-red-500 text-xl font-bold px-1">&times;</button>` : `<div class="w-6"></div>`}
+                    <div class="flex gap-2 items-center">
+                      <input type="number" class="input-field flex-1 sm:w-32 p-2.5 rounded-lg text-sm text-right font-semibold text-indigo-700" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
+                      ${budgetState[cat].length > 1 ? `<button onclick="removeBudgetRow('${cat}', ${index})" class="text-slate-400 hover:text-red-500 text-2xl font-bold px-2">&times;</button>` : `<div class="w-6"></div>`}
+                    </div>
                 </div>
             `;
         });
 
         html += `
             </div>
-            <button onclick="addBudgetRow('${cat}')" class="text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-100">+ Add ${cat} Row</button>
+            <button onclick="addBudgetRow('${cat}')" class="w-full sm:w-auto text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 text-center">+ Add ${cat} Row</button>
         </div>
         `;
       });
@@ -795,7 +797,7 @@
             
             if (btn) {
               btn.innerText = 'Submitted by Team ✓';
-              btn.className = 'bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed';
+              btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed';
               btn.disabled = true;
             }
 
@@ -915,7 +917,7 @@
       } else {
         showToast('Team strategy submitted successfully!');
         btn.innerText = 'Submitted by Team ✓';
-        btn.className = 'bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-not-allowed';
+        btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed';
         
         const builder = document.getElementById('budget-builder-container');
         if(builder) {
@@ -1001,7 +1003,6 @@
           let investTotal = (parsed.Investments || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
           let grandTotal = needsTotal + wantsTotal + investTotal;
 
-          // Disqualification Check: Disqualify only if max budget is exceeded
           let isDisqualified = false;
           if (!isNaN(maxBudget) && maxBudget > 0 && grandTotal > maxBudget) {
             isDisqualified = true;
@@ -1018,7 +1019,6 @@
             return;
           }
 
-          // 50-30-20 Variance Scoring Calculation
           let needsPct = grandTotal > 0 ? (needsTotal / grandTotal) * 100 : 0;
           let wantsPct = grandTotal > 0 ? (wantsTotal / grandTotal) * 100 : 0;
           let investPct = grandTotal > 0 ? (investTotal / grandTotal) * 100 : 0;
@@ -1224,15 +1224,15 @@
         const hasTeamAnswer = s.team_number && teamAnswers[s.team_number];
         return `
           <tr class="hover:bg-slate-50 transition-colors">
-            <td class="py-3 px-5 font-medium text-slate-800">${s.name}</td>
-            <td class="py-3 px-5 text-slate-500">${s.prn}</td>
-            <td class="py-3 px-5 text-center">
+            <td class="py-3 px-4 sm:px-5 font-medium text-slate-800">${s.name}</td>
+            <td class="py-3 px-4 sm:px-5 text-slate-500">${s.prn}</td>
+            <td class="py-3 px-4 sm:px-5 text-center">
               ${s.team_number 
                 ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
                 : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
             </td>
-            <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
-            <td class="py-3 px-5 text-right whitespace-nowrap">
+            <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
+            <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap">
               ${hasTeamAnswer && s.team_number ? `
                 <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Team Answer</button>
                 <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Team Sheet</button>
