@@ -291,7 +291,7 @@
         </div>
       </div>
 
-      <!-- Settings Panel (Includes Hidden Max Budget) -->
+      <!-- Settings Panel (With Visible Max Budget Option) -->
       <div id="org-settings" class="hidden clean-panel p-6 border-l-4 border-l-blue-500 mb-6 space-y-4">
         <h3 class="font-semibold text-slate-800 tracking-tight">Event Configurations & Evaluation Rules</h3>
         <div class="flex flex-wrap gap-5 items-end">
@@ -307,7 +307,7 @@
             <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Teams / Table</label>
             <input type="number" id="cfg-teams-per-table" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
           </div>
-          <div class="flex-1 min-w-[150px]">
+          <div class="flex-1 min-w-[160px]">
             <label class="block text-xs font-medium text-rose-600 mb-2 uppercase tracking-wide font-bold">Max Allocatable Budget</label>
             <input type="number" id="cfg-max-budget" class="input-field w-full p-2.5 rounded-xl text-center font-bold text-rose-600" placeholder="e.g. 10000" />
           </div>
@@ -315,7 +315,7 @@
             <button onclick="saveSettings()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
           </div>
         </div>
-        <p class="text-[11px] text-slate-400">* Note: Max Budget is strictly hidden from students. Teams crossing or falling short of this grand total will be automatically disqualified.</p>
+        <p class="text-[11px] text-slate-400">* Note: Max Budget is strictly hidden from students. Teams exceeding this limit will be automatically disqualified.</p>
       </div>
 
       <!-- Evaluation & Leaderboard Panel -->
@@ -573,7 +573,7 @@
 
     async function fetchTeamResult(teamNum) {
       const { data: team } = await supabaseClient.from('teams').select('*').eq('team_number', teamNum).single();
-      if (team && team.ranking) {
+      if (team && team.ranking !== null && team.ranking !== undefined) {
         const banner = document.getElementById('student-results-banner');
         const statusEl = document.getElementById('student-result-status');
         const detailsEl = document.getElementById('student-result-details');
@@ -581,7 +581,7 @@
         banner.classList.remove('hidden');
         if (team.disqualified) {
           statusEl.innerText = `Disqualified`;
-          detailsEl.innerText = `Reason: Total budget crossed or fell short of the admin's limit ($${team.grand_total || 0}).`;
+          detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable budget limit.`;
           banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-6 rounded-2xl text-white shadow-lg space-y-2";
         } else {
           statusEl.innerText = `Rank #${team.ranking} Overall 🎉`;
@@ -970,7 +970,7 @@
       document.getElementById('cfg-team-size').value = myConfig.team_size;
       document.getElementById('cfg-total-tables').value = myConfig.total_tables;
       document.getElementById('cfg-teams-per-table').value = myConfig.teams_per_table;
-      document.getElementById('cfg-max-budget').value = myConfig.max_budget || 10000;
+      document.getElementById('cfg-max-budget').value = myConfig.max_budget !== undefined ? myConfig.max_budget : 10000;
 
       document.getElementById('org-subject-title').value = myConfig.subject_title || '';
       document.getElementById('org-subject-content').value = myConfig.subject_content || '';
@@ -990,7 +990,7 @@
         return showToast('No team submissions found to evaluate.');
       }
 
-      const maxBudget = parseFloat(myConfig.max_budget) || 10000;
+      const maxBudget = parseFloat(myConfig.max_budget);
       let evaluatedTeams = [];
 
       teams.forEach(team => {
@@ -1003,12 +1003,17 @@
           let investTotal = (parsed.Investments || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
           let grandTotal = needsTotal + wantsTotal + investTotal;
 
-          // Disqualification Check
-          if (grandTotal > maxBudget || grandTotal < maxBudget) {
+          // Disqualification Check: Disqualify only if a max budget is set and exceeded
+          let isDisqualified = false;
+          if (!isNaN(maxBudget) && maxBudget > 0 && grandTotal > maxBudget) {
+            isDisqualified = true;
+          }
+
+          if (isDisqualified) {
             evaluatedTeams.push({
               team_number: team.team_number,
               grand_total: grandTotal,
-              score: 9999, // Worst score
+              score: 9999,
               disqualified: true,
               submitted_at: team.submitted_at || '9999-99-99'
             });
@@ -1035,14 +1040,13 @@
         }
       });
 
-      // Sort: Qualified first (lowest variance score), tie-breaker by earliest submitted_at timestamp
+      // Sort: Qualified first (lowest variance score), tie-breaker by earliest timestamp
       evaluatedTeams.sort((a, b) => {
         if (a.disqualified !== b.disqualified) return a.disqualified ? 1 : -1;
         if (a.score !== b.score) return a.score - b.score;
         return new Date(a.submitted_at) - new Date(b.submitted_at);
       });
 
-      // Assign Ranks
       let rankCounter = 1;
       for (let i = 0; i < evaluatedTeams.length; i++) {
         let t = evaluatedTeams[i];
@@ -1052,7 +1056,6 @@
           t.ranking = null;
         }
 
-        // Save rank back to Supabase team row
         await supabaseClient.from('teams').update({
           ranking: t.ranking,
           score: t.score,
@@ -1076,7 +1079,7 @@
 
       tbody.innerHTML = teamsList.map(t => `
         <tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-4 font-extrabold text-center text-indigo-700">${t.disqualified ? '-' : '#' + t.ranking}</td>
+          <td class="py-3 px-4 font-extrabold text-center text-indigo-700">${t.disqualified || t.ranking === null ? '-' : '#' + t.ranking}</td>
           <td class="py-3 px-4 font-medium text-slate-800">Team ${t.team_number}</td>
           <td class="py-3 px-4 text-center font-semibold text-slate-700">$${t.grand_total.toLocaleString()}</td>
           <td class="py-3 px-4 text-center font-bold text-indigo-600">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
@@ -1129,7 +1132,7 @@
           grand_total: t.grand_total || 0,
           score: t.score || 0,
           disqualified: t.disqualified || false,
-          ranking: t.ranking || null,
+          ranking: t.ranking !== undefined ? t.ranking : null,
           submitted_at: t.submitted_at || ''
         }));
         renderLeaderboard(formatted);
@@ -1140,7 +1143,7 @@
       myConfig.team_size = parseInt(document.getElementById('cfg-team-size').value);
       myConfig.total_tables = parseInt(document.getElementById('cfg-total-tables').value);
       myConfig.teams_per_table = parseInt(document.getElementById('cfg-teams-per-table').value);
-      myConfig.max_budget = parseFloat(document.getElementById('cfg-max-budget').value) || 10000;
+      myConfig.max_budget = parseFloat(document.getElementById('cfg-max-budget').value) || 0;
 
       await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
       showToast('Event settings & Max Budget updated successfully.');
