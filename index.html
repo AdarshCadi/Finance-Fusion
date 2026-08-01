@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* ── Base & Light Theme (Gemini-Inspired) ── */
+    /* ── Base & Light Theme ── */
     body { 
       font-family: 'Inter', sans-serif; 
       background-color: #f8fafc; 
@@ -108,6 +108,10 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Modal Animation */
+    @keyframes fadeUp { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .animate-fadeUp { animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   </style>
 </head>
 <body>
@@ -142,7 +146,7 @@
           </button>
         </form>
 
-        <!-- Master Admin Form (Replaced Organizer Flow) -->
+        <!-- Master Admin Form -->
         <div id="admin-form" class="hidden">
           <form id="admin-auth-form" onsubmit="handleAdminAuth(event)">
             <div class="mb-5">
@@ -218,7 +222,18 @@
           <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100">
             <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
             <h4 id="student-case-title" class="text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Case Details...</h4>
-            <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the case details yet.</p>
+            <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
+            
+            <!-- Student Solution Submission Form -->
+            <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
+              <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Your Solution</label>
+              <textarea id="student-answer-input" rows="4" class="input-field w-full p-3 rounded-xl text-sm" placeholder="Type your team's solution here..."></textarea>
+              <div class="flex justify-end mt-3">
+                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">
+                  Submit Answer
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -362,6 +377,29 @@
     </div>
   </div>
 
+  <!-- Admin Modal for Viewing Answers -->
+  <div id="answer-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fadeUp">
+      <div class="flex justify-between items-center p-5 border-b border-slate-100">
+        <h3 class="font-bold text-slate-800 text-lg">Case Submission</h3>
+        <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+      <div class="p-5">
+        <div class="mb-4">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Student & Team</span>
+          <p id="modal-student-name" class="font-medium text-slate-800 mt-1"></p>
+        </div>
+        <div>
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Submitted Solution</span>
+          <div id="modal-student-answer" class="mt-2 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap border border-slate-100 max-h-60 overflow-y-auto"></div>
+        </div>
+      </div>
+      <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <button onclick="closeAnswerModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 rounded-xl text-sm font-medium shadow-sm hover:bg-slate-50 transition-all">Close Window</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toast-container"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -373,6 +411,7 @@
 
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '' };
+    let globalRosterData = [];
 
     function showToast(msg) {
       const el = document.createElement('div');
@@ -408,13 +447,20 @@
     }
 
     function updateStudentContentUI() {
+      // Show texts if they exist
       if (myConfig.subject_title || myConfig.subject_content) {
         document.getElementById('student-subject-title').innerText = myConfig.subject_title || 'Subject 1 Basics';
         document.getElementById('student-subject-content').innerText = myConfig.subject_content || '';
       }
+      
       if (myConfig.case_title || myConfig.case_content) {
         document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
         document.getElementById('student-case-content').innerText = myConfig.case_content || '';
+        
+        // Show submission section ONLY if a case exists
+        if(myConfig.case_content && myConfig.case_content.trim() !== '') {
+          document.getElementById('student-submission-section').classList.remove('hidden');
+        }
       }
     }
 
@@ -462,6 +508,17 @@
           
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
+
+          // Populate existing answer if any
+          if (me.case_answer) {
+            const answerInput = document.getElementById('student-answer-input');
+            const answerBtn = document.getElementById('submit-answer-btn');
+            if (answerInput && answerInput.value === '') {
+              answerInput.value = me.case_answer;
+              answerBtn.innerText = 'Update Answer';
+              answerBtn.classList.replace('bg-indigo-600', 'bg-indigo-500');
+            }
+          }
 
           const { data: mates } = await supabaseClient
             .from('students')
@@ -525,6 +582,34 @@
       }
     }
 
+    async function submitCaseAnswer() {
+      const answer = document.getElementById('student-answer-input').value.trim();
+      if (!answer) {
+        return showToast('Please write your solution before submitting.');
+      }
+
+      const prn = localStorage.getItem('fp_prn');
+      const btn = document.getElementById('submit-answer-btn');
+      
+      btn.innerText = 'Submitting...';
+      btn.disabled = true;
+
+      const { error } = await supabaseClient.from('students').update({ case_answer: answer }).eq('prn', prn);
+      
+      btn.disabled = false;
+      
+      if (error) {
+        console.error("Answer submit error:", error);
+        showToast('Error saving answer: ' + error.message);
+        btn.innerText = 'Submit Answer';
+      } else {
+        showToast('Solution submitted successfully!');
+        btn.innerText = 'Submitted ✓';
+        btn.classList.remove('bg-indigo-600', 'bg-indigo-500', 'hover:bg-indigo-700');
+        btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+      }
+    }
+
     /* --- MASTER ADMIN FLOW (Seamless Setup) --- */
     async function handleAdminAuth(e) {
       e.preventDefault();
@@ -546,7 +631,6 @@
         const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
         
         if (signUpError) {
-          // If signup fails because the user already exists, they typed the wrong password.
           if (signUpError.message.includes("already registered")) {
             return showToast('Incorrect password for this Admin ID.');
           }
@@ -578,7 +662,6 @@
       document.getElementById('org-case-title').value = myConfig.case_title || '';
       document.getElementById('org-case-content').value = myConfig.case_content || '';
       
-      // Display which Admin ID is currently active
       document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminNum}`;
       
       setInterval(fetchRoster, 5000);
@@ -653,6 +736,8 @@
 
     async function fetchRoster() {
       const { data } = await supabaseClient.from('students').select('*').order('created_at');
+      globalRosterData = data; // Cache data for the modal viewer
+      
       document.getElementById('roster-body').innerHTML = data.map(s => `
         <tr class="hover:bg-slate-50 transition-colors">
           <td class="py-3 px-5 font-medium text-slate-800">${s.name}</td>
@@ -663,11 +748,26 @@
               : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
           </td>
           <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
-          <td class="py-3 px-5 text-right">
+          <td class="py-3 px-5 text-right whitespace-nowrap">
+            ${s.case_answer ? `<button onclick="openAnswerModal('${s.prn}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 transition-all mr-2">Read Answer</button>` : ''}
             <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
           </td>
         </tr>
       `).join('');
+    }
+
+    // Modal Controller Functions
+    function openAnswerModal(prn) {
+      const student = globalRosterData.find(s => s.prn === prn);
+      if(student) {
+        document.getElementById('modal-student-name').innerText = `${student.name} (PRN: ${student.prn} | Team: ${student.team_number})`;
+        document.getElementById('modal-student-answer').innerText = student.case_answer;
+        document.getElementById('answer-modal').classList.remove('hidden');
+      }
+    }
+
+    function closeAnswerModal() {
+      document.getElementById('answer-modal').classList.add('hidden');
     }
 
     async function deleteStudent(prn) {
@@ -700,7 +800,6 @@
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user && session.user.email) {
-        // Extract Admin ID from the hidden email format (adminX@financefusion.local)
         const match = session.user.email.match(/admin(\d+)@/);
         if (match && match[1]) {
           return initAdmin(match[1]);
