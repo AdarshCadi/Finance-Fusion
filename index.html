@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* ── Base & Light Theme ── */
+    /* ── Base & Light Theme (Gemini-Inspired) ── */
     body { 
       font-family: 'Inter', sans-serif; 
       background-color: #f8fafc; 
@@ -224,13 +224,18 @@
             <h4 id="student-case-title" class="text-lg font-bold text-slate-800 mt-1 mb-2">Awaiting Case Details...</h4>
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
-            <!-- Student Solution Submission Form -->
+            <!-- Dynamic Allocation Strategy Builder -->
             <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
-              <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Your Solution</label>
-              <textarea id="student-answer-input" rows="4" class="input-field w-full p-3 rounded-xl text-sm" placeholder="Type your team's solution here..."></textarea>
-              <div class="flex justify-end mt-3">
-                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">
-                  Submit Answer
+              <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
+              
+              <!-- Interactive Budget Tool Container -->
+              <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <!-- Injected dynamically by JS -->
+              </div>
+
+              <div class="flex justify-end mt-5">
+                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
+                  Submit Strategy
                 </button>
               </div>
             </div>
@@ -378,24 +383,22 @@
   </div>
 
   <!-- Admin Modal for Viewing Answers -->
-  <div id="answer-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fadeUp">
-      <div class="flex justify-between items-center p-5 border-b border-slate-100">
-        <h3 class="font-bold text-slate-800 text-lg">Case Submission</h3>
+  <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fadeUp">
+      <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+        <h3 class="font-bold text-slate-800 text-lg">Allocation Strategy Review</h3>
         <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
-      <div class="p-5">
-        <div class="mb-4">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Student & Team</span>
-          <p id="modal-student-name" class="font-medium text-slate-800 mt-1"></p>
+      <div class="p-6">
+        <div class="mb-5 border-b border-slate-100 pb-4">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student / Team ID</span>
+          <p id="modal-student-name" class="font-semibold text-indigo-900 mt-1"></p>
         </div>
-        <div>
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Submitted Solution</span>
-          <div id="modal-student-answer" class="mt-2 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap border border-slate-100 max-h-60 overflow-y-auto"></div>
-        </div>
+        <!-- Rendered JSON content will go here -->
+        <div id="modal-student-answer" class="text-sm"></div>
       </div>
       <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end">
-        <button onclick="closeAnswerModal()" class="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 rounded-xl text-sm font-medium shadow-sm hover:bg-slate-50 transition-all">Close Window</button>
+        <button onclick="closeAnswerModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Done Reading</button>
       </div>
     </div>
   </div>
@@ -412,6 +415,14 @@
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '' };
     let globalRosterData = [];
+
+    // --- STUDENT BUDGET STATE ---
+    const budgetCategories = ['Needs', 'Wants', 'Investments'];
+    let budgetState = {
+      Needs: [{ desc: '', amount: '' }],
+      Wants: [{ desc: '', amount: '' }],
+      Investments: [{ desc: '', amount: '' }]
+    };
 
     function showToast(msg) {
       const el = document.createElement('div');
@@ -457,14 +468,91 @@
         document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
         document.getElementById('student-case-content').innerText = myConfig.case_content || '';
         
-        // Show submission section ONLY if a case exists
+        // Show interactive submission section ONLY if a case exists
         if(myConfig.case_content && myConfig.case_content.trim() !== '') {
           document.getElementById('student-submission-section').classList.remove('hidden');
+          renderBudgetBuilder();
         }
       }
     }
 
-    /* --- STUDENT FLOW --- */
+    // --- INTERACTIVE BUDGET BUILDER LOGIC ---
+    function renderBudgetBuilder() {
+      const container = document.getElementById('budget-builder-container');
+      if(!container) return;
+
+      let html = '';
+      let grandTotal = 0;
+
+      budgetCategories.forEach(cat => {
+        let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        grandTotal += catTotal;
+        
+        html += `
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-200/60">
+                <h5 class="font-bold text-slate-700 uppercase tracking-widest text-xs">${cat}</h5>
+                <span class="font-semibold text-slate-500 text-sm">Total: <span id="total-${cat}" class="text-indigo-600 font-bold">$${catTotal.toLocaleString()}</span></span>
+            </div>
+            <div id="list-${cat}" class="space-y-2">
+        `;
+        
+        budgetState[cat].forEach((item, index) => {
+            html += `
+                <div class="flex gap-2 items-center">
+                    <input type="text" class="input-field flex-1 p-2.5 rounded-lg text-sm font-medium" placeholder="Component Name (e.g. Rent)" value="${item.desc}" oninput="updateBudget('${cat}', ${index}, 'desc', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
+                    <input type="number" class="input-field w-28 p-2.5 rounded-lg text-sm text-right font-semibold text-indigo-700" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
+                    ${budgetState[cat].length > 1 ? `<button onclick="removeBudgetRow('${cat}', ${index})" class="text-slate-300 hover:text-red-500 text-xl font-bold px-1">&times;</button>` : `<div class="w-6"></div>`}
+                </div>
+            `;
+        });
+
+        html += `
+            </div>
+            <button onclick="addBudgetRow('${cat}')" class="text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-100">+ Add ${cat} Row</button>
+        </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function updateBudget(cat, index, field, value) {
+      budgetState[cat][index][field] = value;
+      if(field === 'amount') {
+        let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        document.getElementById(`total-${cat}`).innerText = '$' + catTotal.toLocaleString();
+      }
+    }
+
+    function addBudgetRow(cat, focusIndex = -1) {
+      budgetState[cat].push({ desc: '', amount: '' });
+      renderBudgetBuilder();
+      
+      // Auto-focus the newly created description row
+      if(focusIndex >= 0) {
+        setTimeout(() => {
+            const list = document.getElementById(`list-${cat}`);
+            const inputs = list.querySelectorAll('input[type="text"]');
+            if(inputs.length > focusIndex + 1) {
+                inputs[focusIndex + 1].focus();
+            }
+        }, 50);
+      }
+    }
+
+    function removeBudgetRow(cat, index) {
+      budgetState[cat].splice(index, 1);
+      renderBudgetBuilder();
+    }
+
+    function checkEnter(e, cat, index) {
+      if (e.key === 'Enter') {
+          e.preventDefault();
+          addBudgetRow(cat, index);
+      }
+    }
+
+    /* --- STUDENT FLOW CONT. --- */
     async function handleStudentRegistration(e) {
       e.preventDefault();
       const name = document.getElementById('student-name').value.trim();
@@ -487,7 +575,7 @@
 
     async function checkTeamMatch(prn) {
       try {
-        await loadSettings(); // Keep settings/content synchronized during poll
+        await loadSettings();
         const { data: me, error: meErr } = await supabaseClient
           .from('students')
           .select('*')
@@ -509,14 +597,21 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          // Populate existing answer if any
+          // Populate existing budget logic if any
           if (me.case_answer) {
-            const answerInput = document.getElementById('student-answer-input');
-            const answerBtn = document.getElementById('submit-answer-btn');
-            if (answerInput && answerInput.value === '') {
-              answerInput.value = me.case_answer;
-              answerBtn.innerText = 'Update Answer';
-              answerBtn.classList.replace('bg-indigo-600', 'bg-indigo-500');
+            try {
+              // Only load it into the state if they haven't started typing yet
+              let isStateEmpty = budgetCategories.every(cat => budgetState[cat].length === 1 && budgetState[cat][0].desc === '' && budgetState[cat][0].amount === '');
+              if (isStateEmpty) {
+                budgetState = JSON.parse(me.case_answer);
+                renderBudgetBuilder();
+                
+                const btn = document.getElementById('submit-answer-btn');
+                btn.innerText = 'Update Strategy';
+                btn.classList.replace('bg-indigo-600', 'bg-indigo-500');
+              }
+            } catch (e) {
+              console.error("Failed to parse previous answer", e);
             }
           }
 
@@ -583,9 +678,16 @@
     }
 
     async function submitCaseAnswer() {
-      const answer = document.getElementById('student-answer-input').value.trim();
-      if (!answer) {
-        return showToast('Please write your solution before submitting.');
+      // Validate that at least one item has data
+      let hasData = false;
+      budgetCategories.forEach(cat => {
+          budgetState[cat].forEach(item => {
+              if (item.desc || item.amount) hasData = true;
+          });
+      });
+
+      if (!hasData) {
+        return showToast('Please add at least one component before submitting.');
       }
 
       const prn = localStorage.getItem('fp_prn');
@@ -594,16 +696,17 @@
       btn.innerText = 'Submitting...';
       btn.disabled = true;
 
-      const { error } = await supabaseClient.from('students').update({ case_answer: answer }).eq('prn', prn);
+      // Save the state as a stringified JSON object so the Master Admin viewer can perfectly render it
+      const { error } = await supabaseClient.from('students').update({ case_answer: JSON.stringify(budgetState) }).eq('prn', prn);
       
       btn.disabled = false;
       
       if (error) {
         console.error("Answer submit error:", error);
         showToast('Error saving answer: ' + error.message);
-        btn.innerText = 'Submit Answer';
+        btn.innerText = 'Submit Strategy';
       } else {
-        showToast('Solution submitted successfully!');
+        showToast('Allocation strategy submitted successfully!');
         btn.innerText = 'Submitted ✓';
         btn.classList.remove('bg-indigo-600', 'bg-indigo-500', 'hover:bg-indigo-700');
         btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
@@ -736,7 +839,7 @@
 
     async function fetchRoster() {
       const { data } = await supabaseClient.from('students').select('*').order('created_at');
-      globalRosterData = data; // Cache data for the modal viewer
+      globalRosterData = data; 
       
       document.getElementById('roster-body').innerHTML = data.map(s => `
         <tr class="hover:bg-slate-50 transition-colors">
@@ -749,19 +852,59 @@
           </td>
           <td class="py-3 px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
           <td class="py-3 px-5 text-right whitespace-nowrap">
-            ${s.case_answer ? `<button onclick="openAnswerModal('${s.prn}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 transition-all mr-2">Read Answer</button>` : ''}
+            ${s.case_answer ? `<button onclick="openAnswerModal('${s.prn}')" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>` : ''}
             <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
           </td>
         </tr>
       `).join('');
     }
 
-    // Modal Controller Functions
+    // Modal Controller Functions (JSON Viewer)
     function openAnswerModal(prn) {
       const student = globalRosterData.find(s => s.prn === prn);
       if(student) {
-        document.getElementById('modal-student-name').innerText = `${student.name} (PRN: ${student.prn} | Team: ${student.team_number})`;
-        document.getElementById('modal-student-answer').innerText = student.case_answer;
+        document.getElementById('modal-student-name').innerText = `${student.name} (PRN: ${student.prn}) - Team ${student.team_number}`;
+        
+        let displayHTML = '';
+        try {
+            const parsed = JSON.parse(student.case_answer);
+            let grandTotal = 0;
+            displayHTML = `<div class="space-y-4">`;
+            
+            budgetCategories.forEach(cat => {
+                let catTotal = 0;
+                let rowsHtml = '';
+                if (parsed[cat]) {
+                    parsed[cat].forEach(item => {
+                        if(item.desc || item.amount) {
+                            const amt = parseFloat(item.amount) || 0;
+                            catTotal += amt;
+                            rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800">$${amt.toLocaleString()}</span></div>`;
+                        }
+                    });
+                }
+                if(catTotal > 0) {
+                    displayHTML += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2">${cat}</h5>
+                        ${rowsHtml}
+                        <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700">
+                            <span>Subtotal</span><span>$${catTotal.toLocaleString()}</span>
+                        </div>
+                    </div>`;
+                    grandTotal += catTotal;
+                }
+            });
+            displayHTML += `
+                <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md">
+                    <span>GRAND TOTAL</span><span>$${grandTotal.toLocaleString()}</span>
+                </div>
+            </div>`;
+        } catch(e) {
+            displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200">${student.case_answer}</div>`;
+        }
+
+        document.getElementById('modal-student-answer').innerHTML = displayHTML;
         document.getElementById('answer-modal').classList.remove('hidden');
       }
     }
