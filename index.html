@@ -613,8 +613,14 @@
       myConfig.case_title = document.getElementById('org-case-title').value.trim();
       myConfig.case_content = document.getElementById('org-case-content').value.trim();
 
-      await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-      showToast('Subject & Case context broadcasted successfully.');
+      const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+      
+      if (error) {
+        console.error("Content Save Error:", error);
+        showToast('Database Error: ' + error.message);
+      } else {
+        showToast('Subject & Case context broadcasted successfully.');
+      }
     }
 
     async function addStudentManually() {
