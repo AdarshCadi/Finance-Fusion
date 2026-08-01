@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Finance Portal — Real-time student pairing and team assignment for finance events." />
-  <title>Finance Portal — Student Pairing</title>
+  <title>Finance Portal — Master Admin & Student Pairing</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -124,7 +124,7 @@
         <!-- Sleek Segmented Control -->
         <div class="flex p-1 bg-slate-100 rounded-xl mb-8 border border-slate-200">
           <button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-slate-800 shadow-sm transition-all border border-slate-200/50" id="tab-student" onclick="switchTab('student')">Student</button>
-          <button class="flex-1 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 transition-all" id="tab-organizer" onclick="switchTab('organizer')">Organiser</button>
+          <button class="flex-1 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 transition-all" id="tab-admin" onclick="switchTab('admin')">Master Admin</button>
         </div>
 
         <!-- Student Form -->
@@ -142,34 +142,22 @@
           </button>
         </form>
 
-        <!-- Organizer Form -->
-        <div id="organizer-form" class="hidden">
-          <div class="flex justify-center mb-6 space-x-6">
-            <label class="text-sm font-medium cursor-pointer flex items-center text-slate-600 hover:text-slate-900 transition-colors">
-              <input type="radio" name="org_mode" value="login" checked onchange="toggleOrgMode()" class="mr-2 accent-blue-600"> Login
-            </label>
-            <label class="text-sm font-medium cursor-pointer flex items-center text-slate-600 hover:text-slate-900 transition-colors">
-              <input type="radio" name="org_mode" value="signup" onchange="toggleOrgMode()" class="mr-2 accent-blue-600"> Request Access
-            </label>
-          </div>
-
-          <form id="org-auth-form" onsubmit="handleOrganizerAuth(event)">
+        <!-- Master Admin Form (Replaced Organizer Flow) -->
+        <div id="admin-form" class="hidden">
+          <form id="admin-auth-form" onsubmit="handleAdminAuth(event)">
             <div class="mb-5">
-              <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Email Address</label>
-              <input type="email" id="org-email" placeholder="name@example.com" class="input-field w-full px-4 py-3 rounded-xl" required />
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Master Admin ID (1 - 50)</label>
+              <input type="number" id="admin-id" min="1" max="50" placeholder="e.g. 1" class="input-field w-full px-4 py-3 rounded-xl font-medium" required />
             </div>
             <div class="mb-8">
               <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Password</label>
-              <input type="password" id="org-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl" required minlength="6" />
+              <input type="password" id="admin-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl" required minlength="6" />
+              <p class="text-[11px] text-slate-400 mt-3 leading-tight">*If this is your first time using this ID, the password you type now will become your permanent password.</p>
             </div>
-            <button type="submit" id="org-submit-btn" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
-              Login to Dashboard
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
+              Access Command Center
             </button>
           </form>
-          
-          <div id="pending-approval-msg" class="hidden mt-6 text-center text-sm font-medium text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200">
-            Account created. Pending Master Admin approval.
-          </div>
         </div>
       </div>
     </div>
@@ -237,42 +225,24 @@
     </div>
   </div>
 
-  <!-- SCREEN 3: Organizer Dashboard -->
-  <div id="organizer-dashboard-screen" class="screen flex-col min-h-screen p-4 md:p-8">
+  <!-- SCREEN 3: Master Admin Dashboard -->
+  <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-4 md:p-8">
     <div class="max-w-7xl mx-auto w-full space-y-6">
       
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 clean-panel p-5">
         <div>
-          <h2 class="font-bold text-xl text-slate-800 tracking-tight">Organiser Command Center</h2>
+          <h2 class="font-bold text-xl text-slate-800 tracking-tight">Master Admin Command Center</h2>
           <div class="flex items-center gap-2 mt-1.5">
             <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-            <p id="org-role-badge" class="text-xs font-semibold text-slate-500 uppercase tracking-wider"></p>
+            <p id="admin-role-badge" class="text-xs font-semibold text-slate-500 uppercase tracking-wider"></p>
           </div>
         </div>
         <div class="flex flex-wrap gap-3">
-          <button id="admin-panel-btn" onclick="toggleAdminPanel()" class="hidden text-sm px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all">Approvals</button>
           <button onclick="toggleManualAdd()" class="text-sm px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg font-medium transition-all shadow-sm">Add Student</button>
           <button onclick="toggleContentPanel()" class="text-sm px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case</button>
           <button onclick="toggleSettings()" class="text-sm px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
           <button onclick="logout()" class="text-sm px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all">Logout</button>
-        </div>
-      </div>
-
-      <!-- Master Admin Panel -->
-      <div id="master-admin-panel" class="hidden clean-panel p-6 border-l-4 border-l-indigo-500 mb-6">
-        <h3 class="font-bold text-slate-800 mb-4 tracking-tight">Pending Access Requests</h3>
-        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-          <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-slate-50 border-b border-slate-200">
-              <tr class="text-slate-600">
-                <th class="py-3 px-4 font-semibold">Email Address</th>
-                <th class="py-3 px-4 font-semibold">Status</th>
-                <th class="py-3 px-4 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="approvals-body" class="divide-y divide-slate-100"></tbody>
-          </table>
         </div>
       </div>
 
@@ -401,12 +371,8 @@
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // --- MASTER ADMIN CONFIG ---
-    const MASTER_ADMIN_EMAIL = 'admin@financeportal.com';
-
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '' };
-    let currentOrganiserMode = 'login';
 
     function showToast(msg) {
       const el = document.createElement('div');
@@ -417,20 +383,13 @@
 
     function switchTab(tab) {
       document.getElementById('student-form').classList.toggle('hidden', tab !== 'student');
-      document.getElementById('organizer-form').classList.toggle('hidden', tab === 'student');
+      document.getElementById('admin-form').classList.toggle('hidden', tab === 'student');
       
       const activeClass = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-slate-800 shadow-sm transition-all border border-slate-200/50';
       const inactiveClass = 'flex-1 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 transition-all';
       
       document.getElementById('tab-student').className = tab === 'student' ? activeClass : inactiveClass;
-      document.getElementById('tab-organizer').className = tab === 'organizer' ? activeClass : inactiveClass;
-    }
-
-    function toggleOrgMode() {
-      const mode = document.querySelector('input[name="org_mode"]:checked').value;
-      currentOrganiserMode = mode;
-      document.getElementById('org-submit-btn').innerText = mode === 'login' ? 'Login to Dashboard' : 'Submit Access Request';
-      document.getElementById('pending-approval-msg').classList.add('hidden');
+      document.getElementById('tab-admin').className = tab === 'admin' ? activeClass : inactiveClass;
     }
 
     function switchScreen(id) {
@@ -496,7 +455,6 @@
           return;
         }
 
-        // 1. If assigned, show team UI
         if (me.team_number) {
           document.getElementById('student-waiting').classList.add('hidden');
           document.getElementById('student-assigned').classList.remove('hidden');
@@ -524,7 +482,6 @@
           return;
         }
 
-        // 2. Fetch waiting queue
         const { data: waiting, error: waitErr } = await supabaseClient
           .from('students')
           .select('*')
@@ -550,7 +507,6 @@
 
           await supabaseClient.from('students').update({ team_number: nextTeam }).in('prn', prns);
         } else if (waiting && waiting.length > 0) {
-          // 3. Lone student timeout (3 mins)
           const waitTime = new Date() - new Date(me.created_at);
           if (waitTime > 180000 && waiting[0].prn === prn) {
             const { data: lastTeam } = await supabaseClient
@@ -569,135 +525,64 @@
       }
     }
 
-    /* --- ORGANISER FLOW --- */
-    async function handleOrganizerAuth(e) {
+    /* --- MASTER ADMIN FLOW (Seamless Setup) --- */
+    async function handleAdminAuth(e) {
       e.preventDefault();
-      const email = document.getElementById('org-email').value.trim();
-      const password = document.getElementById('org-password').value.trim();
+      const adminNum = document.getElementById('admin-id').value.trim();
+      const password = document.getElementById('admin-password').value.trim();
       
-      document.getElementById('pending-approval-msg').classList.add('hidden');
+      if (adminNum < 1 || adminNum > 50) {
+        return showToast('Please enter a valid Master Admin ID (1 - 50).');
+      }
 
-      if (currentOrganiserMode === 'signup') {
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      // Map ID to a hidden email structure
+      const email = `admin${adminNum}@financefusion.local`;
+
+      // 1. Attempt to Login first
+      let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      
+      // 2. If login fails because user doesn't exist, we immediately Register them
+      if (error && error.message.includes("Invalid login credentials")) {
+        const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
         
-        // 1. Catch standard Auth errors
-        if (error) return showToast('Auth Error: ' + error.message);
-        
-        // 2. Catch the Supabase "Fake Signup" security feature
-        if (!data.user || (data.user.identities && data.user.identities.length === 0)) {
-          return showToast('Error: Email already exists in Auth. Use a brand new email or Login.');
-        }
-        
-        if (data.user) {
-          const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
-          
-          // 3. Catch Database Insert Errors explicitly
-          const { error: dbError } = await supabaseClient.from('organisers').upsert({ 
-            id: data.user.id, 
-            email: email, 
-            is_approved: isMaster 
-          });
-          
-          if (dbError) {
-            console.error("DB Insert Error:", dbError);
-            return showToast('Database Error: ' + dbError.message);
+        if (signUpError) {
+          // If signup fails because the user already exists, they typed the wrong password.
+          if (signUpError.message.includes("already registered")) {
+            return showToast('Incorrect password for this Admin ID.');
           }
-          
-          if (isMaster) {
-            showToast('Master Admin Account created!');
-            initOrganizer(email);
-          } else {
-            document.getElementById('pending-approval-msg').classList.remove('hidden');
-            await supabaseClient.auth.signOut();
-          }
+          return showToast('Error: ' + signUpError.message);
         }
-      } else {
-        // LOGIN FLOW
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) return showToast('Login Error: ' + error.message);
         
-        const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
-        if (isMaster) {
-          initOrganizer(email);
-          return;
-        }
+        data = signUpData;
+        error = null;
+        showToast(`Master Admin ${adminNum} claimed! Password saved.`);
+      } else if (error) {
+        return showToast('Login Error: ' + error.message);
+      }
 
-        const { data: orgData, error: fetchErr } = await supabaseClient.from('organisers').select('*').eq('id', data.user.id).single();
-        
-        if (fetchErr) {
-          console.error("Fetch Error:", fetchErr);
-          await supabaseClient.auth.signOut();
-          return showToast('Error checking approval status.');
-        }
-
-        if (orgData && orgData.is_approved) {
-          initOrganizer(email);
-        } else {
-          document.getElementById('pending-approval-msg').classList.remove('hidden');
-          await supabaseClient.auth.signOut();
-        }
+      if (data && data.user) {
+        initAdmin(adminNum);
       }
     }
 
-    async function initOrganizer(email) {
-      switchScreen('organizer-dashboard-screen');
+    async function initAdmin(adminNum) {
+      switchScreen('admin-dashboard-screen');
       await loadSettings();
+      
       document.getElementById('cfg-team-size').value = myConfig.team_size;
       document.getElementById('cfg-total-tables').value = myConfig.total_tables;
       document.getElementById('cfg-teams-per-table').value = myConfig.teams_per_table;
 
-      // Populate organiser content fields
       document.getElementById('org-subject-title').value = myConfig.subject_title || '';
       document.getElementById('org-subject-content').value = myConfig.subject_content || '';
       document.getElementById('org-case-title').value = myConfig.case_title || '';
       document.getElementById('org-case-content').value = myConfig.case_content || '';
       
-      const isMaster = (email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
-      document.getElementById('org-role-badge').innerText = isMaster ? 'Master Admin' : 'Event Organiser';
-      
-      if (isMaster) {
-        document.getElementById('admin-panel-btn').classList.remove('hidden');
-        fetchApprovals();
-      }
+      // Display which Admin ID is currently active
+      document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminNum}`;
       
       setInterval(fetchRoster, 5000);
       fetchRoster();
-    }
-
-    /* --- MASTER ADMIN FUNCTIONS --- */
-    function toggleAdminPanel() {
-      document.getElementById('master-admin-panel').classList.toggle('hidden');
-      fetchApprovals();
-    }
-
-    async function fetchApprovals() {
-      const { data, error } = await supabaseClient.from('organisers').select('*').eq('is_approved', false);
-      const tbody = document.getElementById('approvals-body');
-      
-      if (error) {
-        console.error("Approvals Fetch Error:", error);
-        tbody.innerHTML = `<tr><td colspan="3" class="py-6 px-4 text-center text-red-500 italic">Error loading requests: ${error.message}</td></tr>`;
-        return;
-      }
-      
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="py-6 px-4 text-center text-slate-400 italic">No pending requests at this time.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = data.map(org => `
-        <tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-4 text-slate-700">${org.email}</td>
-          <td class="py-3 px-4"><span class="text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md text-xs font-semibold border border-amber-200">Pending</span></td>
-          <td class="py-3 px-4 text-right"><button onclick="approveOrganiser('${org.id}')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm">Grant Access</button></td>
-        </tr>
-      `).join('');
-    }
-
-    async function approveOrganiser(id) {
-      await supabaseClient.from('organisers').update({ is_approved: true }).eq('id', id);
-      showToast('Organiser access granted successfully.');
-      fetchApprovals();
     }
 
     /* --- SETTINGS, CONTENT & ROSTER --- */
@@ -788,7 +673,6 @@
 
     async function deleteAllStudents() {
       if(!confirm('DANGER: Are you sure you want to delete ALL participants? This action cannot be undone.')) return;
-      
       await supabaseClient.from('students').delete().neq('prn', '0'); 
       fetchRoster();
       showToast('All participants have been deleted.');
@@ -809,14 +693,11 @@
       }
 
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session && session.user) {
-        const isMaster = (session.user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase());
-        if (isMaster) {
-          return initOrganizer(session.user.email);
-        }
-        const { data: orgData } = await supabaseClient.from('organisers').select('*').eq('id', session.user.id).single();
-        if (orgData && orgData.is_approved) {
-          return initOrganizer(session.user.email);
+      if (session && session.user && session.user.email) {
+        // Extract Admin ID from the hidden email format (adminX@financefusion.local)
+        const match = session.user.email.match(/admin(\d+)@/);
+        if (match && match[1]) {
+          return initAdmin(match[1]);
         }
       }
     };
