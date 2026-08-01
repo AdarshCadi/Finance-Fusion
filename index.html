@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Finance Portal — Real-time student pairing and team assignment for finance events." />
+  <meta name="description" content="Finance Portal — Real-time student pairing, team assignment, and automated evaluation for finance events." />
   <title>Finance Portal — Master Admin & Student Pairing</title>
 
   <!-- Tailwind CSS CDN -->
@@ -216,6 +216,13 @@
           </ul>
         </div>
 
+        <!-- Results Banner (Hidden until Admin publishes results) -->
+        <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-lg space-y-2">
+          <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
+          <h4 id="student-result-status" class="text-2xl font-extrabold tracking-tight mt-1"></h4>
+          <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
+        </div>
+
         <!-- Live Content Stream (Subject & Case 1) -->
         <div class="space-y-4 pt-2 border-t border-slate-100">
           <div class="bg-blue-50/60 p-5 rounded-2xl border border-blue-100">
@@ -239,9 +246,9 @@
 
             <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
             
-            <!-- Dynamic Allocation Strategy Builder (Locked by default until timer starts) -->
+            <!-- Dynamic Allocation Strategy Builder -->
             <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
-              <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
+              <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy (50-30-20 Rule)</label>
               
               <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-sm font-medium mb-4">
                 ⏳ Waiting for Master Admin to start the submission timer... Inputs are currently locked.
@@ -278,14 +285,15 @@
         <div class="flex flex-wrap gap-3">
           <button onclick="toggleManualAdd()" class="text-sm px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg font-medium transition-all shadow-sm">Add Student</button>
           <button onclick="toggleContentPanel()" class="text-sm px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case</button>
+          <button onclick="toggleEvaluationPanel()" class="text-sm px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all shadow-sm">Evaluate & Rank</button>
           <button onclick="toggleSettings()" class="text-sm px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
           <button onclick="logout()" class="text-sm px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all">Logout</button>
         </div>
       </div>
 
-      <!-- Settings Panel -->
-      <div id="org-settings" class="hidden clean-panel p-6 border-l-4 border-l-blue-500 mb-6">
-        <h3 class="font-semibold text-slate-800 mb-5 tracking-tight">Event Configurations</h3>
+      <!-- Settings Panel (Includes Hidden Max Budget) -->
+      <div id="org-settings" class="hidden clean-panel p-6 border-l-4 border-l-blue-500 mb-6 space-y-4">
+        <h3 class="font-semibold text-slate-800 tracking-tight">Event Configurations & Evaluation Rules</h3>
         <div class="flex flex-wrap gap-5 items-end">
           <div class="flex-1 min-w-[120px]">
             <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Team Size</label>
@@ -299,9 +307,50 @@
             <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Teams / Table</label>
             <input type="number" id="cfg-teams-per-table" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
           </div>
-          <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-            <button onclick="saveSettings()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save</button>
+          <div class="flex-1 min-w-[150px]">
+            <label class="block text-xs font-medium text-rose-600 mb-2 uppercase tracking-wide font-bold">Max Allocatable Budget</label>
+            <input type="number" id="cfg-max-budget" class="input-field w-full p-2.5 rounded-xl text-center font-bold text-rose-600" placeholder="e.g. 10000" />
           </div>
+          <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
+            <button onclick="saveSettings()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-400">* Note: Max Budget is strictly hidden from students. Teams crossing or falling short of this grand total will be automatically disqualified.</p>
+      </div>
+
+      <!-- Evaluation & Leaderboard Panel -->
+      <div id="org-evaluation-panel" class="hidden clean-panel p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg tracking-tight">Automated Leaderboard & Evaluation (50-30-20 Rule)</h3>
+            <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">
+              Compute Rankings
+            </button>
+            <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">
+              Publish Results to Students
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200">
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr class="text-slate-600">
+                <th class="py-3 px-4 font-semibold text-center">Rank</th>
+                <th class="py-3 px-4 font-semibold">Team No.</th>
+                <th class="py-3 px-4 font-semibold text-center">Grand Total</th>
+                <th class="py-3 px-4 font-semibold text-center">Score (Variance)</th>
+                <th class="py-3 px-4 font-semibold text-center">Status</th>
+                <th class="py-3 px-4 font-semibold text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body" class="divide-y divide-slate-100">
+              <tr><td colspan="6" class="py-6 text-center text-slate-400 italic">Click "Compute Rankings" to evaluate team submissions.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -446,7 +495,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
     let pollInterval = null;
-    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null };
+    let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false };
     let globalTeamsData = [];
     let myTeamNumber = null;
     
@@ -515,6 +564,31 @@
           manageStudentTimer();
         }
       }
+
+      // Check if Results are Published
+      if (myConfig.results_published && myTeamNumber) {
+        fetchTeamResult(myTeamNumber);
+      }
+    }
+
+    async function fetchTeamResult(teamNum) {
+      const { data: team } = await supabaseClient.from('teams').select('*').eq('team_number', teamNum).single();
+      if (team && team.ranking) {
+        const banner = document.getElementById('student-results-banner');
+        const statusEl = document.getElementById('student-result-status');
+        const detailsEl = document.getElementById('student-result-details');
+        
+        banner.classList.remove('hidden');
+        if (team.disqualified) {
+          statusEl.innerText = `Disqualified`;
+          detailsEl.innerText = `Reason: Total budget crossed or fell short of the admin's limit ($${team.grand_total || 0}).`;
+          banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-6 rounded-2xl text-white shadow-lg space-y-2";
+        } else {
+          statusEl.innerText = `Rank #${team.ranking} Overall 🎉`;
+          detailsEl.innerText = `Score Variance: ${team.score}% off the 50-30-20 rule | Total: $${team.grand_total}`;
+          banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-6 rounded-2xl text-white shadow-lg space-y-2";
+        }
+      }
     }
 
     function manageStudentTimer() {
@@ -564,7 +638,6 @@
           const seconds = Math.floor((distance % (1000 * 60)) / 1000);
           clock.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-          // Timer is active! Unlock the builder for typing
           if (notice) notice.classList.add('hidden');
           if (builder) builder.classList.remove('opacity-50', 'pointer-events-none');
           if (submitBtn && !submitBtn.classList.contains('bg-emerald-500')) {
@@ -700,7 +773,6 @@
           const teamsPerTable = myConfig.teams_per_table || 5;
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
 
-          // Check team-level submission status dynamically during poll
           const { data: teamData } = await supabaseClient
             .from('teams')
             .select('case_answer')
@@ -804,7 +876,6 @@
         return showToast('Team assignment is still pending.');
       }
 
-      // Check one more time before submitting to prevent double-submissions
       const { data: currentTeam } = await supabaseClient
         .from('teams')
         .select('case_answer')
@@ -830,9 +901,12 @@
       btn.innerText = 'Submitting...';
       btn.disabled = true;
 
+      const submissionTime = new Date().toISOString();
+
       const { error } = await supabaseClient.from('teams').upsert({ 
         team_number: myTeamNumber, 
-        case_answer: JSON.stringify(budgetState) 
+        case_answer: JSON.stringify(budgetState),
+        submitted_at: submissionTime
       });
       
       if (error) {
@@ -896,6 +970,7 @@
       document.getElementById('cfg-team-size').value = myConfig.team_size;
       document.getElementById('cfg-total-tables').value = myConfig.total_tables;
       document.getElementById('cfg-teams-per-table').value = myConfig.teams_per_table;
+      document.getElementById('cfg-max-budget').value = myConfig.max_budget || 10000;
 
       document.getElementById('org-subject-title').value = myConfig.subject_title || '';
       document.getElementById('org-subject-content').value = myConfig.subject_content || '';
@@ -906,6 +981,125 @@
       
       setInterval(fetchRoster, 5000);
       fetchRoster();
+    }
+
+    /* --- EVALUATION & RANKING LOGIC (50-30-20 RULE) --- */
+    async function runEvaluation() {
+      const { data: teams } = await supabaseClient.from('teams').select('*');
+      if (!teams || teams.length === 0) {
+        return showToast('No team submissions found to evaluate.');
+      }
+
+      const maxBudget = parseFloat(myConfig.max_budget) || 10000;
+      let evaluatedTeams = [];
+
+      teams.forEach(team => {
+        if (!team.case_answer) return;
+
+        try {
+          const parsed = JSON.parse(team.case_answer);
+          let needsTotal = (parsed.Needs || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+          let wantsTotal = (parsed.Wants || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+          let investTotal = (parsed.Investments || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+          let grandTotal = needsTotal + wantsTotal + investTotal;
+
+          // Disqualification Check
+          if (grandTotal > maxBudget || grandTotal < maxBudget) {
+            evaluatedTeams.push({
+              team_number: team.team_number,
+              grand_total: grandTotal,
+              score: 9999, // Worst score
+              disqualified: true,
+              submitted_at: team.submitted_at || '9999-99-99'
+            });
+            return;
+          }
+
+          // 50-30-20 Variance Scoring Calculation
+          let needsPct = grandTotal > 0 ? (needsTotal / grandTotal) * 100 : 0;
+          let wantsPct = grandTotal > 0 ? (wantsTotal / grandTotal) * 100 : 0;
+          let investPct = grandTotal > 0 ? (investTotal / grandTotal) * 100 : 0;
+
+          let variance = Math.abs(needsPct - 50) + Math.abs(wantsPct - 30) + Math.abs(investPct - 20);
+
+          evaluatedTeams.push({
+            team_number: team.team_number,
+            grand_total: grandTotal,
+            score: parseFloat(variance.toFixed(2)),
+            disqualified: false,
+            submitted_at: team.submitted_at || '9999-99-99'
+          });
+
+        } catch (e) {
+          console.error("Scoring error for team", team.team_number);
+        }
+      });
+
+      // Sort: Qualified first (lowest variance score), tie-breaker by earliest submitted_at timestamp
+      evaluatedTeams.sort((a, b) => {
+        if (a.disqualified !== b.disqualified) return a.disqualified ? 1 : -1;
+        if (a.score !== b.score) return a.score - b.score;
+        return new Date(a.submitted_at) - new Date(b.submitted_at);
+      });
+
+      // Assign Ranks
+      let rankCounter = 1;
+      for (let i = 0; i < evaluatedTeams.length; i++) {
+        let t = evaluatedTeams[i];
+        if (!t.disqualified) {
+          t.ranking = rankCounter++;
+        } else {
+          t.ranking = null;
+        }
+
+        // Save rank back to Supabase team row
+        await supabaseClient.from('teams').update({
+          ranking: t.ranking,
+          score: t.score,
+          disqualified: t.disqualified,
+          grand_total: t.grand_total
+        }).eq('team_number', t.team_number);
+      }
+
+      renderLeaderboard(evaluatedTeams);
+      showToast('Evaluation complete! Leaderboard updated.');
+    }
+
+    function renderLeaderboard(teamsList) {
+      const tbody = document.getElementById('leaderboard-body');
+      if(!tbody) return;
+
+      if(teamsList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 italic">No submitted answers available to rank.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = teamsList.map(t => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="py-3 px-4 font-extrabold text-center text-indigo-700">${t.disqualified ? '-' : '#' + t.ranking}</td>
+          <td class="py-3 px-4 font-medium text-slate-800">Team ${t.team_number}</td>
+          <td class="py-3 px-4 text-center font-semibold text-slate-700">$${t.grand_total.toLocaleString()}</td>
+          <td class="py-3 px-4 text-center font-bold text-indigo-600">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
+          <td class="py-3 px-4 text-center">
+            ${t.disqualified 
+              ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold">Disqualified</span>' 
+              : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold">Qualified</span>'}
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all">View Sheet</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function publishResults() {
+      myConfig.results_published = true;
+      const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+      if (error) {
+        showToast('Error publishing results: ' + error.message);
+      } else {
+        showToast('Results published successfully to all students!');
+      }
     }
 
     /* --- SETTINGS, CONTENT & ROSTER --- */
@@ -921,13 +1115,35 @@
       document.getElementById('org-content-panel').classList.toggle('hidden');
     }
 
+    function toggleEvaluationPanel() {
+      document.getElementById('org-evaluation-panel').classList.toggle('hidden');
+      fetchLeaderboardData();
+    }
+
+    async function fetchLeaderboardData() {
+      const { data } = await supabaseClient.from('teams').select('*').order('ranking', { ascending: true, nullsLast: true });
+      if(data) {
+        globalTeamsData = data;
+        let formatted = data.filter(t => t.case_answer).map(t => ({
+          team_number: t.team_number,
+          grand_total: t.grand_total || 0,
+          score: t.score || 0,
+          disqualified: t.disqualified || false,
+          ranking: t.ranking || null,
+          submitted_at: t.submitted_at || ''
+        }));
+        renderLeaderboard(formatted);
+      }
+    }
+
     async function saveSettings() {
       myConfig.team_size = parseInt(document.getElementById('cfg-team-size').value);
       myConfig.total_tables = parseInt(document.getElementById('cfg-total-tables').value);
       myConfig.teams_per_table = parseInt(document.getElementById('cfg-teams-per-table').value);
+      myConfig.max_budget = parseFloat(document.getElementById('cfg-max-budget').value) || 10000;
 
       await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-      showToast('Event settings updated successfully.');
+      showToast('Event settings & Max Budget updated successfully.');
     }
 
     async function saveEventContentOnly() {
@@ -1028,7 +1244,7 @@
 
     async function clearTeamAnswer(teamNumber) {
       if(!confirm(`Are you sure you want to completely delete the submission for Team ${teamNumber}? The team will be able to submit a new strategy.`)) return;
-      await supabaseClient.from('teams').update({ case_answer: null }).eq('team_number', teamNumber);
+      await supabaseClient.from('teams').update({ case_answer: null, ranking: null, score: null, disqualified: false }).eq('team_number', teamNumber);
       fetchRoster();
       showToast(`Team ${teamNumber} answer cleared.`);
     }
