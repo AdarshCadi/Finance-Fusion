@@ -458,7 +458,6 @@
     }
 
     function updateStudentContentUI() {
-      // Show texts if they exist
       if (myConfig.subject_title || myConfig.subject_content) {
         document.getElementById('student-subject-title').innerText = myConfig.subject_title || 'Subject 1 Basics';
         document.getElementById('student-subject-content').innerText = myConfig.subject_content || '';
@@ -468,10 +467,14 @@
         document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
         document.getElementById('student-case-content').innerText = myConfig.case_content || '';
         
-        // Show interactive submission section ONLY if a case exists
+        // CRITICAL FIX: Only render the builder ONCE so the 3-second poll doesn't wipe active typing
         if(myConfig.case_content && myConfig.case_content.trim() !== '') {
           document.getElementById('student-submission-section').classList.remove('hidden');
-          renderBudgetBuilder();
+          
+          const container = document.getElementById('budget-builder-container');
+          if (container && container.innerHTML.trim() === '') {
+            renderBudgetBuilder();
+          }
         }
       }
     }
@@ -604,7 +607,12 @@
               let isStateEmpty = budgetCategories.every(cat => budgetState[cat].length === 1 && budgetState[cat][0].desc === '' && budgetState[cat][0].amount === '');
               if (isStateEmpty) {
                 budgetState = JSON.parse(me.case_answer);
-                renderBudgetBuilder();
+                
+                // Only re-render if the container is empty to prevent overwriting active typing
+                const container = document.getElementById('budget-builder-container');
+                if (container && container.innerHTML.trim() === '') {
+                    renderBudgetBuilder();
+                }
                 
                 const btn = document.getElementById('submit-answer-btn');
                 btn.innerText = 'Update Strategy';
