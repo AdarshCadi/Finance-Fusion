@@ -416,7 +416,7 @@
                 <span id="student-timer-clock" class="text-base font-extrabold text-error font-mono">--:--</span>
             </div>
 
-            <!-- Optional Chocolate/Event Banner (Appears if sent via admin but results aren't scratched yet) -->
+            <!-- Optional Event Banner (Appears if results published but not yet scratched, or just general info) -->
             <div id="student-results-banner" class="hidden bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4">
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] font-bold uppercase tracking-widest bg-background/50 px-3 py-1 rounded border border-outline-variant">Event Update</span>
@@ -560,12 +560,13 @@
             <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation (Relative Percentile)</h3>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
                         <p class="text-xs text-slate-500 mt-1">Evaluates Needs, Wants, and Investments with keyword micro-scoring. Scaled to 100th percentile.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
                         <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
+                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">🍫 Send Chocolates</button>
                     </div>
                 </div>
 
@@ -626,9 +627,12 @@
                         <h4 class="font-bold text-red-700 text-lg">🚨 Send Urgent Notification</h4>
                         <p class="text-red-600 text-sm">Locks all student interfaces for 30 seconds and assigns a random Surprise Event Card.</p>
                     </div>
-                    <button onclick="triggerPlotTwist()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md transition-all whitespace-nowrap">
-                        Trigger Plot Twist
-                    </button>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="unpublishPlotTwist()" class="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm whitespace-nowrap">Reset Twist</button>
+                        <button onclick="triggerPlotTwist()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md transition-all whitespace-nowrap">
+                            Trigger Plot Twist
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Event Constraints & Timer Rules -->
@@ -643,7 +647,10 @@
                             <label class="block text-xs font-medium text-slate-500 mb-1">Timer Duration (Mins)</label>
                             <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="admin-input text-center font-medium" />
                         </div>
-                        <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer & Limit</button>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Reset Timer</button>
+                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer & Limit</button>
+                        </div>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
                         <div class="flex-1">
@@ -668,7 +675,7 @@
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                     </div>
-                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">Clear All</button>
+                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">Clear All (Factory Reset)</button>
                 </div>
                 <div class="overflow-auto flex-1 bg-white">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -737,7 +744,7 @@
         </div>
     </div>
 
-    <div class="toast-container" id="toast-container"></div>
+    <div class="toast-container font-sans" id="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -833,26 +840,22 @@
             scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
             const container = scratchCanvas.parentElement;
             
-            // Set precise internal canvas dimensions to match the DOM element size
             scratchCanvas.width = container.offsetWidth;
             scratchCanvas.height = container.offsetHeight;
             
-            // Draw luxurious gold texture
             let gradient = scratchCtx.createLinearGradient(0, 0, scratchCanvas.width, scratchCanvas.height);
-            gradient.addColorStop(0, '#B8860B'); // DarkGoldenRod
-            gradient.addColorStop(0.5, '#FFD700'); // Gold
-            gradient.addColorStop(1, '#DAA520'); // GoldenRod
+            gradient.addColorStop(0, '#B8860B'); 
+            gradient.addColorStop(0.5, '#FFD700'); 
+            gradient.addColorStop(1, '#DAA520'); 
             
             scratchCtx.fillStyle = gradient;
             scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
             
-            // Add Overlay Text
             scratchCtx.font = "bold 24px Montserrat";
             scratchCtx.fillStyle = "#ffffff";
             scratchCtx.textAlign = "center";
             scratchCtx.fillText("SCRATCH TO REVEAL!", scratchCanvas.width/2, scratchCanvas.height/2);
             
-            // Prepare for erasing
             scratchCtx.globalCompositeOperation = 'destination-out';
             scratchIsCleared = false;
             
@@ -888,11 +891,11 @@
         
         function scratch(e) {
             if(!isScratching || scratchIsCleared) return;
-            if(e.cancelable) e.preventDefault(); // prevent pull-to-refresh on mobile while scratching
+            if(e.cancelable) e.preventDefault(); 
             
             let pos = getScratchPos(e);
             scratchCtx.beginPath();
-            scratchCtx.arc(pos.x, pos.y, 40, 0, 2 * Math.PI); // 40px brush size
+            scratchCtx.arc(pos.x, pos.y, 40, 0, 2 * Math.PI); 
             scratchCtx.fill();
         }
         
@@ -901,13 +904,12 @@
             
             const pixels = scratchCtx.getImageData(0,0, scratchCanvas.width, scratchCanvas.height).data;
             let clearPixels = 0;
-            // Check alpha channel (every 4th value)
             for(let i=3; i<pixels.length; i+=4) {
                 if(pixels[i] === 0) clearPixels++;
             }
             
             let percent = (clearPixels / (pixels.length / 4)) * 100;
-            if(percent > 40) { // If 40% cleared, snap it all away
+            if(percent > 40) { 
                 scratchIsCleared = true;
                 scratchCanvas.style.transition = "opacity 0.6s ease-out";
                 scratchCanvas.style.opacity = "0";
@@ -1129,6 +1131,9 @@
         function checkPlotTwist() {
             if(studentState === 'admin' || !myTeamNumber) return;
             
+            const overlay = document.getElementById('plot-twist-overlay');
+            if(!overlay) return;
+
             if(myConfig.plot_twist_triggered_at && myConfig.plot_twist_triggered_at !== dismissedTwistTime) {
                 const triggeredTime = new Date(myConfig.plot_twist_triggered_at).getTime();
                 const now = new Date().getTime();
@@ -1139,7 +1144,6 @@
                 document.getElementById('twist-title').innerText = twist.title;
                 document.getElementById('twist-desc').innerText = twist.desc;
                 
-                const overlay = document.getElementById('plot-twist-overlay');
                 const btn = document.getElementById('twist-dismiss-btn');
                 const timerContainer = document.getElementById('twist-countdown-container');
                 const timerText = document.getElementById('twist-timer');
@@ -1168,6 +1172,10 @@
                     timerContainer.classList.add('hidden');
                     btn.classList.remove('hidden');
                 }
+            } else {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                if(twistTimerInterval) clearInterval(twistTimerInterval);
             }
         }
 
@@ -1187,9 +1195,12 @@
                     const banner = document.getElementById('student-results-banner');
                     const statusEl = document.getElementById('student-result-status');
                     
-                    // Display regular banner logic for fallback/viewing
                     if(banner) banner.classList.remove('hidden');
-                    if(statusEl) statusEl.innerText = team.disqualified ? `Disqualified` : `${team.percentile || 0}th Percentile 🎉`;
+                    if (team.disqualified) {
+                        if(statusEl) statusEl.innerText = `Disqualified`;
+                    } else {
+                        if(statusEl) statusEl.innerText = `${team.percentile || 0}th Percentile 🎉`;
+                    }
                     
                     // SCRATCH CARD TRIGGER LOGIC
                     if (!resultsShownThisSession && !team.disqualified && (studentState === 'dashboard' || studentState === 'home' || studentState === 'program' || studentState === 'cases')) {
@@ -1203,7 +1214,6 @@
                             scratchOverlay.classList.remove('hidden');
                             scratchOverlay.classList.add('flex');
                             
-                            // Initialize Canvas
                             scratchCanvas = document.getElementById('scratch-pad');
                             scratchCanvas.style.opacity = "1";
                             scratchCanvas.style.pointerEvents = "auto";
@@ -1211,13 +1221,22 @@
                             document.getElementById('btn-close-scratch').classList.add('opacity-0', 'pointer-events-none');
                             document.getElementById('btn-close-scratch').classList.remove('opacity-100');
                             
-                            setTimeout(initScratchCard, 50); // small delay to ensure DOM sizing
+                            setTimeout(initScratchCard, 50); 
                             
                             resultsShownThisSession = true;
                         }
                     }
                 }
             }
+        }
+
+        function dismissChocolateOverlay() { 
+            const overlay = document.getElementById('chocolate-overlay');
+            if(overlay) overlay.classList.add('hidden'); 
+        }
+        function reopenChocolateOverlay() { 
+            const overlay = document.getElementById('chocolate-overlay');
+            if(overlay) overlay.classList.remove('hidden'); 
         }
 
         function manageStudentTimer() {
@@ -1238,7 +1257,7 @@
             if(badge) badge.classList.remove('hidden');
             if (studentClockInterval) clearInterval(studentClockInterval);
 
-            studentClockInterval = setInterval(() => {
+            const updateStudentClock = () => {
                 const now = new Date().getTime();
                 const distance = new Date(myConfig.timer_end_time).getTime() - now;
 
@@ -1268,7 +1287,10 @@
                         submitBtn.className = 'w-full sm:w-auto bg-primary text-on-primary border border-primary hover:bg-surface-tint px-12 py-3 rounded font-label-md uppercase transition-all shadow-md flex items-center justify-center';
                     }
                 }
-            }, 1000);
+            };
+            
+            updateStudentClock(); // run immediately 
+            studentClockInterval = setInterval(updateStudentClock, 1000);
         }
 
         function manageAdminTimer() {
@@ -1277,13 +1299,14 @@
             
             if (!myConfig.timer_end_time) {
                 display.classList.add('hidden');
+                if(adminClockInterval) clearInterval(adminClockInterval);
                 return;
             }
             
             display.classList.remove('hidden');
             if (adminClockInterval) clearInterval(adminClockInterval);
             
-            adminClockInterval = setInterval(() => {
+            const updateAdminClock = () => {
                 const now = new Date().getTime();
                 const distance = new Date(myConfig.timer_end_time).getTime() - now;
                 
@@ -1295,7 +1318,10 @@
                     const s = Math.floor((distance % (1000 * 60)) / 1000);
                     display.innerHTML = `<span class="material-symbols-outlined animate-pulse">timer</span> Live: ${m}:${s < 10 ? '0' : ''}${s}`;
                 }
-            }, 1000);
+            };
+            
+            updateAdminClock(); // run immediately
+            adminClockInterval = setInterval(updateAdminClock, 1000);
         }
 
         function renderBudgetBuilder() {
@@ -1577,6 +1603,40 @@
             else showToast("🚨 Plot Twist Triggered!");
         }
 
+        async function unpublishPlotTwist() {
+            if(!confirm("Are you sure you want to reset and unpublish the Plot Twist?")) return;
+            myConfig.plot_twist_triggered_at = null;
+            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            if(error) showToast("Error: " + error.message);
+            else showToast("Plot Twist has been reset.");
+        }
+
+        async function startCaseTimerWithBudget() {
+            const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
+            const maxBgt = parseFloat(document.getElementById('org-max-budget').value) || 10000;
+            const endTime = new Date(Date.now() + mins * 60000).toISOString();
+            
+            myConfig.timer_end_time = endTime;
+            myConfig.max_budget = maxBgt;
+
+            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            if (error) showToast('Database Error: ' + error.message);
+            else {
+                showToast(`Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`);
+                manageAdminTimer();
+            }
+        }
+
+        async function resetTimer() {
+            myConfig.timer_end_time = null;
+            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            if (error) showToast('Database Error: ' + error.message);
+            else {
+                showToast("Timer has been reset.");
+                manageAdminTimer();
+            }
+        }
+
         async function addBufferTimer() {
             if (!myConfig.timer_end_time) return showToast('No active timer to add buffer to.');
             const addMins = parseInt(document.getElementById('org-buffer-mins').value) || 3;
@@ -1807,7 +1867,6 @@
             for (let i = 0; i < evaluatedTeams.length; i++) {
                 let t = evaluatedTeams[i];
                 t.ranking = t.disqualified ? null : rankCounter++;
-                // explicitly save the raw score to 'score' and relative percentile to 'percentile'
                 await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.raw_score, disqualified: t.disqualified, grand_total: t.grand_total, percentile: t.percentile }).eq('team_number', t.team_number);
             }
 
@@ -1828,7 +1887,7 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="py-4 px-4 font-bold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
                     <td class="py-4 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-4 px-4 text-center font-semibold text-slate-700 font-sans">₹${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-4 text-center font-semibold text-secondary font-sans">₹${t.grand_total.toLocaleString()}</td>
                     <td class="py-4 px-4 text-center font-bold text-slate-800 font-sans">${t.disqualified ? 'N/A' : (t.raw_score !== undefined ? t.raw_score : t.score)}</td>
                     <td class="py-4 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : (t.percentile !== undefined ? t.percentile : t.score) + ' %ile'}</td>
                     <td class="py-4 px-4 text-center font-sans">
@@ -2001,11 +2060,23 @@
             fetchRoster(); showToast('Participant removed.');
         }
 
+        // FULL FACTORY RESET
         async function deleteAllStudents() {
-            if(!confirm('DANGER: Are you sure you want to delete ALL participants and team submissions? This action cannot be undone.')) return;
+            if(!confirm('DANGER: Are you sure you want to completely FACTORY RESET the event? This will delete all participants, teams, reset timers, clear results, and unpublish plot twists. This action cannot be undone.')) return;
+            
             await supabaseClient.from('students').delete().neq('prn', '0'); 
             await supabaseClient.from('teams').delete().neq('team_number', 0);
-            fetchRoster(); showToast('All participants and submissions have been deleted.');
+            
+            myConfig.timer_end_time = null;
+            myConfig.plot_twist_triggered_at = null;
+            myConfig.results_published = false;
+            myConfig.chocolates_sent = false;
+            
+            await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+
+            fetchRoster(); 
+            manageAdminTimer();
+            showToast('Factory Reset Complete. All participants and data cleared.');
         }
 
         function logout() {
