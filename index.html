@@ -8,7 +8,7 @@
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     
-    <!-- Google Fonts: Cinzel & Montserrat for Students | Inter for Admin -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -71,19 +71,7 @@
                         "surface-container-highest": "#e4e2dd",
                         "primary-container": "#1c1b1b"
                     },
-                    borderRadius: {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    spacing: {
-                        "margin-mobile": "16px",
-                        "unit": "8px",
-                        "container-max": "1140px",
-                        "section-gap": "80px",
-                        "gutter": "24px"
-                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
                     fontFamily: {
                         "display-lg": ["Cinzel", "serif"],
                         "headline-lg-mobile": ["Cinzel", "serif"],
@@ -94,27 +82,14 @@
                         "caption": ["Montserrat", "sans-serif"],
                         "label-md": ["Montserrat", "sans-serif"],
                         "sans": ["Montserrat", "sans-serif"]
-                    },
-                    fontSize: {
-                        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
-                        "headline-lg-mobile": ["28px", { lineHeight: "1.2", fontWeight: "600" }],
-                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "500" }],
-                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
-                        "headline-lg": ["32px", { lineHeight: "1.2", fontWeight: "600" }],
-                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
-                        "caption": ["12px", { lineHeight: "1.4", fontWeight: "400" }],
-                        "label-md": ["14px", { lineHeight: "1.4", letterSpacing: "0.05em", fontWeight: "600" }]
                     }
                 }
             }
         }
     </script>
     <style>
-        /* ── Base & Interactivity ── */
         body { overflow-x: hidden; }
         .input-glow:focus { box-shadow: 0 2px 0 0 theme('colors.secondary'); }
-        
-        /* ── Texture Overlay ── */
         .bg-grain { position: relative; }
         .bg-grain::before {
             content: ""; position: absolute; inset: 0; opacity: 0.03;
@@ -122,15 +97,13 @@
             pointer-events: none; z-index: 0;
         }
 
-        /* ── Screen Transitions & Fades ── */
         .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
         .screen.active { display: flex; opacity: 1; transform: translateY(0); }
         .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes subtleReveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .reveal-anim { animation: subtleReveal 1s ease-out forwards; }
+        @keyframes subtleReveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ── Custom Animations for Astrolabe ── */
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes spin-slow-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
         @keyframes pulse-glow { 0%, 100% { opacity: 0.8; box-shadow: 0 0 15px rgba(119, 90, 25, 0.2); } 50% { opacity: 1; box-shadow: 0 0 25px rgba(119, 90, 25, 0.6); } }
@@ -140,30 +113,19 @@
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
         .animate-fade-in { animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        /* ── Admin Specific Styles (Blue/White Tech Theme) ── */
+        @keyframes boxBounce { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-10px); } }
+        .animate-box-bounce { animation: boxBounce 2s infinite ease-in-out; }
+
         .admin-panel { 
-            background: #ffffff; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
-            border-radius: 1.5rem;
+            background: #ffffff; border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025); border-radius: 1.5rem;
         }
         .admin-input { 
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #0f172a;
-            transition: all 0.2s ease; 
-            padding: 0.75rem;
-            border-radius: 0.75rem;
-            width: 100%;
+            background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a;
+            transition: all 0.2s ease; padding: 0.75rem; border-radius: 0.75rem; width: 100%;
         }
-        .admin-input:focus { 
-            background: #ffffff;
-            border-color: #3b82f6; 
-            box-shadow: 0 0 0 4px #eff6ff; 
-            outline: none; 
-        }
+        .admin-input:focus { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 4px #eff6ff; outline: none; }
 
-        /* ── Minimal Toasts ── */
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; font-family: 'Inter', sans-serif; pointer-events: none;}
         .toast { 
             padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; 
@@ -176,17 +138,58 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Modal Animation */
         @keyframes fadeUp { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .animate-fadeUp { animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes bounceSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .animate-bounceSlow { animation: bounceSlow 3s ease-in-out infinite; }
     </style>
 </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col relative antialiased bg-grain selection:bg-secondary-container selection:text-on-secondary-container font-sans">
     
-    <!-- Background Texture Overlay (Global - Applies only to Student) -->
     <div id="parchment-bg" class="fixed inset-0 pointer-events-none z-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/parchment.png')] mix-blend-multiply"></div>
+
+    <!-- STUDENT FEEDBACK OVERLAY -->
+    <div id="feedback-overlay" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl z-[130] hidden flex-col items-center justify-center p-6 text-on-primary font-sans text-center overflow-y-auto">
+        <div class="max-w-xl w-full bg-surface-container rounded-3xl p-8 md:p-12 text-primary shadow-2xl relative my-auto">
+            <h2 class="text-3xl md:text-4xl font-display-lg font-bold mb-2">Event Feedback</h2>
+            <p class="mb-8 text-sm md:text-base text-on-surface-variant">We'd love to hear your thoughts on the FinFusion experience! (Minimum 2 words)</p>
+            
+            <div id="feedback-form-area" class="w-full">
+                <textarea id="student-feedback-text" rows="5" class="w-full rounded-xl border border-outline-variant p-4 mb-4 text-base bg-surface-container-lowest focus:ring-2 focus:ring-secondary focus:border-transparent transition-shadow resize-none" placeholder="Type your honest feedback here..."></textarea>
+                <button onclick="submitStudentFeedback()" class="w-full bg-secondary text-on-primary font-bold py-4 rounded-xl hover:bg-secondary/80 transition-all text-lg tracking-wide shadow-md">Submit Feedback</button>
+            </div>
+
+            <div id="feedback-success-area" class="hidden flex-col items-center w-full">
+                <span class="material-symbols-outlined text-6xl text-emerald-600 mb-4">check_circle</span>
+                <p class="text-xl font-bold mb-2">Feedback Received!</p>
+                <p class="text-sm text-on-surface-variant mb-6">Thank you for participating in the simulation.</p>
+            </div>
+            
+            <!-- Logout always visible at the bottom of the scroll -->
+            <div class="w-full mt-10 pt-6 border-t border-outline-variant">
+                <p class="text-xs text-on-surface-variant uppercase tracking-widest mb-4">Session Complete?</p>
+                <button onclick="logout()" class="w-full bg-surface-variant text-error border border-error/30 font-bold py-4 rounded-xl hover:bg-error hover:text-white transition-all shadow-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">logout</span> Log Out Safely
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHOCOLATE GIFT BOX OVERLAY -->
+    <div id="gift-box-overlay" class="fixed inset-0 bg-secondary/95 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-6 text-on-primary font-sans text-center">
+        <h2 class="text-4xl md:text-6xl font-display-lg font-bold mb-16 text-primary tracking-tight drop-shadow-sm">A Gift from the Organizers!</h2>
+        
+        <div class="relative w-64 h-64 mx-auto cursor-pointer animate-box-bounce" onclick="openGiftBox()">
+            <!-- Chocolate inside -->
+            <div id="gift-chocolate" class="absolute inset-0 flex items-center justify-center text-[8rem] opacity-0 transform scale-50 transition-all duration-[1200ms] ease-out z-10 drop-shadow-2xl">🍫</div>
+            <!-- Box front -->
+            <div id="gift-box-front" class="absolute inset-0 flex items-center justify-center text-[10rem] z-20 transition-all duration-[800ms] ease-in-out origin-bottom transform drop-shadow-2xl">🎁</div>
+        </div>
+        
+        <p id="gift-hint" class="mt-12 text-xl font-bold uppercase tracking-widest text-primary/80 animate-pulse">Tap the box to open!</p>
+        
+        <button id="gift-close-btn" onclick="closeGiftBox()" class="hidden mt-16 bg-primary text-secondary-fixed font-bold px-10 py-4 rounded-xl shadow-2xl uppercase tracking-widest transition-transform hover:scale-105">
+            Enjoy & Close
+        </button>
+    </div>
 
     <!-- FULL SCREEN PLOT TWIST OVERLAY -->
     <div id="plot-twist-overlay" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl z-[100] hidden flex-col items-center justify-center p-6 text-on-primary font-sans text-center">
@@ -196,14 +199,12 @@
         
         <p class="max-w-xl text-surface-dim text-sm md:text-base leading-relaxed mb-8">Each team will receive one Surprise Event Card.<br>You must immediately revise your budget without increasing the family's income.</p>
         
-        <!-- Generated Card -->
         <div class="bg-surface-container-highest border border-outline-variant rounded-2xl p-8 max-w-sm w-full shadow-2xl mb-8 transform hover:scale-105 transition-transform text-primary">
             <div id="twist-icon" class="text-6xl mb-4"></div>
             <h3 id="twist-title" class="text-2xl font-bold font-display-lg text-primary mb-2"></h3>
             <p id="twist-desc" class="text-error font-bold text-xl tracking-wider"></p>
         </div>
         
-        <!-- Timer / Unlock Button -->
         <div id="twist-countdown-container" class="bg-surface-variant text-primary px-8 py-4 rounded-xl font-bold text-xl border border-outline">
             Interface Locked: <span id="twist-timer" class="text-error">30</span>s
         </div>
@@ -212,17 +213,13 @@
         </button>
     </div>
 
-    <!-- SCRATCH CARD RESULTS OVERLAY (FULL SCREEN ELEGANT) -->
+    <!-- SCRATCH CARD RESULTS OVERLAY -->
     <div id="scratch-card-overlay" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl z-[110] hidden flex-col items-center justify-center p-6 font-sans">
-        
         <h1 class="text-secondary font-display-lg text-4xl md:text-5xl mb-8 tracking-widest uppercase text-center drop-shadow-lg">The Final Results</h1>
-        
         <div id="scratch-card-inner" class="relative w-full max-w-md h-[450px] md:h-[500px] bg-surface-container rounded-3xl shadow-[0_0_60px_rgba(255,215,0,0.3)] flex flex-col items-center justify-center p-8 text-center overflow-hidden transition-shadow duration-500 border border-outline-variant">
-            <!-- The Underlying Reveal Content -->
             <div id="scratch-content-area" class="flex flex-col items-center justify-center h-full w-full opacity-100">
                 <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Global Rank</span>
                 <p id="scratch-rank" class="text-7xl md:text-8xl font-black text-primary font-display-lg mb-8 drop-shadow-sm"></p>
-                
                 <div class="space-y-4 w-full px-4">
                     <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
                         <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Percentile</p>
@@ -233,31 +230,27 @@
                         <p id="scratch-marks" class="text-2xl font-bold text-primary mt-1"></p>
                     </div>
                 </div>
-                
                 <button onclick="dismissScratchCard()" id="btn-close-scratch" class="mt-8 bg-primary text-on-primary font-label-md uppercase px-8 py-3 rounded-xl hover:bg-surface-tint transition-all opacity-0 pointer-events-none">
                     Close & Continue
                 </button>
             </div>
-            
-            <!-- The Erasable Canvas Layer -->
             <canvas id="scratch-pad" class="absolute inset-0 w-full h-full cursor-crosshair touch-none rounded-3xl"></canvas>
         </div>
         <p id="scratch-hint-text" class="text-surface-dim font-label-md mt-8 tracking-widest uppercase animate-pulse">Use your finger or mouse to scratch the surface</p>
     </div>
 
-    <!-- Universal TopAppBar (Student) -->
+    <!-- Universal TopAppBar -->
     <header id="global-header" class="bg-background border-b border-outline-variant fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-16 shadow-sm shadow-surface-variant/20 backdrop-blur-md bg-opacity-90">
         <div class="w-full max-w-container-max flex items-center justify-between">
-            <div class="w-10"></div> <!-- Left spacer -->
+            <div class="w-10"></div> 
             <h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-md md:font-headline-md tracking-[0.2em] text-primary absolute left-1/2 -translate-x-1/2 uppercase">FinFusion</h1>
-            <!-- Right: Hamburger Menu -->
             <button id="header-menu-btn" aria-label="Menu" onclick="toggleStudentMenu()" class="hidden p-2 -mr-2 text-primary hover:text-secondary transition-colors duration-300 opacity-80 z-50">
                 <span class="material-symbols-outlined text-3xl" id="menu-icon">menu</span>
             </button>
         </div>
     </header>
 
-    <!-- Side Drawer Menu for Team Info (Student) -->
+    <!-- Side Drawer Menu -->
     <div id="student-side-menu" class="fixed inset-y-0 right-0 w-80 bg-surface-bright border-l border-outline-variant shadow-2xl transform translate-x-full transition-transform duration-300 z-[60] pt-20 px-6 pb-6 overflow-y-auto hidden font-sans">
         <div class="space-y-6 animate-fade-in">
             <div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant text-center shadow-sm relative overflow-hidden">
@@ -278,7 +271,7 @@
     </div>
     <div id="menu-overlay" onclick="toggleStudentMenu()" class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[55] hidden opacity-0 transition-opacity duration-300"></div>
 
-    <!-- SCREEN 1: Login / Register (Student Theme) -->
+    <!-- SCREEN 1: Login / Register -->
     <div id="login-register-screen" class="screen active w-full flex-col min-h-screen relative z-10 pt-24 pb-24">
         <main class="flex-grow flex flex-col items-center justify-center w-full px-margin-mobile">
             <div class="w-full max-w-[460px] bg-surface-container-lowest relative border border-outline-variant rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)]">
@@ -311,9 +304,6 @@
                             <span class="relative z-10">Join Activity</span>
                             <span class="material-symbols-outlined relative z-10 text-xl transition-transform duration-300 group-hover:translate-x-1" style="font-variation-settings: 'wght' 300;">all_inclusive</span>
                         </button>
-                        <div class="mt-4 text-center">
-                            <p class="font-label-md text-label-md text-primary tracking-wider uppercase">Let the Dancing Begin!</p>
-                        </div>
                     </form>
 
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
@@ -324,10 +314,9 @@
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-password">Password</label>
-                            <p class="text-[11px] text-on-surface-variant mt-2 tracking-wide font-caption">*First-time login securely sets your permanent password.</p>
                         </div>
                         <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container-highest to-surface-variant border border-primary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-outline-variant transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden" type="submit">
-                            <span class="relative z-10">Access Command Center</span>
+                            <span class="relative z-10">Command Center</span>
                             <span class="material-symbols-outlined relative z-10 text-xl transition-transform duration-300 group-hover:translate-x-1" style="font-variation-settings: 'wght' 300;">admin_panel_settings</span>
                         </button>
                     </form>
@@ -357,13 +346,12 @@
                 <div class="w-3 h-3 md:w-4 md:h-4 bg-primary rotate-45 animate-pulse-glow flex items-center justify-center relative z-20">
                     <div class="absolute inset-0 border border-secondary scale-150 rotate-45 opacity-50"></div>
                 </div>
-                <div class="absolute w-24 h-24 bg-secondary rounded-full blur-[40px] opacity-10"></div>
             </div>
             
             <div class="text-center flex flex-col items-center gap-4">
                 <div class="w-12 h-px bg-secondary opacity-40 mb-2"></div>
                 <h1 class="font-display-lg text-display-lg text-primary tracking-tight">Searching for your partner...</h1>
-                <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">Consulting the archives and aligning profiles to find your most compatible scholarly match. Please wait a moment.</p>
+                <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">Consulting the archives and aligning profiles to find your most compatible scholarly match.</p>
             </div>
         </main>
     </div>
@@ -392,8 +380,6 @@
                         </div>
                     </div>
                     
-                    <div class="w-24 h-px bg-secondary opacity-40 mb-10"></div>
-                    
                     <button onclick="goToDashboard()" class="bg-gradient-to-b from-surface-container to-background border border-secondary text-primary text-label-md font-label-md uppercase px-12 py-4 rounded hover:bg-surface-variant transition-colors shadow-sm flex items-center gap-2 group">
                         Get Started<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </button>
@@ -402,25 +388,13 @@
         </main>
     </div>
 
-    <!-- SCREEN 4: Student Main Dashboard (Multi-View) -->
+    <!-- SCREEN 4: Student Main Dashboard -->
     <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-primary z-10 relative font-sans pt-24 pb-20">
         <div class="w-full max-w-3xl relative">
 
-            <!-- Global Timer Badge -->
             <div id="student-timer-badge" class="hidden bg-surface-container border border-error/50 px-5 py-2.5 rounded-lg shadow-sm flex items-center justify-between mb-6 mx-auto w-fit gap-4">
                 <span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"><span class="material-symbols-outlined text-error text-sm animate-pulse">timer</span> Time Left</span>
                 <span id="student-timer-clock" class="text-base font-extrabold text-error font-mono">--:--</span>
-            </div>
-
-            <!-- Optional Event Banner -->
-            <div id="student-results-banner" class="hidden bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4">
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold uppercase tracking-widest bg-background/50 px-3 py-1 rounded border border-outline-variant">Event Update</span>
-                    <button onclick="checkResultsPublished()" class="bg-secondary text-on-primary font-label-md uppercase tracking-wider text-xs px-4 py-2 rounded shadow-sm hover:bg-secondary/80 transition-all cursor-pointer flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">visibility</span> Open Dashboard
-                    </button>
-                </div>
-                <h4 id="student-result-status" class="text-2xl font-bold font-display-lg tracking-tight mt-2">Waiting for final rankings...</h4>
             </div>
 
             <!-- VIEW 1: HOME HUB -->
@@ -488,7 +462,6 @@
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -556,12 +529,14 @@
             <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation (Relative Percentile)</h3>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
                         <p class="text-xs text-slate-500 mt-1">Evaluates Needs, Wants, and Investments with keyword micro-scoring. Scaled to 100th percentile.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
                         <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
+                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">🍫 Send Chocolates</button>
+                        <button onclick="publishFeedbackForm()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center gap-2">Publish Feedback</button>
                     </div>
                 </div>
 
@@ -670,7 +645,10 @@
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                     </div>
-                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">Clear All (Factory Reset)</button>
+                    <div class="flex gap-2">
+                        <button onclick="openAdminFeedbackViewer()" class="text-xs px-4 py-2 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 border border-fuchsia-200 rounded-lg font-medium transition-all shadow-sm flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> View Feedback</button>
+                        <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">Clear All (Factory Reset)</button>
+                    </div>
                 </div>
                 <div class="overflow-auto flex-1 bg-white">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -739,7 +717,20 @@
         </div>
     </div>
 
-    <div class="toast-container" id="toast-container"></div>
+    <!-- Admin Modal for Viewing Feedback -->
+    <div id="admin-feedback-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-3 sm:p-4 text-slate-800" style="font-family: 'Inter', sans-serif;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2"><span class="material-symbols-outlined text-fuchsia-600">forum</span> Student Feedback Logs</h3>
+                <button onclick="closeAdminFeedbackViewer()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50/50 space-y-4" id="admin-feedback-list">
+                <!-- Feedback populates here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container font-sans" id="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -764,7 +755,7 @@
             subject_content: '[]', case_content: '[]', 
             timer_end_time: null, results_published: false, chocolates_sent: false,
             target_needs: 50, target_wants: 20, target_inv: 30,
-            plot_twist_triggered_at: null
+            plot_twist_triggered_at: null, feedback_published: false
         };
         
         let adminSubjects = [{ title: '', content: '' }];
@@ -782,6 +773,7 @@
         let studentCasesList = [];
 
         let lastKnownTimer = null;
+        let lastChocolatesSent = false;
         let resultsShownThisSession = false;
         let dismissedTwistTime = null;
         let currentlyEditingPrn = null;
@@ -825,6 +817,7 @@
             localStorage.setItem('fp_budgetState', JSON.stringify(budgetState));
             localStorage.setItem('fp_resultsShown', resultsShownThisSession);
             localStorage.setItem('fp_dismissedTwistTime', dismissedTwistTime || '');
+            localStorage.setItem('fp_lastChocState', lastChocolatesSent);
         }
 
         function loadLocalState() {
@@ -846,6 +839,7 @@
             }
             
             resultsShownThisSession = localStorage.getItem('fp_resultsShown') === 'true';
+            lastChocolatesSent = localStorage.getItem('fp_lastChocState') === 'true';
             dismissedTwistTime = localStorage.getItem('fp_dismissedTwistTime') || null;
         }
 
@@ -860,6 +854,53 @@
             }
             document.getElementById('toast-container').appendChild(el);
             setTimeout(() => el.remove(), 4000);
+        }
+
+        // --- GIFT BOX LOGIC ---
+        function openGiftBox() {
+            document.getElementById('gift-box-front').style.transform = "scale(1.1) translateY(20px) rotate(5deg)";
+            document.getElementById('gift-box-front').style.opacity = "0";
+            setTimeout(() => {
+                const choc = document.getElementById('gift-chocolate');
+                choc.style.opacity = "1";
+                choc.style.transform = "scale(1.5) translateY(-30px)";
+                document.getElementById('gift-hint').classList.add('hidden');
+                document.getElementById('gift-close-btn').classList.remove('hidden');
+            }, 300);
+        }
+
+        function closeGiftBox() {
+            document.getElementById('gift-box-overlay').classList.add('hidden');
+            document.getElementById('gift-box-overlay').classList.remove('flex');
+            saveLocalState();
+        }
+
+        // --- STUDENT FEEDBACK LOGIC ---
+        async function submitStudentFeedback() {
+            const text = document.getElementById('student-feedback-text').value.trim();
+            const words = text.split(/\s+/).filter(w => w.length > 0);
+            if (words.length < 2) {
+                return showToast("Please write at least two words for your feedback.");
+            }
+            
+            const prn = localStorage.getItem('fp_prn');
+            const { error } = await supabaseClient.from('students').update({ feedback: text }).eq('prn', prn);
+            if(error) return showToast("Error saving feedback: " + error.message);
+            
+            document.getElementById('feedback-form-area').classList.add('hidden');
+            document.getElementById('feedback-success-area').classList.remove('hidden');
+            document.getElementById('feedback-success-area').classList.add('flex');
+            
+            showToast("Feedback submitted successfully!");
+        }
+
+        function studentLogout() {
+            if(pollInterval) clearInterval(pollInterval);
+            if(studentClockInterval) clearInterval(studentClockInterval);
+            if(twistTimerInterval) clearInterval(twistTimerInterval);
+            
+            localStorage.clear();
+            window.location.reload(); 
         }
 
         // --- TIERED SCRATCH CARD LOGIC ---
@@ -894,7 +935,6 @@
                 gradient.addColorStop(1, '#CD7F32');
                 glowColor = 'rgba(205,127,50,0.4)';
             } else {
-                // White / Disqualified
                 gradient.addColorStop(0, '#D3D3D3'); 
                 gradient.addColorStop(0.5, '#FFFFFF'); 
                 gradient.addColorStop(1, '#F5F5F5');
@@ -926,10 +966,7 @@
             let rect = scratchCanvas.getBoundingClientRect();
             let clientX = e.clientX || (e.touches && e.touches[0].clientX);
             let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
+            return { x: clientX - rect.left, y: clientY - rect.top };
         }
 
         function startScratch(e) {
@@ -1168,7 +1205,6 @@
 
             const isDashboard = ['dashboard', 'home', 'program', 'cases'].includes(studentState);
             
-            // Auto-Redirect to Cases if a NEW timer starts
             if (myConfig.timer_end_time !== lastKnownTimer) {
                 if (myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime()) {
                     if (isDashboard && studentDashView !== 'cases') {
@@ -1177,6 +1213,20 @@
                     }
                 }
                 lastKnownTimer = myConfig.timer_end_time;
+            }
+
+            // Check Chocolates Broadcast
+            if (myConfig.chocolates_sent === true && !lastChocolatesSent && isDashboard) {
+                const giftOverlay = document.getElementById('gift-box-overlay');
+                if(giftOverlay) {
+                    giftOverlay.classList.remove('hidden');
+                    giftOverlay.classList.add('flex');
+                    lastChocolatesSent = true;
+                    saveLocalState();
+                }
+            } else if (myConfig.chocolates_sent === false) {
+                lastChocolatesSent = false;
+                saveLocalState();
             }
 
             if(isDashboard) {
@@ -1195,6 +1245,35 @@
             else {
                 const resultsBanner = document.getElementById('student-results-banner');
                 if(resultsBanner) resultsBanner.classList.add('hidden');
+            }
+            
+            // Check Feedback Form Status
+            if (myConfig.feedback_published && isDashboard) {
+                checkFeedbackStatus();
+            } else {
+                document.getElementById('feedback-overlay').classList.add('hidden');
+                document.getElementById('feedback-overlay').classList.remove('flex');
+            }
+        }
+        
+        async function checkFeedbackStatus() {
+            const prn = localStorage.getItem('fp_prn');
+            if(!prn) return;
+            const { data, error } = await supabaseClient.from('students').select('feedback').eq('prn', prn).single();
+            const overlay = document.getElementById('feedback-overlay');
+            if(data) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                
+                if (data.feedback && data.feedback.trim() !== '') {
+                    document.getElementById('feedback-form-area').classList.add('hidden');
+                    document.getElementById('feedback-success-area').classList.remove('hidden');
+                    document.getElementById('feedback-success-area').classList.add('flex');
+                } else {
+                    document.getElementById('feedback-form-area').classList.remove('hidden');
+                    document.getElementById('feedback-success-area').classList.add('hidden');
+                    document.getElementById('feedback-success-area').classList.remove('flex');
+                }
             }
         }
 
@@ -1276,12 +1355,10 @@
                     if (!resultsShownThisSession && ['dashboard', 'home', 'program', 'cases'].includes(studentState)) {
                         const scratchOverlay = document.getElementById('scratch-card-overlay');
                         
-                        // Set the content
                         document.getElementById('scratch-rank').innerText = team.disqualified ? "DQ" : `#${team.ranking}`;
                         document.getElementById('scratch-percentile').innerText = team.disqualified ? "N/A" : `${team.percentile || 0} %ile`;
                         document.getElementById('scratch-marks').innerText = team.disqualified ? "N/A" : `${team.score || 0}`; 
                         
-                        // Determine Tier
                         let tier = 'white';
                         if (!team.disqualified && team.ranking) {
                             if (team.ranking <= 10) tier = 'gold';
@@ -1303,6 +1380,7 @@
                             setTimeout(() => { initScratchCard(tier); }, 50); 
                             
                             resultsShownThisSession = true;
+                            saveLocalState();
                         }
                     }
                 }
@@ -1933,7 +2011,6 @@
 
                     let rawScore = Math.max(0, macroScore + needsScore + wantsScore + invScore + twistScore);
 
-                    // We store rawScore in `score` to keep the DB schema simple, and calculate percentile next
                     evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, raw_score: rawScore, disqualified: false, submitted_at: team.submitted_at || '9999-99-99' });
                 } catch (e) {}
             });
@@ -2000,7 +2077,51 @@
             myConfig.chocolates_sent = true;
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             if (error) showToast('Error sending chocolates: ' + error.message);
-            else showToast('🍫 Virtual chocolates sent to all qualified winners successfully!');
+            else showToast('🍫 Virtual chocolates sent successfully!');
+        }
+
+        async function publishFeedbackForm() {
+            myConfig.feedback_published = true;
+            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            if (error) showToast('Error publishing feedback form: ' + error.message);
+            else showToast('Feedback form published to all students!');
+        }
+
+        async function openAdminFeedbackViewer() {
+            const modal = document.getElementById('admin-feedback-modal');
+            const listArea = document.getElementById('admin-feedback-list');
+            
+            listArea.innerHTML = '<p class="text-center text-slate-500 py-8">Loading feedback...</p>';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            const { data, error } = await supabaseClient.from('students').select('*').not('feedback', 'is', null);
+            
+            if(error) {
+                listArea.innerHTML = `<p class="text-center text-red-500 py-8">Error: ${error.message}</p>`;
+                return;
+            }
+            
+            if(!data || data.length === 0) {
+                listArea.innerHTML = '<p class="text-center text-slate-500 py-8">No feedback submitted yet.</p>';
+                return;
+            }
+            
+            listArea.innerHTML = data.map(s => `
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2">
+                        <span class="font-bold text-slate-800">${s.name}</span>
+                        <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-1 rounded">Team ${s.team_number ? toRoman(s.team_number) : '?'}</span>
+                    </div>
+                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${s.feedback}</p>
+                </div>
+            `).join('');
+        }
+        
+        function closeAdminFeedbackViewer() {
+            const modal = document.getElementById('admin-feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         function toggleSettings() { document.getElementById('org-settings').classList.toggle('hidden'); }
@@ -2160,6 +2281,7 @@
             myConfig.plot_twist_triggered_at = null;
             myConfig.results_published = false;
             myConfig.chocolates_sent = false;
+            myConfig.feedback_published = false;
             
             await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
 
@@ -2175,7 +2297,7 @@
             if(twistTimerInterval) clearInterval(twistTimerInterval);
             supabaseClient.auth.signOut(); 
             
-            localStorage.clear(); // Wipe student state on logout
+            localStorage.clear(); 
             
             const headerElement = document.querySelector('#global-header');
             if(headerElement) headerElement.style.display = 'flex';
@@ -2193,7 +2315,7 @@
                 const headerElement = document.querySelector('#global-header');
                 if(headerElement) headerElement.style.display = 'flex';
                 
-                loadLocalState(); // Restore local state
+                loadLocalState(); 
                 
                 if (studentState === 'home' || studentState === 'program' || studentState === 'cases' || studentState === 'dashboard') {
                     document.getElementById('header-menu-btn').classList.remove('hidden');
