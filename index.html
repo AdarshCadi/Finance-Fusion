@@ -566,7 +566,6 @@
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
                         <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
-                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">🍫 Send Chocolates</button>
                     </div>
                 </div>
 
@@ -786,6 +785,7 @@
         let studentSubjectsList = [];
         let studentCasesList = [];
 
+        let lastKnownTimer = null;
         let resultsShownThisSession = false;
         let dismissedTwistTime = null;
         let currentlyEditingPrn = null;
@@ -929,11 +929,8 @@
             const overlay = document.getElementById('scratch-card-overlay');
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
-            
-            // Re-render dashboard to show regular banner if needed
             renderStudentDash();
         }
-
 
         function switchTab(tab) {
             const studentForm = document.getElementById('student-form');
@@ -964,6 +961,7 @@
 
         function setStudentView(view) {
             studentDashView = view;
+            studentState = view; // Keep state in sync
             renderStudentDash();
         }
 
@@ -1109,7 +1107,20 @@
                 try { studentCasesList = JSON.parse(myConfig.case_content).filter(c => c.title || c.content) || []; } catch(e){}
             }
 
-            if(studentState === 'dashboard' || studentState === 'home' || studentState === 'program' || studentState === 'cases') {
+            const isDashboard = ['dashboard', 'home', 'program', 'cases'].includes(studentState);
+            
+            // Auto-Redirect to Cases if a NEW timer starts
+            if (myConfig.timer_end_time !== lastKnownTimer) {
+                if (myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime()) {
+                    if (isDashboard && studentDashView !== 'cases') {
+                        showToast("⏳ Timer Started! Redirecting to Cases...");
+                        setStudentView('cases');
+                    }
+                }
+                lastKnownTimer = myConfig.timer_end_time;
+            }
+
+            if(isDashboard) {
                 renderStudentDash();
                 checkPlotTwist(); 
             }
@@ -1202,13 +1213,12 @@
                         if(statusEl) statusEl.innerText = `${team.percentile || 0}th Percentile 🎉`;
                     }
                     
-                    // SCRATCH CARD TRIGGER LOGIC
-                    if (!resultsShownThisSession && !team.disqualified && (studentState === 'dashboard' || studentState === 'home' || studentState === 'program' || studentState === 'cases')) {
+                    if (!resultsShownThisSession && !team.disqualified && ['dashboard', 'home', 'program', 'cases'].includes(studentState)) {
                         const scratchOverlay = document.getElementById('scratch-card-overlay');
                         
                         document.getElementById('scratch-rank').innerText = `#${team.ranking}`;
                         document.getElementById('scratch-percentile').innerText = `${team.percentile || 0} %ile`;
-                        document.getElementById('scratch-marks').innerText = `${team.score || 0}`; // Assuming score holds raw
+                        document.getElementById('scratch-marks').innerText = `${team.score || 0}`; 
                         
                         if(scratchOverlay) {
                             scratchOverlay.classList.remove('hidden');
@@ -1289,7 +1299,7 @@
                 }
             };
             
-            updateStudentClock(); // run immediately 
+            updateStudentClock(); 
             studentClockInterval = setInterval(updateStudentClock, 1000);
         }
 
@@ -1320,7 +1330,7 @@
                 }
             };
             
-            updateAdminClock(); // run immediately
+            updateAdminClock(); 
             adminClockInterval = setInterval(updateAdminClock, 1000);
         }
 
@@ -1497,7 +1507,11 @@
         }
 
         function goToDashboard() {
-            studentState = 'home';
+            // Intelligent Redirect: if the timer is already running, skip the home hub
+            const hasActiveTimer = myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime();
+            studentDashView = hasActiveTimer ? 'cases' : 'home';
+            studentState = studentDashView;
+            
             const headerElement = document.querySelector('#global-header');
             if(headerElement) headerElement.style.display = 'flex';
             document.getElementById('header-menu-btn').classList.remove('hidden');
