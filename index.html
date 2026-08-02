@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="en" style="">
+<html class="light" lang="en">
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -145,16 +145,24 @@
         .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
         .screen.active { display: flex; opacity: 1; transform: translateY(0); }
         
-        /* ── Light Radar Pulse Animation ── */
-        .radar-container { position: relative; width: 100px; height: 100px; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: center; }
-        .radar-core { width: 16px; height: 16px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 0 4px #eff6ff; }
-        .radar-ripple {
-            position: absolute; top: 50%; left: 50%; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
-            border-radius: 50%; transform: translate(-50%, -50%) scale(0.1);
-            animation: ripple 2s cubic-bezier(0.21, 0.53, 0.56, 1) infinite;
+        /* ── Texture Overlay ── */
+        .bg-grain { position: relative; }
+        .bg-grain::before {
+            content: ""; position: absolute; inset: 0; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 0;
         }
-        @keyframes ripple { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+
+        /* ── Custom Animations for the 'Astrolabe' Loader ── */
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-slow-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.8; box-shadow: 0 0 15px rgba(119, 90, 25, 0.2); } 50% { opacity: 1; box-shadow: 0 0 25px rgba(119, 90, 25, 0.6); } }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .animate-spin-slow { animation: spin-slow 16s linear infinite; }
+        .animate-spin-slow-reverse { animation: spin-slow-reverse 24s linear infinite; }
+        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .animate-fade-in { animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         /* ── Minimal Toasts ── */
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
@@ -178,12 +186,12 @@
         .animate-bounceSlow { animation: bounceSlow 3s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col relative antialiased selection:bg-secondary-container selection:text-on-secondary-container font-sans">
+<body class="bg-background text-on-background min-h-screen flex flex-col relative antialiased bg-grain selection:bg-secondary-container selection:text-on-secondary-container font-sans">
     
     <!-- Background Texture Overlay (Global) -->
     <div class="fixed inset-0 pointer-events-none z-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/parchment.png')] mix-blend-multiply"></div>
 
-    <!-- SCREEN 1: Login / Register -->
+    <!-- SCREEN 1: Login / Register (NEW ACADEMIC UI) -->
     <div id="login-register-screen" class="screen active w-full flex-col min-h-screen relative z-10">
         
         <!-- TopAppBar -->
@@ -196,7 +204,7 @@
 
         <!-- Main Content -->
         <main class="flex-grow flex flex-col items-center justify-center w-full relative z-10 px-margin-mobile pt-24 pb-24">
-            <!-- Form Container / Card (UPDATED TO rounded-3xl) -->
+            <!-- Form Container / Card -->
             <div class="w-full max-w-[460px] bg-surface-container-lowest relative border border-outline-variant rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)]">
                 <!-- Scholarly Gold Top Accent -->
                 <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary"></div>
@@ -290,19 +298,53 @@
                 </button>
             </div>
 
-            <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10" id="student-header-banner">
                 <h2 class="font-semibold text-lg tracking-tight">Student Event Hub</h2>
                 <span class="text-xs font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">Active Session</span>
             </div>
             
-            <!-- Waiting State -->
+            <!-- Waiting State (NEW ASTROLABE UI) -->
             <div id="student-waiting" class="py-10 text-center relative z-10">
-                <div class="radar-container">
-                    <div class="radar-ripple"></div>
-                    <div class="radar-core"></div>
-                </div>
-                <p class="text-lg font-medium text-blue-600 mt-6 tracking-tight">Finding your team...</p>
-                <p class="text-sm text-slate-500 mt-2">Please wait while we match you with your partners.</p>
+                <main class="relative z-10 flex flex-col items-center justify-center p-margin-mobile w-full max-w-2xl mx-auto opacity-0 animate-fade-in">
+                    <!-- Modern-Ancient Indicator: Stylized Astrolabe / Orbiting Rings -->
+                    <div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-12">
+                        <!-- Outer Fixed Measurement Ring -->
+                        <svg class="absolute inset-0 w-full h-full text-outline opacity-20" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" fill="none" r="49" stroke="currentColor" stroke-width="0.25"></circle>
+                            <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="1 3" stroke-width="0.5"></circle>
+                        </svg>
+                        <!-- Rotating Outer Ring (Gold) -->
+                        <svg class="absolute inset-0 w-full h-full text-secondary opacity-60 animate-spin-slow" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" fill="none" r="43" stroke="currentColor" stroke-width="0.75"></circle>
+                            <circle cx="50" cy="50" fill="none" r="39" stroke="currentColor" stroke-dasharray="2 6" stroke-width="0.5"></circle>
+                            <!-- Celestial Marker -->
+                            <circle cx="50" cy="7" fill="currentColor" r="1.5"></circle>
+                        </svg>
+                        <!-- Inner Intersecting Orbits -->
+                        <svg class="absolute w-[75%] h-[75%] text-secondary opacity-80 animate-spin-slow-reverse" viewBox="0 0 100 100">
+                            <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(30 50 50)"></ellipse>
+                            <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(-30 50 50)"></ellipse>
+                            <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(90 50 50)"></ellipse>
+                        </svg>
+                        <!-- Central Core / Philosopher's Stone -->
+                        <div class="w-3 h-3 md:w-4 md:h-4 bg-primary rotate-45 animate-pulse-glow flex items-center justify-center relative z-20">
+                            <div class="absolute inset-0 border border-secondary scale-150 rotate-45 opacity-50"></div>
+                        </div>
+                        <!-- Ambient shadow behind the core -->
+                        <div class="absolute w-24 h-24 bg-secondary rounded-full blur-[40px] opacity-10"></div>
+                    </div>
+                    <!-- Typography Cluster -->
+                    <div class="text-center flex flex-col items-center gap-4">
+                        <!-- Decorative Scholar Line -->
+                        <div class="w-12 h-px bg-secondary opacity-40 mb-2"></div>
+                        <h1 class="font-display-lg text-display-lg text-primary tracking-tight">
+                            Searching for your partner...
+                        </h1>
+                        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">
+                            Consulting the archives and aligning profiles to find your most compatible scholarly match. Please wait a moment.
+                        </p>
+                    </div>
+                </main>
             </div>
 
             <!-- Assigned State -->
@@ -910,6 +952,10 @@
             const { error } = await supabaseClient.from('students').upsert({ prn, name }, { onConflict: 'prn' });
             if(error) return showToast('Error: ' + error.message);
             
+            // Immediately hide header for transition
+            const headerElement = document.querySelector('#login-register-screen header');
+            if(headerElement) headerElement.style.display = 'none';
+
             localStorage.setItem('fp_prn', prn);
             startStudentPolling(prn);
         }
@@ -940,6 +986,11 @@
 
                 if (me.team_number) {
                     myTeamNumber = me.team_number;
+                    
+                    // Show header again if we hid it
+                    const dashHeader = document.getElementById('student-header-banner');
+                    if(dashHeader) dashHeader.style.display = 'flex';
+
                     document.getElementById('student-waiting').classList.add('hidden');
                     document.getElementById('student-assigned').classList.remove('hidden');
                     document.getElementById('assigned-team-number').innerText = me.team_number;
@@ -998,6 +1049,10 @@
                     }
                     return;
                 }
+
+                // If not assigned yet
+                const dashHeader = document.getElementById('student-header-banner');
+                if(dashHeader) dashHeader.style.display = 'none';
 
                 const { data: waiting, error: waitErr } = await supabaseClient
                     .from('students')
@@ -1119,6 +1174,9 @@
             }
 
             if (data && data.user) {
+                // Ensure header disappears if transitioning to dash
+                const headerElement = document.querySelector('#login-register-screen header');
+                if(headerElement) headerElement.style.display = 'none';
                 initAdmin(adminNum);
             }
         }
@@ -1545,6 +1603,8 @@
         window.onload = async () => {
             const prn = localStorage.getItem('fp_prn');
             if (prn) {
+                const headerElement = document.querySelector('#login-register-screen header');
+                if(headerElement) headerElement.style.display = 'none';
                 startStudentPolling(prn);
                 return; 
             }
@@ -1553,6 +1613,8 @@
             if (session && session.user && session.user.email) {
                 const match = session.user.email.match(/admin(\d+)@/);
                 if (match && match[1]) {
+                    const headerElement = document.querySelector('#login-register-screen header');
+                    if(headerElement) headerElement.style.display = 'none';
                     return initAdmin(match[1]);
                 }
             }
