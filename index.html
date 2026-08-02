@@ -364,7 +364,7 @@
                 <h2 class="text-3xl sm:text-4xl font-extrabold font-display-lg tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
                 <p class="text-amber-100 text-sm sm:text-base max-w-md mx-auto mb-6 font-body-md">Congratulations! The Master Admin has rewarded your winning allocation strategy with delicious virtual chocolates!</p>
                 <div class="bg-white/10 border border-white/20 rounded-2xl p-4 w-full max-w-sm mb-6 shadow-inner">
-                    <p id="overlay-team-rank" class="text-lg font-bold font-sans">Your Ranking: Loading...</p>
+                    <p id="overlay-team-rank" class="text-lg font-bold font-sans">Your Percentile: Loading...</p>
                 </div>
                 <button onclick="dismissChocolateOverlay()" class="bg-white text-amber-950 font-bold px-8 py-3 rounded-xl text-sm shadow-xl hover:bg-amber-50 transition-all font-sans">
                     Celebrate & View Results 🏆
@@ -433,6 +433,7 @@
                     </button>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -472,8 +473,26 @@
                         <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Teams / Table</label>
                         <input type="number" id="cfg-teams-per-table" class="admin-input text-center font-medium" />
                     </div>
-                    <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-                        <button onclick="saveSettings()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
+                </div>
+                
+                <div class="pt-4 border-t border-slate-100 mt-4">
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3">Evaluation Target Allocation (%)</h4>
+                    <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
+                        <div class="flex-1 min-w-[120px]">
+                            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Target Needs %</label>
+                            <input type="number" id="cfg-target-needs" value="50" class="admin-input text-center font-medium" />
+                        </div>
+                        <div class="flex-1 min-w-[120px]">
+                            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Target Wants %</label>
+                            <input type="number" id="cfg-target-wants" value="20" class="admin-input text-center font-medium" />
+                        </div>
+                        <div class="flex-1 min-w-[120px]">
+                            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Target Inv. %</label>
+                            <input type="number" id="cfg-target-inv" value="30" class="admin-input text-center font-medium" />
+                        </div>
+                        <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
+                            <button onclick="saveSettings()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -482,8 +501,8 @@
             <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
-                        <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation (Relative Percentile)</h3>
+                        <p class="text-xs text-slate-500 mt-1">Evaluates Needs, Wants, and Investments with keyword micro-scoring. Scaled to 100th percentile.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
@@ -499,7 +518,7 @@
                                 <th class="py-4 px-4 text-center font-semibold">Rank</th>
                                 <th class="py-4 px-4 font-semibold">Team No.</th>
                                 <th class="py-4 px-4 text-center font-semibold">Grand Total</th>
-                                <th class="py-4 px-4 text-center font-semibold">Score (Variance)</th>
+                                <th class="py-4 px-4 text-center font-semibold">Percentile</th>
                                 <th class="py-4 px-4 text-center font-semibold">Status</th>
                                 <th class="py-4 px-4 text-right font-semibold">Action</th>
                             </tr>
@@ -673,12 +692,17 @@
         const adminSessionId = 'admin_tab_' + Math.random().toString(36).substr(2, 9);
 
         let pollInterval = null;
-        let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false, chocolates_sent: false };
+        let myConfig = { 
+            team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, 
+            subject_title: '', subject_content: '', case_title: '', case_content: '', 
+            timer_end_time: null, results_published: false, chocolates_sent: false,
+            target_needs: 50, target_wants: 20, target_inv: 30
+        };
         let globalTeamsData = [];
         let globalStudentsData = [];
         
         let myTeamNumber = null;
-        let studentState = 'login'; // login, waiting, reveal, dashboard, admin
+        let studentState = 'login'; 
         let chocolatesShownThisSession = false;
         let currentlyEditingPrn = null;
         let isBudgetRendered = false;
@@ -689,7 +713,6 @@
 
         function showToast(msg) {
             const el = document.createElement('div');
-            // If admin, use simpler toast class, otherwise use the surface container
             if(studentState === 'admin') {
                 el.className = 'toast flex items-center gap-2';
             } else {
@@ -727,7 +750,6 @@
             setTimeout(() => { document.getElementById(id).classList.add('active'); }, 50);
         }
 
-        // --- DASHBOARD PAGINATION ---
         function nextDashboardPage() {
             document.getElementById('dashboard-page-1').classList.add('hidden');
             document.getElementById('dashboard-page-2').classList.remove('hidden');
@@ -737,7 +759,6 @@
             document.getElementById('dashboard-page-1').classList.remove('hidden');
         }
 
-        // --- HAMBURGER MENU ---
         function toggleStudentMenu() {
             const menu = document.getElementById('student-side-menu');
             const overlay = document.getElementById('menu-overlay');
@@ -821,12 +842,14 @@
                         banner.className = "bg-surface-container-highest border-l-4 border-error p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4";
                         chocBadge.classList.add('hidden');
                     } else {
-                        statusEl.innerText = `Rank #${toRoman(team.ranking)} Overall 🎉`;
+                        // Display Percentile Instead of Rank
+                        statusEl.innerText = `${team.percentile || 0}th Percentile 🎉`;
                         detailsEl.innerText = `Total Budget Allocated: ₹${team.grand_total}`;
                         banner.className = "bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4";
+                        
                         if (myConfig.chocolates_sent) {
                             chocBadge.classList.remove('hidden');
-                            document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${toRoman(team.ranking)}! 🏆`;
+                            document.getElementById('overlay-team-rank').innerText = `Your Team Secured the ${team.percentile || 0}th Percentile! 🏆`;
                             if (!chocolatesShownThisSession && studentState === 'dashboard') {
                                 document.getElementById('chocolate-overlay').classList.remove('hidden');
                                 chocolatesShownThisSession = true;
@@ -948,7 +971,7 @@
         function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); renderBudgetBuilder(); }
         function checkEnter(e, cat, index) { if (e.key === 'Enter') { e.preventDefault(); addBudgetRow(cat, index); } }
 
-        /* --- STUDENT FLOW CONT. --- */
+        /* --- STUDENT FLOW --- */
         async function handleStudentRegistration(e) {
             e.preventDefault();
             const name = document.getElementById('student-name').value.trim();
@@ -1120,6 +1143,9 @@
             }
 
             if (data && data.user) {
+                const headerElement = document.querySelector('#global-header');
+                if(headerElement) headerElement.style.display = 'flex';
+                document.getElementById('header-menu-btn').classList.add('hidden'); 
                 initAdmin(adminNum);
             }
         }
@@ -1141,6 +1167,10 @@
             document.getElementById('cfg-team-size').value = myConfig.team_size;
             document.getElementById('cfg-total-tables').value = myConfig.total_tables;
             document.getElementById('cfg-teams-per-table').value = myConfig.teams_per_table;
+            
+            document.getElementById('cfg-target-needs').value = myConfig.target_needs || 50;
+            document.getElementById('cfg-target-wants').value = myConfig.target_wants || 20;
+            document.getElementById('cfg-target-inv').value = myConfig.target_inv || 30;
 
             document.getElementById('org-subject-title').value = myConfig.subject_title || '';
             document.getElementById('org-subject-content').value = myConfig.subject_content || '';
@@ -1207,11 +1237,16 @@
             }
         }
 
+        /* --- THE NEW INTELLIGENT EVALUATION & RANKING LOGIC --- */
         async function runEvaluation() {
             const { data: teams } = await supabaseClient.from('teams').select('*');
             if (!teams || teams.length === 0) return showToast('No team submissions found to evaluate.');
 
             const maxBudget = parseFloat(myConfig.max_budget);
+            const targetNeeds = parseFloat(myConfig.target_needs) || 50;
+            const targetWants = parseFloat(myConfig.target_wants) || 20;
+            const targetInv = parseFloat(myConfig.target_inv) || 30;
+            
             let evaluatedTeams = [];
 
             teams.forEach(team => {
@@ -1223,23 +1258,86 @@
                     let investTotal = (parsed.Investments || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
                     let grandTotal = needsTotal + wantsTotal + investTotal;
 
+                    // Absolute Disqualification 
                     if (!isNaN(maxBudget) && maxBudget > 0 && grandTotal > maxBudget) {
-                        evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, score: 9999, disqualified: true, submitted_at: team.submitted_at || '9999-99-99' });
+                        evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, raw_score: 0, percentile: 0, disqualified: true, submitted_at: team.submitted_at || '9999-99-99' });
                         return;
                     }
 
-                    let needsPct = grandTotal > 0 ? (needsTotal / grandTotal) * 100 : 0;
-                    let wantsPct = grandTotal > 0 ? (wantsTotal / grandTotal) * 100 : 0;
-                    let investPct = grandTotal > 0 ? (investTotal / grandTotal) * 100 : 0;
-                    let variance = Math.abs(needsPct - 50) + Math.abs(wantsPct - 30) + Math.abs(investPct - 20);
+                    // 1. MACRO-ALLOCATION SCORE (Max 40 points)
+                    let actualNeeds = grandTotal > 0 ? (needsTotal / grandTotal) * 100 : 0;
+                    let actualWants = grandTotal > 0 ? (wantsTotal / grandTotal) * 100 : 0;
+                    let actualInv = grandTotal > 0 ? (investTotal / grandTotal) * 100 : 0;
+                    
+                    let macroVariance = Math.abs(actualNeeds - targetNeeds) + Math.abs(actualWants - targetWants) + Math.abs(actualInv - targetInv);
+                    let macroScore = Math.max(0, 40 - (macroVariance * 0.5)); // Lose half a point per percentage point off
 
-                    evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, score: parseFloat(variance.toFixed(2)), disqualified: false, submitted_at: team.submitted_at || '9999-99-99' });
-                } catch (e) {}
+                    // 2. MICRO-SCORING: NEEDS (Max 20 points)
+                    let needsScore = 20;
+                    let hasEMI = false, hasRent = false, hasFoodUtil = false, hasHealth = false;
+                    (parsed.Needs || []).forEach(item => {
+                        let text = item.desc.toLowerCase();
+                        if(/emi|loan/.test(text)) hasEMI = true;
+                        if(/rent/.test(text)) hasRent = true;
+                        if(/grocer|food|utilit|electric|water|gas|wifi|internet/.test(text)) hasFoodUtil = true;
+                        if(/health|medic|insur/.test(text)) hasHealth = true;
+                    });
+                    if(hasEMI) needsScore -= 5; // Penalty for heavy fixed liability
+                    if(!hasFoodUtil) needsScore -= 5; // Penalty for missing basic survival
+                    if(!hasHealth) needsScore -= 5; // Penalty for missing health
+
+                    // 3. MICRO-SCORING: WANTS (Max 20 points)
+                    let wantsScore = 20;
+                    (parsed.Wants || []).forEach(item => {
+                        let text = item.desc.toLowerCase();
+                        // Penalty for pure unnecessary luxury
+                        if(/deliver|zomato|swiggy|gadget|phone|iphone|luxur|vip|bar|club|party/.test(text)) wantsScore -= 4;
+                    });
+                    wantsScore = Math.max(0, wantsScore);
+
+                    // 4. MICRO-SCORING: INVESTMENTS (Max 20 points)
+                    let invScore = 5; // Base 5
+                    let hasT1 = false, hasT2 = false, hasT3 = false;
+                    (parsed.Investments || []).forEach(item => {
+                        let text = item.desc.toLowerCase();
+                        if(/saving|liquid|fd|rd|deposit/.test(text)) hasT1 = true;
+                        if(/ppf|vpf|nps|debt|bond|gov/.test(text)) hasT2 = true;
+                        if(/equity|mutual fund|sip|stock|share|market/.test(text)) hasT3 = true;
+                    });
+                    if(hasT1) invScore += 5;
+                    if(hasT2) invScore += 5;
+                    if(hasT3) invScore += 5;
+
+                    let rawScore = macroScore + needsScore + wantsScore + invScore;
+
+                    evaluatedTeams.push({ 
+                        team_number: team.team_number, 
+                        grand_total: grandTotal, 
+                        raw_score: rawScore,
+                        disqualified: false, 
+                        submitted_at: team.submitted_at || '9999-99-99' 
+                    });
+                } catch (e) {
+                    console.error("Scoring error for team", team.team_number);
+                }
             });
 
+            // RELATIVE SCORING (PERCENTILE)
+            let qualifiedTeams = evaluatedTeams.filter(t => !t.disqualified);
+            let maxRaw = Math.max(1, ...qualifiedTeams.map(t => t.raw_score)); // avoid divide by zero
+
+            evaluatedTeams.forEach(t => {
+                if(!t.disqualified) {
+                    t.percentile = parseFloat(((t.raw_score / maxRaw) * 100).toFixed(2));
+                } else {
+                    t.percentile = 0;
+                }
+            });
+
+            // Sort by Percentile, then submitted time
             evaluatedTeams.sort((a, b) => {
                 if (a.disqualified !== b.disqualified) return a.disqualified ? 1 : -1;
-                if (a.score !== b.score) return a.score - b.score;
+                if (a.percentile !== b.percentile) return b.percentile - a.percentile; // Descending
                 return new Date(a.submitted_at) - new Date(b.submitted_at);
             });
 
@@ -1247,11 +1345,12 @@
             for (let i = 0; i < evaluatedTeams.length; i++) {
                 let t = evaluatedTeams[i];
                 t.ranking = t.disqualified ? null : rankCounter++;
-                await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.score, disqualified: t.disqualified, grand_total: t.grand_total }).eq('team_number', t.team_number);
+                // We save percentile to DB under 'score' so the UI displays it properly
+                await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.percentile, disqualified: t.disqualified, grand_total: t.grand_total, percentile: t.percentile }).eq('team_number', t.team_number);
             }
 
             renderLeaderboard(evaluatedTeams);
-            showToast('Evaluation complete! Leaderboard updated.');
+            showToast('Evaluation complete! Percentiles calculated.');
         }
 
         function renderLeaderboard(teamsList) {
@@ -1259,21 +1358,21 @@
             if(!tbody) return;
 
             if(teamsList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 italic font-sans">No submitted answers available to rank.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic">No submitted answers available to rank.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = teamsList.map(t => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="py-3 px-4 font-extrabold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
-                    <td class="py-3 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-3 px-4 text-center font-semibold text-slate-700 font-sans">₹${t.grand_total.toLocaleString()}</td>
-                    <td class="py-3 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
-                    <td class="py-3 px-4 text-center font-sans">
-                        ${t.disqualified ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
+                    <td class="py-4 px-4 font-bold text-center text-primary font-display-lg">${t.disqualified || t.ranking === null ? '-' : '#' + t.ranking}</td>
+                    <td class="py-4 px-4 font-medium text-slate-800">Team ${t.team_number}</td>
+                    <td class="py-4 px-4 text-center font-semibold text-secondary">₹${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-4 text-center font-bold text-indigo-600">${t.disqualified ? 'N/A' : (t.percentile !== undefined ? t.percentile : t.score) + ' %ile'}</td>
+                    <td class="py-4 px-4 text-center">
+                        ${t.disqualified ? '<span class="bg-red-50 text-red-600 border border-red-200 px-3 py-1 rounded text-xs font-semibold uppercase">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded text-xs font-semibold uppercase">Qualified</span>'}
                     </td>
-                    <td class="py-3 px-4 text-right">
-                        <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all font-sans">View Sheet</button>
+                    <td class="py-4 px-4 text-right">
+                        <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-2 rounded bg-indigo-50 border border-indigo-200 transition-all shadow-sm">View Sheet</button>
                     </td>
                 </tr>
             `).join('');
@@ -1302,7 +1401,7 @@
             if(data) {
                 globalTeamsData = data;
                 let formatted = data.filter(t => t.case_answer).map(t => ({
-                    team_number: t.team_number, grand_total: t.grand_total || 0, score: t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
+                    team_number: t.team_number, grand_total: t.grand_total || 0, score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
                 }));
                 renderLeaderboard(formatted);
             }
@@ -1312,6 +1411,10 @@
             myConfig.team_size = parseInt(document.getElementById('cfg-team-size').value);
             myConfig.total_tables = parseInt(document.getElementById('cfg-total-tables').value);
             myConfig.teams_per_table = parseInt(document.getElementById('cfg-teams-per-table').value);
+            myConfig.target_needs = parseFloat(document.getElementById('cfg-target-needs').value) || 50;
+            myConfig.target_wants = parseFloat(document.getElementById('cfg-target-wants').value) || 20;
+            myConfig.target_inv = parseFloat(document.getElementById('cfg-target-inv').value) || 30;
+
             await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             showToast('Event settings updated successfully.');
         }
@@ -1372,19 +1475,19 @@
                 const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
                 return `
                     <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                        <td class="py-3 px-4 sm:px-5 font-medium text-slate-800 font-sans">${s.name}</td>
-                        <td class="py-3 px-4 sm:px-5 text-slate-500 font-sans">${s.prn}</td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-sans">
-                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${toRoman(s.team_number)}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
+                        <td class="py-4 px-6 font-medium text-slate-800">${s.name}</td>
+                        <td class="py-4 px-6 text-slate-500">${s.prn}</td>
+                        <td class="py-4 px-6 text-center">
+                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded text-xs font-semibold uppercase">Team ${s.team_number}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
                         </td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? toRoman(tableNo) : '-'}</td>
-                        <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
-                            <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
+                        <td class="py-4 px-6 text-center font-medium text-slate-700">${s.team_number ? tableNo : '-'}</td>
+                        <td class="py-4 px-6 text-right whitespace-nowrap">
+                            <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold uppercase px-4 py-2 rounded bg-blue-50 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
                             ${hasTeamAnswer && s.team_number ? `
-                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
-                                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
+                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-4 py-2 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
+                                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-2 rounded bg-indigo-50 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
                             ` : ''}
-                            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all shadow-sm">Revoke</button>
+                            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-4 py-2 rounded bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm">Revoke</button>
                         </td>
                     </tr>
                 `;
@@ -1392,15 +1495,15 @@
         }
 
         async function clearTeamAnswer(teamNumber) {
-            if(!confirm(`Are you sure you want to completely delete the submission for Team ${toRoman(teamNumber)}? The team will be able to submit a new strategy.`)) return;
+            if(!confirm(`Are you sure you want to completely delete the submission for Team ${teamNumber}? The team will be able to submit a new strategy.`)) return;
             await supabaseClient.from('teams').update({ case_answer: null, ranking: null, score: null, disqualified: false }).eq('team_number', teamNumber);
-            fetchRoster(); showToast(`Team ${toRoman(teamNumber)} answer cleared.`);
+            fetchRoster(); showToast(`Team ${teamNumber} answer cleared.`);
         }
 
         function openAnswerModal(teamNumber) {
             const team = globalTeamsData.find(t => t.team_number === teamNumber);
             if(team && team.case_answer) {
-                document.getElementById('modal-team-heading').innerText = `Team ${toRoman(team.team_number)} Strategy Submission`;
+                document.getElementById('modal-team-heading').innerText = `Team ${team.team_number} Strategy Submission`;
                 let displayHTML = '';
                 try {
                         const parsed = JSON.parse(team.case_answer);
@@ -1413,16 +1516,17 @@
                                                 if(item.desc || item.amount) {
                                                         const amt = parseFloat(item.amount) || 0;
                                                         catTotal += amt;
-                                                        rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600 font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800 font-sans">₹${amt.toLocaleString()}</span></div>`;
+                                                        rowsHtml += `<div class="flex justify-between text-sm py-2 border-b border-slate-100 last:border-0"><span class="text-slate-600">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800">₹${amt.toLocaleString()}</span></div>`;
                                                 }
                                         });
                                 }
                                 if(catTotal > 0) {
                                         displayHTML += `
-                                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                                <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2 font-sans">${cat}</h5>
+                                        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative">
+                                                <div class="absolute top-0 left-0 w-full h-0.5 bg-blue-200"></div>
+                                                <h5 class="font-bold text-slate-700 tracking-widest text-xs uppercase mb-3">${cat}</h5>
                                                 ${rowsHtml}
-                                                <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700 font-sans">
+                                                <div class="flex justify-between mt-4 pt-3 border-t border-slate-200 font-bold text-sm text-blue-600">
                                                         <span>Subtotal</span><span>₹${catTotal.toLocaleString()}</span>
                                                 </div>
                                         </div>`;
@@ -1430,11 +1534,11 @@
                                 }
                         });
                         displayHTML += `
-                                <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
+                                <div class="bg-slate-800 p-5 rounded-lg flex justify-between font-bold text-lg text-white mt-6 shadow-sm">
                                         <span>GRAND TOTAL</span><span>₹${grandTotal.toLocaleString()}</span>
                                 </div>
                         </div>`;
-                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200 font-sans">${team.case_answer}</div>`; }
+                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-5 bg-slate-50 rounded-lg border border-slate-200">${team.case_answer}</div>`; }
 
                 document.getElementById('modal-team-answer').innerHTML = displayHTML;
                 document.getElementById('answer-modal').classList.remove('hidden');
@@ -1487,6 +1591,9 @@
             if (session && session.user && session.user.email) {
                 const match = session.user.email.match(/admin(\d+)@/);
                 if (match && match[1]) {
+                    const headerElement = document.querySelector('#global-header');
+                    if(headerElement) headerElement.style.display = 'flex';
+                    document.getElementById('header-menu-btn').classList.add('hidden');
                     return initAdmin(match[1]);
                 }
             }
