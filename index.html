@@ -212,6 +212,43 @@
         </button>
     </div>
 
+    <!-- SCRATCH CARD RESULTS OVERLAY -->
+    <div id="scratch-card-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex-col items-center justify-center p-6 font-sans">
+        <div class="relative w-full max-w-sm h-[450px] bg-surface-container rounded-3xl shadow-[0_0_50px_rgba(255,215,0,0.3)] flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+            <!-- The Underlying Reveal Content -->
+            <div id="scratch-content-area" class="flex flex-col items-center justify-center h-full w-full opacity-100">
+                <span class="material-symbols-outlined text-6xl text-secondary mb-4">trophy</span>
+                <h2 class="text-3xl font-extrabold font-display-lg text-primary mb-2">Final Results</h2>
+                <div class="w-16 h-1 bg-secondary mb-6 rounded"></div>
+                
+                <div class="space-y-4 w-full">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-inner">
+                        <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Global Rank</p>
+                        <p id="scratch-rank" class="text-2xl font-black text-primary font-display-lg"></p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-inner">
+                            <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Percentile</p>
+                            <p id="scratch-percentile" class="text-xl font-bold text-secondary"></p>
+                        </div>
+                        <div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-inner">
+                            <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Raw Score</p>
+                            <p id="scratch-marks" class="text-xl font-bold text-primary"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="dismissScratchCard()" id="btn-close-scratch" class="mt-8 bg-primary text-on-primary font-label-md uppercase px-8 py-3 rounded-xl hover:bg-surface-tint transition-all opacity-0 pointer-events-none">
+                    Close & Celebrate
+                </button>
+            </div>
+            
+            <!-- The Erasable Canvas Layer -->
+            <canvas id="scratch-pad" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+        </div>
+        <p id="scratch-hint-text" class="text-white font-label-md mt-6 tracking-widest uppercase animate-pulse">Use your finger or mouse to scratch!</p>
+    </div>
+
     <!-- Universal TopAppBar (Student) -->
     <header id="global-header" class="bg-background border-b border-outline-variant fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-16 shadow-sm shadow-surface-variant/20 backdrop-blur-md bg-opacity-90">
         <div class="w-full max-w-container-max flex items-center justify-between">
@@ -372,18 +409,6 @@
     <!-- SCREEN 4: Student Main Dashboard (Multi-View) -->
     <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-primary z-10 relative font-sans pt-24 pb-20">
         <div class="w-full max-w-3xl relative">
-            
-            <div id="chocolate-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-500/95 via-orange-600/95 to-amber-700/95 z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fadeUp backdrop-blur-md rounded-2xl h-[60vh] mt-4">
-                <div class="text-6xl sm:text-7xl mb-4 animate-bounceSlow">🍫🎉🍫</div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold font-display-lg tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
-                <p class="text-amber-100 text-sm sm:text-base max-w-md mx-auto mb-6 font-body-md">Congratulations! The Master Admin has rewarded your winning allocation strategy with delicious virtual chocolates!</p>
-                <div class="bg-white/10 border border-white/20 rounded-2xl p-4 w-full max-w-sm mb-6 shadow-inner">
-                    <p id="overlay-team-rank" class="text-lg font-bold font-sans">Your Percentile: Loading...</p>
-                </div>
-                <button onclick="dismissChocolateOverlay()" class="bg-white text-amber-950 font-bold px-8 py-3 rounded-xl text-sm shadow-xl hover:bg-amber-50 transition-all font-sans">
-                    Celebrate & View Results 🏆
-                </button>
-            </div>
 
             <!-- Global Timer Badge (Visible across Home, Program, and Cases) -->
             <div id="student-timer-badge" class="hidden bg-surface-container border border-error/50 px-5 py-2.5 rounded-lg shadow-sm flex items-center justify-between mb-6 mx-auto w-fit gap-4">
@@ -391,15 +416,15 @@
                 <span id="student-timer-clock" class="text-base font-extrabold text-error font-mono">--:--</span>
             </div>
 
+            <!-- Optional Chocolate/Event Banner (Appears if sent via admin but results aren't scratched yet) -->
             <div id="student-results-banner" class="hidden bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold uppercase tracking-widest bg-background/50 px-3 py-1 rounded border border-outline-variant">Final Results Published</span>
-                    <button onclick="reopenChocolateOverlay()" id="student-chocolate-badge" class="hidden bg-secondary text-on-primary font-label-md uppercase tracking-wider text-xs px-4 py-2 rounded shadow-sm hover:bg-secondary/80 transition-all cursor-pointer flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">redeem</span> View Chocolates
+                    <span class="text-[10px] font-bold uppercase tracking-widest bg-background/50 px-3 py-1 rounded border border-outline-variant">Event Update</span>
+                    <button onclick="checkResultsPublished()" class="bg-secondary text-on-primary font-label-md uppercase tracking-wider text-xs px-4 py-2 rounded shadow-sm hover:bg-secondary/80 transition-all cursor-pointer flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">visibility</span> Open Dashboard
                     </button>
                 </div>
-                <h4 id="student-result-status" class="text-3xl font-extrabold font-display-lg tracking-tight mt-2"></h4>
-                <p id="student-result-details" class="text-base text-on-surface-variant font-body-md"></p>
+                <h4 id="student-result-status" class="text-2xl font-bold font-display-lg tracking-tight mt-2">Waiting for final rankings...</h4>
             </div>
 
             <!-- VIEW 1: HOME HUB -->
@@ -535,13 +560,12 @@
             <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation (Relative Percentile)</h3>
                         <p class="text-xs text-slate-500 mt-1">Evaluates Needs, Wants, and Investments with keyword micro-scoring. Scaled to 100th percentile.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
                         <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
-                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">🍫 Send Chocolates</button>
                     </div>
                 </div>
 
@@ -552,13 +576,14 @@
                                 <th class="py-4 px-4 text-center font-semibold">Rank</th>
                                 <th class="py-4 px-4 font-semibold">Team No.</th>
                                 <th class="py-4 px-4 text-center font-semibold">Grand Total</th>
+                                <th class="py-4 px-4 text-center font-semibold">Raw Score</th>
                                 <th class="py-4 px-4 text-center font-semibold">Percentile</th>
                                 <th class="py-4 px-4 text-center font-semibold">Status</th>
                                 <th class="py-4 px-4 text-right font-semibold">Action</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboard-body" class="divide-y divide-slate-100">
-                            <tr><td colspan="6" class="py-8 text-center text-slate-400 italic">Click "Compute Rankings" to evaluate team submissions.</td></tr>
+                            <tr><td colspan="7" class="py-8 text-center text-slate-400 italic">Click "Compute Rankings" to evaluate team submissions.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -754,13 +779,19 @@
         let studentSubjectsList = [];
         let studentCasesList = [];
 
-        let chocolatesShownThisSession = false;
+        let resultsShownThisSession = false;
         let dismissedTwistTime = null;
         let currentlyEditingPrn = null;
         let isBudgetRendered = false;
         let studentClockInterval = null;
         let twistTimerInterval = null;
         let adminClockInterval = null;
+
+        // Scratch Card Variables
+        let isScratching = false;
+        let scratchCanvas = null;
+        let scratchCtx = null;
+        let scratchIsCleared = false;
 
         const budgetCategories = ['Needs', 'Wants', 'Investments'];
         let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], Investments: [{ desc: '', amount: '' }] };
@@ -776,7 +807,7 @@
             { icon: '📱', title: 'Oops... Someone Dropped the Phone!', desc: 'New phone purchase: ₹35,000', cost: 35000, key: 'phone|mobile' }
         ];
 
-        // Safe Anti-Cheating (Blocks clipboard shortcuts for students, allows input typing)
+        // Safe Anti-Cheating
         document.addEventListener('copy', function(e) { if(studentState !== 'admin') e.preventDefault(); });
         document.addEventListener('cut', function(e) { if(studentState !== 'admin') e.preventDefault(); });
         document.addEventListener('paste', function(e) { if(studentState !== 'admin') e.preventDefault(); });
@@ -793,6 +824,114 @@
             document.getElementById('toast-container').appendChild(el);
             setTimeout(() => el.remove(), 4000);
         }
+
+        // --- SCRATCH CARD LOGIC ---
+        function initScratchCard() {
+            scratchCanvas = document.getElementById('scratch-pad');
+            if(!scratchCanvas) return;
+            
+            scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
+            const container = scratchCanvas.parentElement;
+            
+            // Set precise internal canvas dimensions to match the DOM element size
+            scratchCanvas.width = container.offsetWidth;
+            scratchCanvas.height = container.offsetHeight;
+            
+            // Draw luxurious gold texture
+            let gradient = scratchCtx.createLinearGradient(0, 0, scratchCanvas.width, scratchCanvas.height);
+            gradient.addColorStop(0, '#B8860B'); // DarkGoldenRod
+            gradient.addColorStop(0.5, '#FFD700'); // Gold
+            gradient.addColorStop(1, '#DAA520'); // GoldenRod
+            
+            scratchCtx.fillStyle = gradient;
+            scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+            
+            // Add Overlay Text
+            scratchCtx.font = "bold 24px Montserrat";
+            scratchCtx.fillStyle = "#ffffff";
+            scratchCtx.textAlign = "center";
+            scratchCtx.fillText("SCRATCH TO REVEAL!", scratchCanvas.width/2, scratchCanvas.height/2);
+            
+            // Prepare for erasing
+            scratchCtx.globalCompositeOperation = 'destination-out';
+            scratchIsCleared = false;
+            
+            scratchCanvas.addEventListener('mousedown', startScratch);
+            scratchCanvas.addEventListener('touchstart', startScratch, {passive: false});
+            window.addEventListener('mouseup', endScratch);
+            window.addEventListener('touchend', endScratch);
+            scratchCanvas.addEventListener('mousemove', scratch);
+            scratchCanvas.addEventListener('touchmove', scratch, {passive: false});
+        }
+
+        function getScratchPos(e) {
+            let rect = scratchCanvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startScratch(e) {
+            if(scratchIsCleared) return;
+            isScratching = true;
+            scratch(e);
+        }
+        
+        function endScratch() {
+            if(!isScratching) return;
+            isScratching = false;
+            checkScratchPercent();
+        }
+        
+        function scratch(e) {
+            if(!isScratching || scratchIsCleared) return;
+            if(e.cancelable) e.preventDefault(); // prevent pull-to-refresh on mobile while scratching
+            
+            let pos = getScratchPos(e);
+            scratchCtx.beginPath();
+            scratchCtx.arc(pos.x, pos.y, 40, 0, 2 * Math.PI); // 40px brush size
+            scratchCtx.fill();
+        }
+        
+        function checkScratchPercent() {
+            if(scratchIsCleared) return;
+            
+            const pixels = scratchCtx.getImageData(0,0, scratchCanvas.width, scratchCanvas.height).data;
+            let clearPixels = 0;
+            // Check alpha channel (every 4th value)
+            for(let i=3; i<pixels.length; i+=4) {
+                if(pixels[i] === 0) clearPixels++;
+            }
+            
+            let percent = (clearPixels / (pixels.length / 4)) * 100;
+            if(percent > 40) { // If 40% cleared, snap it all away
+                scratchIsCleared = true;
+                scratchCanvas.style.transition = "opacity 0.6s ease-out";
+                scratchCanvas.style.opacity = "0";
+                
+                document.getElementById('scratch-hint-text').classList.add('hidden');
+                
+                setTimeout(() => { 
+                    scratchCanvas.style.pointerEvents = "none"; 
+                    const closeBtn = document.getElementById('btn-close-scratch');
+                    closeBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    closeBtn.classList.add('opacity-100');
+                }, 600);
+            }
+        }
+
+        function dismissScratchCard() {
+            const overlay = document.getElementById('scratch-card-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            
+            // Re-render dashboard to show regular banner if needed
+            renderStudentDash();
+        }
+
 
         function switchTab(tab) {
             const studentForm = document.getElementById('student-form');
@@ -845,7 +984,6 @@
             document.getElementById('student-program-viewer').classList.add('hidden');
             document.getElementById('student-case-viewer').classList.add('hidden');
 
-            // Manage global timer visibility across all student views
             manageStudentTimer();
 
             if (studentDashView === 'home') {
@@ -974,12 +1112,17 @@
                 checkPlotTwist(); 
             }
 
+            const timerBadge = document.getElementById('student-timer-badge');
+            if (myConfig.timer_end_time && studentCasesList.length > 0) {
+                if(timerBadge) timerBadge.classList.remove('hidden');
+            } else {
+                if(timerBadge) timerBadge.classList.add('hidden');
+            }
+
             if (myConfig.results_published && myTeamNumber) fetchTeamResult(myTeamNumber);
             else {
                 const resultsBanner = document.getElementById('student-results-banner');
-                const badge = document.getElementById('student-chocolate-badge');
                 if(resultsBanner) resultsBanner.classList.add('hidden');
-                if(badge) badge.classList.add('hidden');
             }
         }
 
@@ -1040,46 +1183,41 @@
             if (teamRows && teamRows.length > 0) {
                 const team = teamRows[0];
                 if (team.ranking !== null && team.ranking !== undefined) {
+                    
                     const banner = document.getElementById('student-results-banner');
                     const statusEl = document.getElementById('student-result-status');
-                    const detailsEl = document.getElementById('student-result-details');
-                    const chocBadge = document.getElementById('student-chocolate-badge');
                     
+                    // Display regular banner logic for fallback/viewing
                     if(banner) banner.classList.remove('hidden');
-                    if (team.disqualified) {
-                        if(statusEl) statusEl.innerText = `Disqualified`;
-                        if(detailsEl) detailsEl.innerText = `Reason: Total budget (₹${team.grand_total || 0}) exceeded the maximum allowable limit.`;
-                        if(banner) banner.className = "bg-surface-container-highest border-l-4 border-error p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4";
-                        if(chocBadge) chocBadge.classList.add('hidden');
-                    } else {
-                        if(statusEl) statusEl.innerText = `${team.percentile || 0}th Percentile 🎉`;
-                        if(detailsEl) detailsEl.innerText = `Total Budget Allocated: ₹${team.grand_total}`;
-                        if(banner) banner.className = "bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4";
+                    if(statusEl) statusEl.innerText = team.disqualified ? `Disqualified` : `${team.percentile || 0}th Percentile 🎉`;
+                    
+                    // SCRATCH CARD TRIGGER LOGIC
+                    if (!resultsShownThisSession && !team.disqualified && (studentState === 'dashboard' || studentState === 'home' || studentState === 'program' || studentState === 'cases')) {
+                        const scratchOverlay = document.getElementById('scratch-card-overlay');
                         
-                        if (myConfig.chocolates_sent) {
-                            if(chocBadge) chocBadge.classList.remove('hidden');
-                            const overlayRank = document.getElementById('overlay-team-rank');
-                            if(overlayRank) overlayRank.innerText = `Your Team Secured the ${team.percentile || 0}th Percentile! 🏆`;
-                            if (!chocolatesShownThisSession && (studentState === 'dashboard' || studentState === 'home' || studentState === 'program' || studentState === 'cases')) {
-                                const chocOverlay = document.getElementById('chocolate-overlay');
-                                if(chocOverlay) chocOverlay.classList.remove('hidden');
-                                chocolatesShownThisSession = true;
-                            }
-                        } else {
-                            if(chocBadge) chocBadge.classList.add('hidden');
+                        document.getElementById('scratch-rank').innerText = `#${team.ranking}`;
+                        document.getElementById('scratch-percentile').innerText = `${team.percentile || 0} %ile`;
+                        document.getElementById('scratch-marks').innerText = `${team.score || 0}`; // Assuming score holds raw
+                        
+                        if(scratchOverlay) {
+                            scratchOverlay.classList.remove('hidden');
+                            scratchOverlay.classList.add('flex');
+                            
+                            // Initialize Canvas
+                            scratchCanvas = document.getElementById('scratch-pad');
+                            scratchCanvas.style.opacity = "1";
+                            scratchCanvas.style.pointerEvents = "auto";
+                            document.getElementById('scratch-hint-text').classList.remove('hidden');
+                            document.getElementById('btn-close-scratch').classList.add('opacity-0', 'pointer-events-none');
+                            document.getElementById('btn-close-scratch').classList.remove('opacity-100');
+                            
+                            setTimeout(initScratchCard, 50); // small delay to ensure DOM sizing
+                            
+                            resultsShownThisSession = true;
                         }
                     }
                 }
             }
-        }
-
-        function dismissChocolateOverlay() { 
-            const overlay = document.getElementById('chocolate-overlay');
-            if(overlay) overlay.classList.add('hidden'); 
-        }
-        function reopenChocolateOverlay() { 
-            const overlay = document.getElementById('chocolate-overlay');
-            if(overlay) overlay.classList.remove('hidden'); 
         }
 
         function manageStudentTimer() {
@@ -1108,7 +1246,7 @@
                     clearInterval(studentClockInterval);
                     if(clock) {
                         clock.innerText = "TIME'S UP";
-                        clock.className = "text-base font-extrabold text-error";
+                        clock.className = "text-base font-extrabold text-error font-mono";
                     }
                     if (notice) notice.classList.add('hidden');
                     if(builder && submitBtn && !submitBtn.classList.contains('bg-secondary')) {
@@ -1301,7 +1439,7 @@
                             
                             if (btn) {
                                 btn.innerText = 'Submitted by Team ✓';
-                                btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-sm cursor-not-allowed font-sans';
+                                btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-md cursor-not-allowed font-sans';
                                 btn.disabled = true;
                             }
                             if(builder) {
@@ -1363,7 +1501,7 @@
             } else {
                 showToast('Team strategy submitted successfully!');
                 btn.innerText = 'Submitted by Team ✓';
-                btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-sm cursor-not-allowed font-sans';
+                btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-md cursor-not-allowed font-sans';
                 const builder = document.getElementById('budget-builder-container');
                 if(builder) builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
             }
@@ -1646,6 +1784,7 @@
 
                     let rawScore = Math.max(0, macroScore + needsScore + wantsScore + invScore + twistScore);
 
+                    // We store rawScore in `score` to keep the DB schema simple, and calculate percentile next
                     evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, raw_score: rawScore, disqualified: false, submitted_at: team.submitted_at || '9999-99-99' });
                 } catch (e) {}
             });
@@ -1668,7 +1807,8 @@
             for (let i = 0; i < evaluatedTeams.length; i++) {
                 let t = evaluatedTeams[i];
                 t.ranking = t.disqualified ? null : rankCounter++;
-                await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.percentile, disqualified: t.disqualified, grand_total: t.grand_total, percentile: t.percentile }).eq('team_number', t.team_number);
+                // explicitly save the raw score to 'score' and relative percentile to 'percentile'
+                await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.raw_score, disqualified: t.disqualified, grand_total: t.grand_total, percentile: t.percentile }).eq('team_number', t.team_number);
             }
 
             renderLeaderboard(evaluatedTeams);
@@ -1680,7 +1820,7 @@
             if(!tbody) return;
 
             if(teamsList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic font-sans">No submitted answers available to rank.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic font-sans">No submitted answers available to rank.</td></tr>`;
                 return;
             }
 
@@ -1688,7 +1828,8 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="py-4 px-4 font-bold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
                     <td class="py-4 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-4 px-4 text-center font-semibold text-secondary font-sans">₹${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-4 text-center font-semibold text-slate-700 font-sans">₹${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-4 text-center font-bold text-slate-800 font-sans">${t.disqualified ? 'N/A' : (t.raw_score !== undefined ? t.raw_score : t.score)}</td>
                     <td class="py-4 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : (t.percentile !== undefined ? t.percentile : t.score) + ' %ile'}</td>
                     <td class="py-4 px-4 text-center font-sans">
                         ${t.disqualified ? '<span class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
@@ -1723,7 +1864,7 @@
             if(data) {
                 globalTeamsData = data;
                 let formatted = data.filter(t => t.case_answer).map(t => ({
-                    team_number: t.team_number, grand_total: t.grand_total || 0, score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
+                    team_number: t.team_number, grand_total: t.grand_total || 0, raw_score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
                 }));
                 renderLeaderboard(formatted);
             }
@@ -1795,7 +1936,7 @@
                                 <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
                                 <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-1.5 rounded bg-indigo-50 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
                             ` : ''}
-                            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 border border-red-100 transition-all shadow-sm">Revoke</button>
+                            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm">Revoke</button>
                         </td>
                     </tr>
                 `;
@@ -1867,26 +2008,11 @@
             fetchRoster(); showToast('All participants and submissions have been deleted.');
         }
 
-        async function startCaseTimerWithBudget() {
-            const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
-            const maxBgt = parseFloat(document.getElementById('org-max-budget').value) || 10000;
-            const endTime = new Date(Date.now() + mins * 60000).toISOString();
-            
-            myConfig.timer_end_time = endTime;
-            myConfig.max_budget = maxBgt;
-
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Database Error: ' + error.message);
-            else {
-                showToast(`Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`);
-                manageAdminTimer();
-            }
-        }
-
         function logout() {
             if (currentlyEditingPrn) supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
             if(pollInterval) clearInterval(pollInterval);
             if(adminClockInterval) clearInterval(adminClockInterval);
+            if(twistTimerInterval) clearInterval(twistTimerInterval);
             supabaseClient.auth.signOut(); 
             
             const headerElement = document.querySelector('#global-header');
