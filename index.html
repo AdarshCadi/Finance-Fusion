@@ -110,40 +110,9 @@
         }
     </script>
     <style>
-        /* ── Base ── */
+        /* ── Base & Interactivity ── */
         body { overflow-x: hidden; }
-        
-        /* ── Input Glow (New UI) ── */
         .input-glow:focus { box-shadow: 0 2px 0 0 theme('colors.secondary'); }
-        
-        /* ── Smooth Fade ── */
-        .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ── Dashboard Styles (Old Logic) ── */
-        .clean-panel { 
-            background: #ffffff; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
-            border-radius: 1.5rem;
-        }
-        .input-field { 
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #0f172a;
-            transition: all 0.2s ease; 
-        }
-        .input-field:focus { 
-            background: #ffffff;
-            border-color: #3b82f6; 
-            box-shadow: 0 0 0 4px #eff6ff; 
-            outline: none; 
-        }
-        .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-
-        /* ── Screen Transitions ── */
-        .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
-        .screen.active { display: flex; opacity: 1; transform: translateY(0); }
         
         /* ── Texture Overlay ── */
         .bg-grain { position: relative; }
@@ -153,16 +122,33 @@
             pointer-events: none; z-index: 0;
         }
 
-        /* ── Custom Animations for the 'Astrolabe' Loader ── */
+        /* ── Screen Transitions & Fades ── */
+        .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
+        .screen.active { display: flex; opacity: 1; transform: translateY(0); }
+        .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes subtleReveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .reveal-anim { animation: subtleReveal 1s ease-out forwards; }
+
+        /* ── Custom Animations for Astrolabe ── */
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes spin-slow-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
         @keyframes pulse-glow { 0%, 100% { opacity: 0.8; box-shadow: 0 0 15px rgba(119, 90, 25, 0.2); } 50% { opacity: 1; box-shadow: 0 0 25px rgba(119, 90, 25, 0.6); } }
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
         .animate-spin-slow { animation: spin-slow 16s linear infinite; }
         .animate-spin-slow-reverse { animation: spin-slow-reverse 24s linear infinite; }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
         .animate-fade-in { animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* ── Dashboard Base Styles ── */
+        .clean-panel { 
+            background: #ffffff; border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
+            border-radius: 1.5rem;
+        }
+        .input-field { background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; transition: all 0.2s ease; }
+        .input-field:focus { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 4px #eff6ff; outline: none; }
+        .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
         /* ── Minimal Toasts ── */
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
@@ -172,8 +158,6 @@
             color: #0f172a; animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
         }
         @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-        /* ── Scrollbar customization ── */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -191,26 +175,25 @@
     <!-- Background Texture Overlay (Global) -->
     <div class="fixed inset-0 pointer-events-none z-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/parchment.png')] mix-blend-multiply"></div>
 
-    <!-- SCREEN 1: Login / Register (NEW ACADEMIC UI) -->
-    <div id="login-register-screen" class="screen active w-full flex-col min-h-screen relative z-10">
-        
-        <!-- TopAppBar -->
-        <header class="bg-background border-b border-outline-variant fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-16 shadow-sm shadow-surface-variant/20 backdrop-blur-md bg-opacity-90">
-            <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'wght' 300;">menu_book</span>
-                <span class="text-headline-md font-headline-md tracking-[0.2em] text-primary uppercase">FinFusion</span>
-            </div>
-        </header>
+    <!-- Universal TopAppBar -->
+    <header id="global-header" class="bg-background border-b border-outline-variant fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-16 shadow-sm shadow-surface-variant/20 backdrop-blur-md bg-opacity-90">
+        <div class="w-full max-w-container-max flex items-center justify-between">
+            <button aria-label="Menu" class="p-2 -ml-2 text-primary hover:text-secondary transition-colors duration-300 opacity-80">
+                <span class="material-symbols-outlined text-2xl" data-icon="menu_book">menu_book</span>
+            </button>
+            <h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-md md:font-headline-md tracking-[0.2em] text-primary absolute left-1/2 -translate-x-1/2 uppercase">FinFusion</h1>
+            <div class="w-10"></div> <!-- Spacer for centering -->
+        </div>
+    </header>
 
-        <!-- Main Content -->
-        <main class="flex-grow flex flex-col items-center justify-center w-full relative z-10 px-margin-mobile pt-24 pb-24">
-            <!-- Form Container / Card -->
+    <!-- SCREEN 1: Login / Register -->
+    <div id="login-register-screen" class="screen active w-full flex-col min-h-screen relative z-10 pt-24 pb-24">
+        <main class="flex-grow flex flex-col items-center justify-center w-full px-margin-mobile">
+            <!-- Form Container -->
             <div class="w-full max-w-[460px] bg-surface-container-lowest relative border border-outline-variant rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)]">
-                <!-- Scholarly Gold Top Accent -->
                 <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary"></div>
                 
                 <div class="p-10 md:p-14">
-                    <!-- Header -->
                     <div class="text-center mb-10 flex flex-col items-center">
                         <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant mb-6">
                             <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'wght' 300, 'FILL' 0;">draw</span>
@@ -219,7 +202,7 @@
                         <p class="font-body-md text-body-md text-on-surface-variant max-w-[280px] mx-auto" id="subtitle-text">We’re excited to have you! Please give us your name and PRN so we know who to blame when the numbers start dancing.</p>
                     </div>
 
-                    <!-- Sleek Segmented Control -->
+                    <!-- Segmented Control -->
                     <div class="flex border-b border-outline-variant mb-10">
                         <button class="flex-1 py-3 text-label-md font-label-md uppercase tracking-wider text-secondary border-b-[3px] border-secondary transition-all" id="tab-student" onclick="switchTab('student')">Student</button>
                         <button class="flex-1 py-3 text-label-md font-label-md uppercase tracking-wider text-on-surface-variant border-b-[3px] border-transparent hover:text-primary transition-all" id="tab-admin" onclick="switchTab('admin')">Master Admin</button>
@@ -227,21 +210,17 @@
 
                     <!-- Student Enrollment Form -->
                     <form id="student-form" class="flex flex-col gap-10 fade-in" onsubmit="handleStudentRegistration(event)">
-                        <!-- Student Name Input -->
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="student-name" name="student_name" placeholder="Full Legal Name" required="" type="text">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-name">Full Legal Name</label>
                         </div>
-                        <!-- PRN Number Input -->
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="student-prn" name="student_prn" placeholder="Your PRN" required="" type="text">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-prn">Your PRN</label>
                         </div>
-                        <!-- Call to Action Button -->
                         <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container to-background border border-secondary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-surface-container-low transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden" type="submit">
                             <span class="relative z-10">Join Activity</span>
                             <span class="material-symbols-outlined relative z-10 text-xl transition-transform duration-300 group-hover:translate-x-1" style="font-variation-settings: 'wght' 300;">all_inclusive</span>
-                            <div class="absolute inset-0 bg-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                         </button>
                         <div class="mt-4 text-center">
                             <p class="font-label-md text-label-md text-primary tracking-wider uppercase">Let the Dancing Begin!</p>
@@ -250,22 +229,18 @@
 
                     <!-- Master Admin Form -->
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
-                        <!-- Admin ID Input -->
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID (1 - 50)" required="" type="number" min="1" max="50">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (1 - 50)</label>
                         </div>
-                        <!-- Password Input -->
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-password">Password</label>
                             <p class="text-[11px] text-on-surface-variant mt-2 tracking-wide font-caption">*First-time login securely sets your permanent password.</p>
                         </div>
-                        <!-- Call to Action Button -->
                         <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container-highest to-surface-variant border border-primary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-outline-variant transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden" type="submit">
                             <span class="relative z-10">Access Command Center</span>
                             <span class="material-symbols-outlined relative z-10 text-xl transition-transform duration-300 group-hover:translate-x-1" style="font-variation-settings: 'wght' 300;">admin_panel_settings</span>
-                            <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                         </button>
                         <div class="mt-4 text-center">
                             <p class="font-label-md text-label-md text-primary tracking-wider uppercase">Lead the Strategy</p>
@@ -274,18 +249,79 @@
                 </div>
             </div>
         </main>
-
-        <!-- Footer -->
-        <footer class="bg-surface-container border-t border-outline-variant opacity-90 w-full py-unit flex flex-col items-center gap-4 px-margin-mobile relative z-20 mt-auto pt-8 pb-6">
-            <p class="text-label-md font-label-md text-on-surface-variant text-center tracking-wider uppercase">CICM presented by PES University</p>
-        </footer>
     </div>
 
-    <!-- SCREEN 2: Student Dashboard -->
-    <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-3 sm:p-4 text-slate-800 z-10 relative font-sans">
+    <!-- SCREEN 2: Student Astrolabe Waiting -->
+    <div id="student-waiting-screen" class="screen w-full min-h-screen items-center justify-center pt-24 pb-24 relative z-10">
+        <main class="relative z-10 flex flex-col items-center justify-center p-margin-mobile w-full max-w-2xl mx-auto opacity-0 animate-fade-in">
+            <div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-12">
+                <svg class="absolute inset-0 w-full h-full text-outline opacity-20" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" fill="none" r="49" stroke="currentColor" stroke-width="0.25"></circle>
+                    <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="1 3" stroke-width="0.5"></circle>
+                </svg>
+                <svg class="absolute inset-0 w-full h-full text-secondary opacity-60 animate-spin-slow" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" fill="none" r="43" stroke="currentColor" stroke-width="0.75"></circle>
+                    <circle cx="50" cy="50" fill="none" r="39" stroke="currentColor" stroke-dasharray="2 6" stroke-width="0.5"></circle>
+                    <circle cx="50" cy="7" fill="currentColor" r="1.5"></circle>
+                </svg>
+                <svg class="absolute w-[75%] h-[75%] text-secondary opacity-80 animate-spin-slow-reverse" viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(30 50 50)"></ellipse>
+                    <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(-30 50 50)"></ellipse>
+                    <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(90 50 50)"></ellipse>
+                </svg>
+                <div class="w-3 h-3 md:w-4 md:h-4 bg-primary rotate-45 animate-pulse-glow flex items-center justify-center relative z-20">
+                    <div class="absolute inset-0 border border-secondary scale-150 rotate-45 opacity-50"></div>
+                </div>
+                <div class="absolute w-24 h-24 bg-secondary rounded-full blur-[40px] opacity-10"></div>
+            </div>
+            
+            <div class="text-center flex flex-col items-center gap-4">
+                <div class="w-12 h-px bg-secondary opacity-40 mb-2"></div>
+                <h1 class="font-display-lg text-display-lg text-primary tracking-tight">Searching for your partner...</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">Consulting the archives and aligning profiles to find your most compatible scholarly match. Please wait a moment.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCREEN 3: Partner Reveal -->
+    <div id="student-reveal-screen" class="screen w-full min-h-screen flex-col items-center justify-center pt-24 pb-24 relative z-10">
+        <main class="flex-grow flex flex-col items-center justify-center px-margin-mobile w-full">
+            <div class="w-full max-w-2xl mx-auto flex flex-col items-center text-center reveal-anim">
+                <div class="mb-unit">
+                    <span class="px-3 py-1 bg-surface-variant text-primary text-label-md font-label-md rounded border border-outline-variant uppercase tracking-widest">Match Confirmed</span>
+                </div>
+                <h2 class="text-headline-md font-headline-md text-primary mt-6 mb-10 max-w-md">Meet your partner-in-crime for the day!</h2>
+                
+                <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-10 flex flex-col items-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
+                    <h3 id="reveal-partner-names" class="text-display-lg font-display-lg text-primary leading-tight mb-8">[Partner Name]</h3>
+                    
+                    <div class="flex flex-col gap-4 mb-10">
+                        <div class="flex items-center gap-2 justify-center">
+                            <span class="text-label-md font-label-md uppercase tracking-widest text-on-surface-variant">Team</span>
+                            <span id="reveal-team-number" class="text-headline-md font-headline-md text-primary">[Number]</span>
+                        </div>
+                        <div class="flex items-center gap-2 justify-center">
+                            <span class="text-label-md font-label-md uppercase tracking-widest text-on-surface-variant">Table</span>
+                            <span id="reveal-table-number" class="text-headline-md font-headline-md text-primary">[Number]</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-24 h-px bg-secondary opacity-40 mb-10"></div>
+                    
+                    <button onclick="goToDashboard()" class="bg-gradient-to-b from-surface-container to-background border border-secondary text-primary text-label-md font-label-md uppercase px-12 py-4 rounded hover:bg-surface-variant transition-colors shadow-sm flex items-center gap-2 group">
+                        Get Started<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCREEN 4: Student Main Dashboard -->
+    <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-3 sm:p-4 text-slate-800 z-10 relative font-sans pt-24">
         <div class="w-full max-w-2xl clean-panel p-4 sm:p-8 relative overflow-hidden my-4 sm:my-6">
             
-            <!-- Big Screen Chocolate Winner Celebration Overlay -->
+            <!-- Chocolate Winner Celebration Overlay -->
             <div id="chocolate-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-500/95 via-orange-600/95 to-amber-700/95 z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fadeUp backdrop-blur-md">
                 <div class="text-6xl sm:text-7xl mb-4 animate-bounceSlow">🍫🎉🍫</div>
                 <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
@@ -298,129 +334,69 @@
                 </button>
             </div>
 
-            <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10" id="student-header-banner">
-                <h2 class="font-semibold text-lg tracking-tight">Student Event Hub</h2>
-                <span class="text-xs font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">Active Session</span>
-            </div>
-            
-            <!-- Waiting State (NEW ASTROLABE UI) -->
-            <div id="student-waiting" class="py-10 text-center relative z-10">
-                <main class="relative z-10 flex flex-col items-center justify-center p-margin-mobile w-full max-w-2xl mx-auto opacity-0 animate-fade-in">
-                    <!-- Modern-Ancient Indicator: Stylized Astrolabe / Orbiting Rings -->
-                    <div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-12">
-                        <!-- Outer Fixed Measurement Ring -->
-                        <svg class="absolute inset-0 w-full h-full text-outline opacity-20" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" fill="none" r="49" stroke="currentColor" stroke-width="0.25"></circle>
-                            <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="1 3" stroke-width="0.5"></circle>
-                        </svg>
-                        <!-- Rotating Outer Ring (Gold) -->
-                        <svg class="absolute inset-0 w-full h-full text-secondary opacity-60 animate-spin-slow" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" fill="none" r="43" stroke="currentColor" stroke-width="0.75"></circle>
-                            <circle cx="50" cy="50" fill="none" r="39" stroke="currentColor" stroke-dasharray="2 6" stroke-width="0.5"></circle>
-                            <!-- Celestial Marker -->
-                            <circle cx="50" cy="7" fill="currentColor" r="1.5"></circle>
-                        </svg>
-                        <!-- Inner Intersecting Orbits -->
-                        <svg class="absolute w-[75%] h-[75%] text-secondary opacity-80 animate-spin-slow-reverse" viewBox="0 0 100 100">
-                            <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(30 50 50)"></ellipse>
-                            <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(-30 50 50)"></ellipse>
-                            <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(90 50 50)"></ellipse>
-                        </svg>
-                        <!-- Central Core / Philosopher's Stone -->
-                        <div class="w-3 h-3 md:w-4 md:h-4 bg-primary rotate-45 animate-pulse-glow flex items-center justify-center relative z-20">
-                            <div class="absolute inset-0 border border-secondary scale-150 rotate-45 opacity-50"></div>
-                        </div>
-                        <!-- Ambient shadow behind the core -->
-                        <div class="absolute w-24 h-24 bg-secondary rounded-full blur-[40px] opacity-10"></div>
-                    </div>
-                    <!-- Typography Cluster -->
-                    <div class="text-center flex flex-col items-center gap-4">
-                        <!-- Decorative Scholar Line -->
-                        <div class="w-12 h-px bg-secondary opacity-40 mb-2"></div>
-                        <h1 class="font-display-lg text-display-lg text-primary tracking-tight">
-                            Searching for your partner...
-                        </h1>
-                        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">
-                            Consulting the archives and aligning profiles to find your most compatible scholarly match. Please wait a moment.
-                        </p>
-                    </div>
-                </main>
+            <!-- Dashboard Details Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 gap-4 mb-6 relative z-10">
+                <div>
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Your Allocation</p>
+                    <h3 class="text-2xl font-extrabold tracking-tight">Team <span id="dash-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span></h3>
+                </div>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-sm shadow-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-slate-600 font-medium">Table</span>
+                    <strong class="text-slate-800 text-base" id="dash-table-number"></strong>
+                </div>
             </div>
 
-            <!-- Assigned State -->
-            <div id="student-assigned" class="hidden space-y-6 relative z-10">
-                <!-- Team & Table Card -->
-                <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 gap-4">
-                    <div>
-                        <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Your Allocation</p>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                            Team <span id="assigned-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span>
-                        </h3>
-                    </div>
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-sm shadow-sm">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-slate-600 font-medium">Table</span>
-                        <strong class="text-slate-800 text-base" id="assigned-table-number"></strong>
-                    </div>
+            <!-- Teammates Grid -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 mb-6 relative z-10">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Your Teammates</h4>
+                <ul id="assigned-partners-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium">
+                    <!-- Populated dynamically via JS -->
+                </ul>
+            </div>
+
+            <!-- Results Banner -->
+            <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-3 mb-6 relative z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
+                    <button onclick="reopenChocolateOverlay()" id="student-chocolate-badge" class="hidden bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-sm hover:bg-amber-300 transition-all cursor-pointer">🍫 View Chocolates</button>
+                </div>
+                <h4 id="student-result-status" class="text-2xl font-extrabold tracking-tight mt-1"></h4>
+                <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
+            </div>
+
+            <!-- Case Study Stream -->
+            <div class="space-y-4 pt-2 border-t border-slate-100 relative z-10">
+                <div class="bg-blue-50/60 p-4 sm:p-5 rounded-2xl border border-blue-100">
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Subject 1 Basics</span>
+                    <h4 id="student-subject-title" class="text-base sm:text-lg font-bold mt-1 mb-2">Awaiting Subject Brief...</h4>
+                    <p id="student-subject-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the subject brief yet.</p>
                 </div>
 
-                <!-- Teammates Grid -->
-                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Your Teammates</h4>
-                    <ul id="assigned-partners-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium">
-                        <!-- Populated dynamically via JS -->
-                    </ul>
-                </div>
-
-                <!-- Results Banner -->
-                <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
-                        <button onclick="reopenChocolateOverlay()" id="student-chocolate-badge" class="hidden bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-sm hover:bg-amber-300 transition-all cursor-pointer">🍫 View Chocolates</button>
-                    </div>
-                    <h4 id="student-result-status" class="text-2xl font-extrabold tracking-tight mt-1"></h4>
-                    <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
-                </div>
-
-                <!-- Live Content Stream (Subject & Case 1) -->
-                <div class="space-y-4 pt-2 border-t border-slate-100">
-                    <div class="bg-blue-50/60 p-4 sm:p-5 rounded-2xl border border-blue-100">
-                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Subject 1 Basics</span>
-                        <h4 id="student-subject-title" class="text-base sm:text-lg font-bold mt-1 mb-2">Awaiting Subject Brief...</h4>
-                        <p id="student-subject-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the subject brief yet.</p>
-                    </div>
-
-                    <div class="bg-indigo-50/60 p-4 sm:p-5 rounded-2xl border border-indigo-100 relative">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
-                                <h4 id="student-case-title" class="text-base sm:text-lg font-bold mt-1 mb-2">Awaiting Case Details...</h4>
-                            </div>
-                            <!-- Timer Display Corner Widget -->
-                            <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right flex-shrink-0 ml-2">
-                                <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Left</span>
-                                <span id="student-timer-clock" class="text-xs sm:text-sm font-extrabold text-rose-600">--:--</span>
-                            </div>
+                <div class="bg-indigo-50/60 p-4 sm:p-5 rounded-2xl border border-indigo-100 relative">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
+                            <h4 id="student-case-title" class="text-base sm:text-lg font-bold mt-1 mb-2">Awaiting Case Details...</h4>
                         </div>
+                        <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right flex-shrink-0 ml-2">
+                            <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Left</span>
+                            <span id="student-timer-clock" class="text-xs sm:text-sm font-extrabold text-rose-600">--:--</span>
+                        </div>
+                    </div>
 
-                        <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
-                        
-                        <!-- Dynamic Allocation Strategy Builder -->
-                        <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
-                            <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
-                            
-                            <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs sm:text-sm font-medium mb-4">
-                                ⏳ Waiting for Master Admin to start the submission timer... Inputs are currently locked.
-                            </div>
-
-                            <!-- Interactive Budget Tool Container -->
-                            <div id="budget-builder-container" class="space-y-4 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
-
-                            <div class="flex justify-end mt-5">
-                                <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="w-full sm:w-auto bg-slate-400 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed" disabled>
-                                    Submit Strategy
-                                </button>
-                            </div>
+                    <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
+                    
+                    <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
+                        <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
+                        <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs sm:text-sm font-medium mb-4">
+                            ⏳ Waiting for Master Admin to start the submission timer... Inputs are currently locked.
+                        </div>
+                        <div id="budget-builder-container" class="space-y-4 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
+                        <div class="flex justify-end mt-5">
+                            <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="w-full sm:w-auto bg-slate-400 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed" disabled>
+                                Submit Strategy
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -428,11 +404,10 @@
         </div>
     </div>
 
-    <!-- SCREEN 3: Master Admin Dashboard -->
-    <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-3 sm:p-4 md:p-8 text-slate-800 z-10 relative font-sans">
+    <!-- SCREEN 5: Master Admin Dashboard -->
+    <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-3 sm:p-4 md:p-8 text-slate-800 z-10 relative font-sans pt-24">
         <div class="max-w-7xl mx-auto w-full space-y-6">
             
-            <!-- Header -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 clean-panel p-4 sm:p-5">
                 <div>
                     <h2 class="font-bold text-xl tracking-tight">Master Admin Command Center</h2>
@@ -449,7 +424,7 @@
                 </div>
             </div>
 
-            <!-- Settings Panel -->
+            <!-- Settings -->
             <div id="org-settings" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-blue-500 mb-6 space-y-4">
                 <h3 class="font-semibold tracking-tight">Event Configurations</h3>
                 <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
@@ -471,7 +446,7 @@
                 </div>
             </div>
 
-            <!-- Evaluation & Leaderboard Panel -->
+            <!-- Leaderboard -->
             <div id="org-evaluation-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -479,15 +454,9 @@
                         <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                        <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
-                            Compute Rankings
-                        </button>
-                        <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">
-                            Publish Results
-                        </button>
-                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm">
-                            🍫 Send Chocolates
-                        </button>
+                        <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
+                        <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
+                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm">🍫 Send Chocolates</button>
                     </div>
                 </div>
 
@@ -510,12 +479,11 @@
                 </div>
             </div>
 
-            <!-- Subject 1 & Case 1 Content Broadcasting Panel -->
+            <!-- Broadcast Content -->
             <div id="org-content-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-blue-600 mb-6 space-y-6">
                 <h3 class="font-bold text-lg tracking-tight">Broadcast Subject & Case Context</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Subject 1 Section -->
                     <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
                         <h4 class="font-semibold text-sm uppercase tracking-wide">Subject 1 Basics</h4>
                         <div>
@@ -527,13 +495,10 @@
                             <textarea id="org-subject-content" rows="4" class="input-field w-full p-3 rounded-xl font-medium" placeholder="Enter fundamental concepts or notes..."></textarea>
                         </div>
                         <div class="flex justify-end pt-2">
-                            <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">
-                                Publish Subject Only
-                            </button>
+                            <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">Publish Subject Only</button>
                         </div>
                     </div>
 
-                    <!-- Case 1 Section, Timer Control & Max Allocatable Budget -->
                     <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
                         <h4 class="font-semibold text-sm uppercase tracking-wide">Case Study 1, Budget & Timer</h4>
                         <div>
@@ -545,7 +510,7 @@
                             <textarea id="org-case-content" rows="2" class="input-field w-full p-3 rounded-xl font-medium" placeholder="Enter scenario details and questions..."></textarea>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-rose-600 font-bold mb-1 uppercase tracking-wider">Max Allocatable Budget (Hidden from Students)</label>
+                            <label class="block text-xs font-medium text-rose-600 font-bold mb-1 uppercase tracking-wider">Max Allocatable Budget (Hidden)</label>
                             <input type="number" id="org-max-budget" class="input-field w-full p-2.5 rounded-xl font-bold text-rose-600" placeholder="e.g. 10000" />
                         </div>
                         
@@ -554,18 +519,14 @@
                                 <label class="block text-xs font-medium text-slate-500 mb-1">Timer Duration (Mins)</label>
                                 <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="input-field w-full p-2.5 rounded-xl text-center font-medium" />
                             </div>
-                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">
-                                Start Timer & Budget
-                            </button>
+                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer & Budget</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
                     <span class="text-xs text-slate-500 font-medium">* Use "Publish Case Details" to make text visible. Use "Start Timer & Budget" to lock in rules and open submissions.</span>
-                    <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">
-                        Publish Case Details
-                    </button>
+                    <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">Publish Case Details</button>
                 </div>
             </div>
 
@@ -579,9 +540,7 @@
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                     </div>
-                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">
-                        Clear All
-                    </button>
+                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">Clear All</button>
                 </div>
                 <div class="overflow-auto flex-1 bg-white">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -601,7 +560,7 @@
         </div>
     </div>
 
-    <!-- Admin Modal for Editing Student Details (With Ultra-Secure Tab Lock) -->
+    <!-- Admin Modal for Editing Student -->
     <div id="edit-student-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 font-sans text-slate-800">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeUp">
             <div class="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 bg-slate-50">
@@ -619,7 +578,7 @@
                     <input type="text" id="edit-student-prn" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Assigned Team (Leave empty if waiting)</label>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Assigned Team</label>
                     <input type="number" id="edit-student-team" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" placeholder="e.g. 1" />
                 </div>
             </div>
@@ -630,7 +589,7 @@
         </div>
     </div>
 
-    <!-- Admin Modal for Viewing Team Answers -->
+    <!-- Admin Modal for Viewing Answer -->
     <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 font-sans text-slate-800">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
             <div class="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
@@ -650,6 +609,12 @@
         </div>
     </div>
 
+    <!-- Universal Footer -->
+    <footer class="bg-surface-container border-t border-outline-variant opacity-90 w-full py-unit flex flex-col items-center gap-4 px-margin-mobile relative z-20 mt-auto pt-8 pb-6">
+        <p class="text-label-md font-label-md text-primary tracking-widest uppercase mb-2">LET THE DANCING BEGIN!</p>
+        <p class="text-caption font-caption text-on-surface-variant mb-4">CICM presented by PES University</p>
+    </footer>
+
     <div class="toast-container font-sans" id="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -659,27 +624,22 @@
         const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-        // UNIQUE TAB ID: Guarantees even two tabs in the same browser won't overlap edit locks
         const adminSessionId = 'admin_tab_' + Math.random().toString(36).substr(2, 9);
 
         let pollInterval = null;
         let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false, chocolates_sent: false };
         let globalTeamsData = [];
         let globalStudentsData = [];
+        
         let myTeamNumber = null;
+        let studentState = 'login'; // login, waiting, reveal, dashboard
         let chocolatesShownThisSession = false;
         let currentlyEditingPrn = null;
-        
         let isBudgetRendered = false;
         let studentClockInterval = null;
 
-        // --- STUDENT BUDGET STATE ---
         const budgetCategories = ['Needs', 'Wants', 'Investments'];
-        let budgetState = {
-            Needs: [{ desc: '', amount: '' }],
-            Wants: [{ desc: '', amount: '' }],
-            Investments: [{ desc: '', amount: '' }]
-        };
+        let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], Investments: [{ desc: '', amount: '' }] };
 
         function showToast(msg) {
             const el = document.createElement('div');
@@ -696,37 +656,23 @@
             const subtitleText = document.getElementById('subtitle-text');
 
             if (tab === 'student') {
-                studentForm.classList.remove('hidden');
-                studentForm.classList.add('flex');
-                adminForm.classList.add('hidden');
-                adminForm.classList.remove('flex');
-
-                tabStudent.classList.add('text-secondary', 'border-secondary');
-                tabStudent.classList.remove('text-on-surface-variant', 'border-transparent');
-                tabAdmin.classList.add('text-on-surface-variant', 'border-transparent');
-                tabAdmin.classList.remove('text-secondary', 'border-secondary');
-                
+                studentForm.classList.remove('hidden'); studentForm.classList.add('flex');
+                adminForm.classList.add('hidden'); adminForm.classList.remove('flex');
+                tabStudent.classList.add('text-secondary', 'border-secondary'); tabStudent.classList.remove('text-on-surface-variant', 'border-transparent');
+                tabAdmin.classList.add('text-on-surface-variant', 'border-transparent'); tabAdmin.classList.remove('text-secondary', 'border-secondary');
                 if(subtitleText) subtitleText.innerText = "We’re excited to have you! Please give us your name and PRN so we know who to blame when the numbers start dancing.";
             } else {
-                adminForm.classList.remove('hidden');
-                adminForm.classList.add('flex');
-                studentForm.classList.add('hidden');
-                studentForm.classList.remove('flex');
-
-                tabAdmin.classList.add('text-secondary', 'border-secondary');
-                tabAdmin.classList.remove('text-on-surface-variant', 'border-transparent');
-                tabStudent.classList.add('text-on-surface-variant', 'border-transparent');
-                tabStudent.classList.remove('text-secondary', 'border-secondary');
-                
+                adminForm.classList.remove('hidden'); adminForm.classList.add('flex');
+                studentForm.classList.add('hidden'); studentForm.classList.remove('flex');
+                tabAdmin.classList.add('text-secondary', 'border-secondary'); tabAdmin.classList.remove('text-on-surface-variant', 'border-transparent');
+                tabStudent.classList.add('text-on-surface-variant', 'border-transparent'); tabStudent.classList.remove('text-secondary', 'border-secondary');
                 if(subtitleText) subtitleText.innerText = "Welcome back, Master Admin. Authenticate below to oversee the event coordination and evaluate team strategies.";
             }
         }
 
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            setTimeout(() => {
-                document.getElementById(id).classList.add('active');
-            }, 50);
+            setTimeout(() => { document.getElementById(id).classList.add('active'); }, 50);
         }
 
         async function loadSettings() {
@@ -742,26 +688,17 @@
                 document.getElementById('student-subject-title').innerText = myConfig.subject_title || 'Subject 1 Basics';
                 document.getElementById('student-subject-content').innerText = myConfig.subject_content || '';
             }
-            
             if (myConfig.case_title || myConfig.case_content) {
                 document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
                 document.getElementById('student-case-content').innerText = myConfig.case_content || '';
                 
                 if(myConfig.case_content && myConfig.case_content.trim() !== '') {
                     document.getElementById('student-submission-section').classList.remove('hidden');
-                    
-                    if (!isBudgetRendered) {
-                        renderBudgetBuilder();
-                        isBudgetRendered = true;
-                    }
-
+                    if (!isBudgetRendered) { renderBudgetBuilder(); isBudgetRendered = true; }
                     manageStudentTimer();
                 }
             }
-
-            if (myConfig.results_published && myTeamNumber) {
-                fetchTeamResult(myTeamNumber);
-            }
+            if (myConfig.results_published && myTeamNumber) fetchTeamResult(myTeamNumber);
         }
 
         async function fetchTeamResult(teamNum) {
@@ -776,17 +713,16 @@
                 if (team.disqualified) {
                     statusEl.innerText = `Disqualified`;
                     detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable limit.`;
-                    banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2";
+                    banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10";
                     chocBadge.classList.add('hidden');
                 } else {
                     statusEl.innerText = `Rank #${team.ranking} Overall 🎉`;
                     detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
-                    banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2";
-                    
+                    banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10";
                     if (myConfig.chocolates_sent) {
                         chocBadge.classList.remove('hidden');
                         document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${team.ranking}! 🏆`;
-                        if (!chocolatesShownThisSession) {
+                        if (!chocolatesShownThisSession && studentState === 'dashboard') {
                             document.getElementById('chocolate-overlay').classList.remove('hidden');
                             chocolatesShownThisSession = true;
                         }
@@ -797,13 +733,8 @@
             }
         }
 
-        function dismissChocolateOverlay() {
-            document.getElementById('chocolate-overlay').classList.add('hidden');
-        }
-
-        function reopenChocolateOverlay() {
-            document.getElementById('chocolate-overlay').classList.remove('hidden');
-        }
+        function dismissChocolateOverlay() { document.getElementById('chocolate-overlay').classList.add('hidden'); }
+        function reopenChocolateOverlay() { document.getElementById('chocolate-overlay').classList.remove('hidden'); }
 
         function manageStudentTimer() {
             const badge = document.getElementById('student-timer-badge');
@@ -816,65 +747,49 @@
                 badge.classList.add('hidden');
                 if (notice) notice.classList.remove('hidden');
                 if (builder) builder.classList.add('opacity-50', 'pointer-events-none');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
+                if (submitBtn) { submitBtn.disabled = true; submitBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
                 return;
             }
 
             badge.classList.remove('hidden');
-
             if (studentClockInterval) clearInterval(studentClockInterval);
 
             studentClockInterval = setInterval(() => {
                 const now = new Date().getTime();
-                const endTime = new Date(myConfig.timer_end_time).getTime();
-                const distance = endTime - now;
+                const distance = new Date(myConfig.timer_end_time).getTime() - now;
 
                 if (distance < 0) {
                     clearInterval(studentClockInterval);
                     clock.innerText = "TIME'S UP";
                     clock.className = "text-xs sm:text-sm font-extrabold text-slate-400";
                     if (notice) notice.classList.add('hidden');
-                    
                     if(builder && !submitBtn.classList.contains('bg-emerald-500')) {
-                        builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
-                        builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                        builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
                         builder.classList.add('opacity-50', 'pointer-events-none');
                     }
                     if(submitBtn && !submitBtn.classList.contains('bg-emerald-500')) {
-                        submitBtn.disabled = true;
-                        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        submitBtn.disabled = true; submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     }
                 } else {
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    clock.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
+                    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((distance % (1000 * 60)) / 1000);
+                    clock.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                     if (notice) notice.classList.add('hidden');
                     if (builder) builder.classList.remove('opacity-50', 'pointer-events-none');
                     if (submitBtn && !submitBtn.classList.contains('bg-emerald-500')) {
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        submitBtn.disabled = false; submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
                 }
             }, 1000);
         }
 
-        // --- INTERACTIVE BUDGET BUILDER LOGIC ---
         function renderBudgetBuilder() {
             const container = document.getElementById('budget-builder-container');
             if(!container) return;
-
-            let html = '';
-            let grandTotal = 0;
+            let html = ''; let grandTotal = 0;
 
             budgetCategories.forEach(cat => {
-                if (!budgetState[cat] || !Array.isArray(budgetState[cat])) {
-                        budgetState[cat] = [{ desc: '', amount: '' }];
-                }
-
+                if (!budgetState[cat] || !Array.isArray(budgetState[cat])) budgetState[cat] = [{ desc: '', amount: '' }];
                 let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
                 grandTotal += catTotal;
                 
@@ -884,8 +799,7 @@
                                 <h5 class="font-bold text-slate-700 uppercase tracking-widest text-xs">${cat}</h5>
                                 <span class="font-semibold text-slate-500 text-xs sm:text-sm">Total: <span id="total-${cat}" class="text-indigo-600 font-bold">$${catTotal.toLocaleString()}</span></span>
                         </div>
-                        <div id="list-${cat}" class="space-y-3">
-                `;
+                        <div id="list-${cat}" class="space-y-3">`;
                 
                 budgetState[cat].forEach((item, index) => {
                         html += `
@@ -895,15 +809,9 @@
                                             <input type="number" class="input-field flex-1 sm:w-32 p-2.5 rounded-lg text-sm text-right font-semibold text-indigo-700" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
                                             ${budgetState[cat].length > 1 ? `<button onclick="removeBudgetRow('${cat}', ${index})" class="text-slate-400 hover:text-red-500 text-2xl font-bold px-2">&times;</button>` : `<div class="w-6"></div>`}
                                         </div>
-                                </div>
-                        `;
+                                </div>`;
                 });
-
-                html += `
-                        </div>
-                        <button onclick="addBudgetRow('${cat}')" class="w-full sm:w-auto text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 text-center">+ Add ${cat} Row</button>
-                </div>
-                `;
+                html += `</div><button onclick="addBudgetRow('${cat}')" class="w-full sm:w-auto text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 text-center">+ Add ${cat} Row</button></div>`;
             });
             container.innerHTML = html;
         }
@@ -917,31 +825,17 @@
         }
 
         function addBudgetRow(cat, focusIndex = -1) {
-            budgetState[cat].push({ desc: '', amount: '' });
-            renderBudgetBuilder();
-            
+            budgetState[cat].push({ desc: '', amount: '' }); renderBudgetBuilder();
             if(focusIndex >= 0) {
                 setTimeout(() => {
-                        const list = document.getElementById(`list-${cat}`);
-                        const inputs = list.querySelectorAll('input[type="text"]');
-                        if(inputs.length > focusIndex + 1) {
-                                inputs[focusIndex + 1].focus();
-                        }
+                        const inputs = document.getElementById(`list-${cat}`).querySelectorAll('input[type="text"]');
+                        if(inputs.length > focusIndex + 1) inputs[focusIndex + 1].focus();
                 }, 50);
             }
         }
 
-        function removeBudgetRow(cat, index) {
-            budgetState[cat].splice(index, 1);
-            renderBudgetBuilder();
-        }
-
-        function checkEnter(e, cat, index) {
-            if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addBudgetRow(cat, index);
-            }
-        }
+        function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); renderBudgetBuilder(); }
+        function checkEnter(e, cat, index) { if (e.key === 'Enter') { e.preventDefault(); addBudgetRow(cat, index); } }
 
         /* --- STUDENT FLOW CONT. --- */
         async function handleStudentRegistration(e) {
@@ -952,16 +846,13 @@
             const { error } = await supabaseClient.from('students').upsert({ prn, name }, { onConflict: 'prn' });
             if(error) return showToast('Error: ' + error.message);
             
-            // Immediately hide header for transition
-            const headerElement = document.querySelector('#login-register-screen header');
-            if(headerElement) headerElement.style.display = 'none';
-
             localStorage.setItem('fp_prn', prn);
+            studentState = 'waiting';
+            switchScreen('student-waiting-screen');
             startStudentPolling(prn);
         }
 
         function startStudentPolling(prn) {
-            switchScreen('student-dashboard-screen');
             loadSettings().then(() => {
                 pollInterval = setInterval(() => checkTeamMatch(prn), 3000);
                 checkTeamMatch(prn);
@@ -971,38 +862,42 @@
         async function checkTeamMatch(prn) {
             try {
                 await loadSettings();
-                const { data: me, error: meErr } = await supabaseClient
-                    .from('students')
-                    .select('*')
-                    .eq('prn', prn)
-                    .single();
+                const { data: me, error: meErr } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
 
                 if (meErr || !me) {
-                    console.error("Student check failed:", meErr);
-                    localStorage.removeItem('fp_prn');
-                    switchScreen('login-register-screen');
-                    return;
+                    localStorage.removeItem('fp_prn'); switchScreen('login-register-screen'); return;
                 }
 
                 if (me.team_number) {
                     myTeamNumber = me.team_number;
-                    
-                    // Show header again if we hid it
-                    const dashHeader = document.getElementById('student-header-banner');
-                    if(dashHeader) dashHeader.style.display = 'flex';
+                    const tableNo = Math.ceil(me.team_number / 5);
 
-                    document.getElementById('student-waiting').classList.add('hidden');
-                    document.getElementById('student-assigned').classList.remove('hidden');
-                    document.getElementById('assigned-team-number').innerText = me.team_number;
-                    
-                    document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / 5);
+                    // 1. Setup Data for Reveal & Dashboard
+                    const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
+                    if (studentState === 'waiting') {
+                        document.getElementById('reveal-team-number').innerText = me.team_number;
+                        document.getElementById('reveal-table-number').innerText = tableNo;
+                        if (mates) {
+                            const otherMates = mates.filter(m => m.name !== me.name);
+                            const names = otherMates.map(m => m.name).join(' & ');
+                            document.getElementById('reveal-partner-names').innerText = names || 'Solo (Waiting for partners)';
+                            
+                            // Prep Dashboard Grid silently
+                            document.getElementById('assigned-partners-list').innerHTML = mates.map(m => `
+                                <li class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">${m.name.charAt(0).toUpperCase()}</div>
+                                    ${m.name}
+                                </li>`).join('');
+                        }
+                        studentState = 'reveal';
+                        switchScreen('student-reveal-screen');
+                    }
 
-                    const { data: teamData } = await supabaseClient
-                        .from('teams')
-                        .select('case_answer')
-                        .eq('team_number', me.team_number)
-                        .single();
+                    // 2. Keep Dashboard UI up to date
+                    document.getElementById('dash-team-number').innerText = me.team_number;
+                    document.getElementById('dash-table-number').innerText = tableNo;
 
+                    const { data: teamData } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).single();
                     const btn = document.getElementById('submit-answer-btn');
                     const builder = document.getElementById('budget-builder-container');
 
@@ -1010,58 +905,28 @@
                         try {
                             const parsedData = JSON.parse(teamData.case_answer);
                             if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
-                                    budgetState = parsedData;
-                                    if (isBudgetRendered) {
-                                            renderBudgetBuilder();
-                                    }
+                                budgetState = parsedData;
+                                if (isBudgetRendered) renderBudgetBuilder();
                             }
-                        } catch (e) {
-                            console.warn("Failed to parse team answer.");
-                        }
+                        } catch (e) {}
                         
                         if (btn) {
                             btn.innerText = 'Submitted by Team ✓';
                             btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed';
                             btn.disabled = true;
                         }
-
                         if(builder) {
-                            builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
-                            builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                            builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
                         }
-                    }
-
-                    const { data: mates } = await supabaseClient
-                        .from('students')
-                        .select('name')
-                        .eq('team_number', me.team_number);
-
-                    if (mates) {
-                        document.getElementById('assigned-partners-list').innerHTML = mates
-                            .map(m => `
-                                <li class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                                        ${m.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    ${m.name}
-                                </li>
-                            `).join('');
                     }
                     return;
                 }
 
-                // If not assigned yet
-                const dashHeader = document.getElementById('student-header-banner');
-                if(dashHeader) dashHeader.style.display = 'none';
+                // If no team yet, ensure we are on waiting screen and perform logic
+                if (studentState !== 'waiting') { studentState = 'waiting'; switchScreen('student-waiting-screen'); }
 
-                const { data: waiting, error: waitErr } = await supabaseClient
-                    .from('students')
-                    .select('*')
-                    .is('team_number', null)
-                    .order('created_at', { ascending: true });
-
+                const { data: waiting, error: waitErr } = await supabaseClient.from('students').select('*').is('team_number', null).order('created_at', { ascending: true });
                 if (waitErr) return;
-
                 const targetTeamSize = myConfig.team_size || 2;
 
                 if (waiting && waiting.length >= targetTeamSize) {
@@ -1069,76 +934,44 @@
                 } else if (waiting && waiting.length > 0) {
                     const waitTime = new Date() - new Date(me.created_at);
                     if (waitTime > 180000 && waiting[0].prn === prn) {
-                        const { data: lastTeam } = await supabaseClient
-                            .from('students')
-                            .select('team_number')
-                            .not('team_number', 'is', null)
-                            .order('team_number', { ascending: false })
-                            .limit(1);
-
+                        const { data: lastTeam } = await supabaseClient.from('students').select('team_number').not('team_number', 'is', null).order('team_number', { ascending: false }).limit(1);
                         const fallbackTeam = (lastTeam && lastTeam.length && lastTeam[0].team_number) ? lastTeam[0].team_number + 1 : 1;
                         await supabaseClient.from('students').update({ team_number: fallbackTeam }).eq('prn', prn);
                         await supabaseClient.from('teams').upsert({ team_number: fallbackTeam, case_answer: null });
                     }
                 }
-            } catch (err) {
-                console.error("Unexpected error in checkTeamMatch:", err);
-            }
+            } catch (err) { console.error("Unexpected error:", err); }
+        }
+
+        function goToDashboard() {
+            studentState = 'dashboard';
+            switchScreen('student-dashboard-screen');
         }
 
         async function submitCaseAnswer() {
-            if (!myTeamNumber) {
-                return showToast('Team assignment is still pending.');
-            }
-
-            const { data: currentTeam } = await supabaseClient
-                .from('teams')
-                .select('case_answer')
-                .eq('team_number', myTeamNumber)
-                .single();
-
-            if (currentTeam && currentTeam.case_answer) {
-                return showToast('Your team has already submitted a strategy!');
-            }
+            if (!myTeamNumber) return showToast('Team assignment is still pending.');
+            const { data: currentTeam } = await supabaseClient.from('teams').select('case_answer').eq('team_number', myTeamNumber).single();
+            if (currentTeam && currentTeam.case_answer) return showToast('Your team has already submitted a strategy!');
 
             let hasData = false;
-            budgetCategories.forEach(cat => {
-                    budgetState[cat].forEach(item => {
-                            if (item.desc || item.amount) hasData = true;
-                    });
-            });
-
-            if (!hasData) {
-                return showToast('Please add at least one component before submitting.');
-            }
+            budgetCategories.forEach(cat => { budgetState[cat].forEach(item => { if (item.desc || item.amount) hasData = true; }); });
+            if (!hasData) return showToast('Please add at least one component before submitting.');
 
             const btn = document.getElementById('submit-answer-btn');
-            btn.innerText = 'Submitting...';
-            btn.disabled = true;
-
+            btn.innerText = 'Submitting...'; btn.disabled = true;
             const submissionTime = new Date().toISOString();
 
-            const { error } = await supabaseClient.from('teams').upsert({ 
-                team_number: myTeamNumber, 
-                case_answer: JSON.stringify(budgetState),
-                submitted_at: submissionTime
-            });
+            const { error } = await supabaseClient.from('teams').upsert({ team_number: myTeamNumber, case_answer: JSON.stringify(budgetState), submitted_at: submissionTime });
             
             if (error) {
-                console.error("Answer submit error:", error);
                 showToast('Error saving answer: ' + error.message);
-                btn.innerText = 'Submit Strategy';
-                btn.disabled = false;
+                btn.innerText = 'Submit Strategy'; btn.disabled = false;
             } else {
                 showToast('Team strategy submitted successfully!');
                 btn.innerText = 'Submitted by Team ✓';
                 btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed';
-                
                 const builder = document.getElementById('budget-builder-container');
-                if(builder) {
-                    builder.querySelectorAll('input').forEach(inp => inp.disabled = true);
-                    builder.querySelectorAll('button').forEach(btn => btn.disabled = true);
-                }
+                if(builder) builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
             }
         }
 
@@ -1147,41 +980,24 @@
             e.preventDefault();
             const adminNum = document.getElementById('admin-id').value.trim();
             const password = document.getElementById('admin-password').value.trim();
-            
-            if (adminNum < 1 || adminNum > 50) {
-                return showToast('Please enter a valid Master Admin ID (1 - 50).');
-            }
+            if (adminNum < 1 || adminNum > 50) return showToast('Please enter a valid Master Admin ID (1 - 50).');
 
             const email = `admin${adminNum}@financefusion.local`;
-
             let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error && error.message.includes("Invalid login credentials")) {
                 const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
-                
-                if (signUpError) {
-                    if (signUpError.message.includes("already registered")) {
-                        return showToast('Incorrect password for this Admin ID.');
-                    }
-                    return showToast('Error: ' + signUpError.message);
-                }
-                
-                data = signUpData;
-                error = null;
-                showToast(`Master Admin ${adminNum} claimed! Password saved.`);
+                if (signUpError) return showToast(signUpError.message.includes("already registered") ? 'Incorrect password.' : 'Error: ' + signUpError.message);
+                data = signUpData; error = null; showToast(`Master Admin ${adminNum} claimed! Password saved.`);
             } else if (error) {
                 return showToast('Login Error: ' + error.message);
             }
 
-            if (data && data.user) {
-                // Ensure header disappears if transitioning to dash
-                const headerElement = document.querySelector('#login-register-screen header');
-                if(headerElement) headerElement.style.display = 'none';
-                initAdmin(adminNum);
-            }
+            if (data && data.user) initAdmin(adminNum);
         }
 
         async function initAdmin(adminNum) {
+            studentState = 'admin';
             switchScreen('admin-dashboard-screen');
             await loadSettings();
             
@@ -1196,40 +1012,22 @@
             document.getElementById('org-max-budget').value = myConfig.max_budget !== undefined ? myConfig.max_budget : 10000;
             
             document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminNum}`;
-            
             setInterval(fetchRoster, 5000);
             fetchRoster();
         }
 
-        /* --- STUDENT EDITING & STRICT JAVASCRIPT TAB LOCKING --- */
         async function openEditModal(prn) {
-            const { data: student, error } = await supabaseClient
-                .from('students')
-                .select('*')
-                .eq('prn', prn)
-                .single();
-
-            if (error || !student) {
-                return showToast('Error fetching student profile.');
-            }
+            const { data: student, error } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
+            if (error || !student) return showToast('Error fetching student profile.');
 
             const now = new Date();
             if (student.locked_by && student.locked_by !== adminSessionId) {
-                const expiresAt = new Date(student.lock_expires_at);
-                if (expiresAt > now) {
-                    return showToast(`🔒 Locked: This student is currently being edited by another admin window.`);
-                }
+                if (new Date(student.lock_expires_at) > now) return showToast(`🔒 Locked: This student is currently being edited by another admin window.`);
             }
 
             const newExpiry = new Date(now.getTime() + 120000).toISOString();
-            const { error: lockErr } = await supabaseClient.from('students').update({
-                locked_by: adminSessionId,
-                lock_expires_at: newExpiry
-            }).eq('prn', prn);
-
-            if (lockErr) {
-                return showToast('Error acquiring edit lock.');
-            }
+            const { error: lockErr } = await supabaseClient.from('students').update({ locked_by: adminSessionId, lock_expires_at: newExpiry }).eq('prn', prn);
+            if (lockErr) return showToast('Error acquiring edit lock.');
 
             currentlyEditingPrn = prn;
             document.getElementById('edit-original-prn').value = student.prn;
@@ -1241,10 +1039,7 @@
 
         async function closeEditModal() {
             if (currentlyEditingPrn) {
-                await supabaseClient.from('students').update({
-                    locked_by: null,
-                    lock_expires_at: null
-                }).eq('prn', currentlyEditingPrn);
+                await supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
                 currentlyEditingPrn = null;
             }
             document.getElementById('edit-student-modal').classList.add('hidden');
@@ -1257,28 +1052,17 @@
             const teamInput = document.getElementById('edit-student-team').value.trim();
             const newTeam = teamInput ? parseInt(teamInput) : null;
 
-            if (!newName || !newPrn) {
-                return showToast('Name and PRN cannot be empty.');
-            }
-
-            if (originalPrn !== newPrn) {
-                await supabaseClient.from('students').delete().eq('prn', originalPrn);
-            }
+            if (!newName || !newPrn) return showToast('Name and PRN cannot be empty.');
+            if (originalPrn !== newPrn) await supabaseClient.from('students').delete().eq('prn', originalPrn);
 
             const { error } = await supabaseClient.from('students').upsert({
-                prn: newPrn,
-                name: newName,
-                team_number: newTeam,
-                locked_by: null,
-                lock_expires_at: null
+                prn: newPrn, name: newName, team_number: newTeam, locked_by: null, lock_expires_at: null
             }, { onConflict: 'prn' });
 
             if (error) {
                 showToast('Error updating student: ' + error.message);
             } else {
-                if (newTeam) {
-                    await supabaseClient.from('teams').upsert({ team_number: newTeam, case_answer: null }, { onConflict: 'team_number' });
-                }
+                if (newTeam) await supabaseClient.from('teams').upsert({ team_number: newTeam, case_answer: null }, { onConflict: 'team_number' });
                 showToast('Student details updated & position adjusted successfully!');
                 currentlyEditingPrn = null;
                 document.getElementById('edit-student-modal').classList.add('hidden');
@@ -1286,19 +1070,15 @@
             }
         }
 
-        /* --- EVALUATION & RANKING LOGIC (50-30-20 RULE) --- */
         async function runEvaluation() {
             const { data: teams } = await supabaseClient.from('teams').select('*');
-            if (!teams || teams.length === 0) {
-                return showToast('No team submissions found to evaluate.');
-            }
+            if (!teams || teams.length === 0) return showToast('No team submissions found to evaluate.');
 
             const maxBudget = parseFloat(myConfig.max_budget);
             let evaluatedTeams = [];
 
             teams.forEach(team => {
                 if (!team.case_answer) return;
-
                 try {
                     const parsed = JSON.parse(team.case_answer);
                     let needsTotal = (parsed.Needs || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
@@ -1306,39 +1086,18 @@
                     let investTotal = (parsed.Investments || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
                     let grandTotal = needsTotal + wantsTotal + investTotal;
 
-                    let isDisqualified = false;
                     if (!isNaN(maxBudget) && maxBudget > 0 && grandTotal > maxBudget) {
-                        isDisqualified = true;
-                    }
-
-                    if (isDisqualified) {
-                        evaluatedTeams.push({
-                            team_number: team.team_number,
-                            grand_total: grandTotal,
-                            score: 9999,
-                            disqualified: true,
-                            submitted_at: team.submitted_at || '9999-99-99'
-                        });
+                        evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, score: 9999, disqualified: true, submitted_at: team.submitted_at || '9999-99-99' });
                         return;
                     }
 
                     let needsPct = grandTotal > 0 ? (needsTotal / grandTotal) * 100 : 0;
                     let wantsPct = grandTotal > 0 ? (wantsTotal / grandTotal) * 100 : 0;
                     let investPct = grandTotal > 0 ? (investTotal / grandTotal) * 100 : 0;
-
                     let variance = Math.abs(needsPct - 50) + Math.abs(wantsPct - 30) + Math.abs(investPct - 20);
 
-                    evaluatedTeams.push({
-                        team_number: team.team_number,
-                        grand_total: grandTotal,
-                        score: parseFloat(variance.toFixed(2)),
-                        disqualified: false,
-                        submitted_at: team.submitted_at || '9999-99-99'
-                    });
-
-                } catch (e) {
-                    console.error("Scoring error for team", team.team_number);
-                }
+                    evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, score: parseFloat(variance.toFixed(2)), disqualified: false, submitted_at: team.submitted_at || '9999-99-99' });
+                } catch (e) {}
             });
 
             evaluatedTeams.sort((a, b) => {
@@ -1350,18 +1109,8 @@
             let rankCounter = 1;
             for (let i = 0; i < evaluatedTeams.length; i++) {
                 let t = evaluatedTeams[i];
-                if (!t.disqualified) {
-                    t.ranking = rankCounter++;
-                } else {
-                    t.ranking = null;
-                }
-
-                await supabaseClient.from('teams').update({
-                    ranking: t.ranking,
-                    score: t.score,
-                    disqualified: t.disqualified,
-                    grand_total: t.grand_total
-                }).eq('team_number', t.team_number);
+                t.ranking = t.disqualified ? null : rankCounter++;
+                await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.score, disqualified: t.disqualified, grand_total: t.grand_total }).eq('team_number', t.team_number);
             }
 
             renderLeaderboard(evaluatedTeams);
@@ -1384,9 +1133,7 @@
                     <td class="py-3 px-4 text-center font-semibold text-slate-700">$${t.grand_total.toLocaleString()}</td>
                     <td class="py-3 px-4 text-center font-bold text-indigo-600">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
                     <td class="py-3 px-4 text-center">
-                        ${t.disqualified 
-                            ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold">Disqualified</span>' 
-                            : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold">Qualified</span>'}
+                        ${t.disqualified ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold">Qualified</span>'}
                     </td>
                     <td class="py-3 px-4 text-right">
                         <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all">View Sheet</button>
@@ -1398,41 +1145,27 @@
         async function publishResults() {
             myConfig.results_published = true;
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) {
-                showToast('Error publishing results: ' + error.message);
-            } else {
-                showToast('Results published successfully to all students!');
-            }
+            if (error) showToast('Error publishing results: ' + error.message);
+            else showToast('Results published successfully to all students!');
         }
 
         async function sendVirtualChocolates() {
             myConfig.chocolates_sent = true;
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) {
-                showToast('Error sending chocolates: ' + error.message);
-            } else {
-                showToast('🍫 Virtual chocolates sent to all qualified winners successfully!');
-            }
+            if (error) showToast('Error sending chocolates: ' + error.message);
+            else showToast('🍫 Virtual chocolates sent to all qualified winners successfully!');
         }
 
         function toggleSettings() { document.getElementById('org-settings').classList.toggle('hidden'); }
         function toggleContentPanel() { document.getElementById('org-content-panel').classList.toggle('hidden'); }
-        function toggleEvaluationPanel() { 
-            document.getElementById('org-evaluation-panel').classList.toggle('hidden'); 
-            fetchLeaderboardData(); 
-        }
+        function toggleEvaluationPanel() { document.getElementById('org-evaluation-panel').classList.toggle('hidden'); fetchLeaderboardData(); }
 
         async function fetchLeaderboardData() {
             const { data } = await supabaseClient.from('teams').select('*').order('ranking', { ascending: true, nullsLast: true });
             if(data) {
                 globalTeamsData = data;
                 let formatted = data.filter(t => t.case_answer).map(t => ({
-                    team_number: t.team_number,
-                    grand_total: t.grand_total || 0,
-                    score: t.score || 0,
-                    disqualified: t.disqualified || false,
-                    ranking: t.ranking !== undefined ? t.ranking : null,
-                    submitted_at: t.submitted_at || ''
+                    team_number: t.team_number, grand_total: t.grand_total || 0, score: t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
                 }));
                 renderLeaderboard(formatted);
             }
@@ -1442,7 +1175,6 @@
             myConfig.team_size = parseInt(document.getElementById('cfg-team-size').value);
             myConfig.total_tables = parseInt(document.getElementById('cfg-total-tables').value);
             myConfig.teams_per_table = parseInt(document.getElementById('cfg-teams-per-table').value);
-
             await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             showToast('Event settings updated successfully.');
         }
@@ -1454,29 +1186,21 @@
             myConfig.case_content = document.getElementById('org-case-content').value.trim();
 
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) {
-                console.error("Content Save Error:", error);
-                showToast('Database Error: ' + error.message);
-            } else {
-                showToast('Case details published successfully.');
-            }
+            if (error) showToast('Database Error: ' + error.message);
+            else showToast('Case details published successfully.');
         }
 
         async function startCaseTimerWithBudget() {
             const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
             const maxBgt = parseFloat(document.getElementById('org-max-budget').value) || 10000;
-            
             const endTime = new Date(new Date().getTime() + mins * 60000).toISOString();
+            
             myConfig.timer_end_time = endTime;
             myConfig.max_budget = maxBgt;
 
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) {
-                console.error("Timer & Budget Start Error:", error);
-                showToast('Database Error: ' + error.message);
-            } else {
-                showToast(`Timer started for ${mins} mins! Max Budget set to $${maxBgt.toLocaleString()}`);
-            }
+            if (error) showToast('Database Error: ' + error.message);
+            else showToast(`Timer started for ${mins} mins! Max Budget set to $${maxBgt.toLocaleString()}`);
         }
 
         async function fetchRoster() {
@@ -1485,9 +1209,7 @@
             
             globalStudentsData = students || [];
             const teamAnswers = {};
-            if (teams) {
-                teams.forEach(t => { teamAnswers[t.team_number] = t.case_answer; });
-            }
+            if (teams) teams.forEach(t => { teamAnswers[t.team_number] = t.case_answer; });
             globalTeamsData = teams || [];
             
             document.getElementById('roster-body').innerHTML = students.map(s => {
@@ -1498,9 +1220,7 @@
                         <td class="py-3 px-4 sm:px-5 font-medium text-slate-800">${s.name}</td>
                         <td class="py-3 px-4 sm:px-5 text-slate-500">${s.prn}</td>
                         <td class="py-3 px-4 sm:px-5 text-center">
-                            ${s.team_number 
-                                ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
-                                : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
+                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
                         </td>
                         <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600">${tableNo}</td>
                         <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap">
@@ -1519,24 +1239,20 @@
         async function clearTeamAnswer(teamNumber) {
             if(!confirm(`Are you sure you want to completely delete the submission for Team ${teamNumber}? The team will be able to submit a new strategy.`)) return;
             await supabaseClient.from('teams').update({ case_answer: null, ranking: null, score: null, disqualified: false }).eq('team_number', teamNumber);
-            fetchRoster();
-            showToast(`Team ${teamNumber} answer cleared.`);
+            fetchRoster(); showToast(`Team ${teamNumber} answer cleared.`);
         }
 
         function openAnswerModal(teamNumber) {
             const team = globalTeamsData.find(t => t.team_number === teamNumber);
             if(team && team.case_answer) {
                 document.getElementById('modal-team-heading').innerText = `Team ${team.team_number} Strategy Submission`;
-                
                 let displayHTML = '';
                 try {
                         const parsed = JSON.parse(team.case_answer);
-                        let grandTotal = 0;
-                        displayHTML = `<div class="space-y-4">`;
+                        let grandTotal = 0; displayHTML = `<div class="space-y-4">`;
                         
                         budgetCategories.forEach(cat => {
-                                let catTotal = 0;
-                                let rowsHtml = '';
+                                let catTotal = 0; let rowsHtml = '';
                                 if (parsed[cat]) {
                                         parsed[cat].forEach(item => {
                                                 if(item.desc || item.amount) {
@@ -1563,48 +1279,39 @@
                                         <span>GRAND TOTAL</span><span>$${grandTotal.toLocaleString()}</span>
                                 </div>
                         </div>`;
-                } catch(e) {
-                        displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200">${team.case_answer}</div>`;
-                }
+                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200">${team.case_answer}</div>`; }
 
                 document.getElementById('modal-team-answer').innerHTML = displayHTML;
                 document.getElementById('answer-modal').classList.remove('hidden');
             }
         }
 
-        function closeAnswerModal() {
-            document.getElementById('answer-modal').classList.add('hidden');
-        }
+        function closeAnswerModal() { document.getElementById('answer-modal').classList.add('hidden'); }
 
         async function deleteStudent(prn) {
             if(!confirm('Are you sure you want to remove this participant?')) return;
             await supabaseClient.from('students').delete().eq('prn', prn);
-            fetchRoster();
-            showToast('Participant removed.');
+            fetchRoster(); showToast('Participant removed.');
         }
 
         async function deleteAllStudents() {
             if(!confirm('DANGER: Are you sure you want to delete ALL participants and team submissions? This action cannot be undone.')) return;
             await supabaseClient.from('students').delete().neq('prn', '0'); 
             await supabaseClient.from('teams').delete().neq('team_number', 0);
-            fetchRoster();
-            showToast('All participants and submissions have been deleted.');
+            fetchRoster(); showToast('All participants and submissions have been deleted.');
         }
 
         function logout() {
-            if (currentlyEditingPrn) {
-                supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
-            }
+            if (currentlyEditingPrn) supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
             if(pollInterval) clearInterval(pollInterval);
-            supabaseClient.auth.signOut();
-            switchScreen('login-register-screen');
+            supabaseClient.auth.signOut(); switchScreen('login-register-screen');
         }
 
         window.onload = async () => {
             const prn = localStorage.getItem('fp_prn');
             if (prn) {
-                const headerElement = document.querySelector('#login-register-screen header');
-                if(headerElement) headerElement.style.display = 'none';
+                studentState = 'waiting';
+                switchScreen('student-waiting-screen');
                 startStudentPolling(prn);
                 return; 
             }
@@ -1612,11 +1319,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user && session.user.email) {
                 const match = session.user.email.match(/admin(\d+)@/);
-                if (match && match[1]) {
-                    const headerElement = document.querySelector('#login-register-screen header');
-                    if(headerElement) headerElement.style.display = 'none';
-                    return initAdmin(match[1]);
-                }
+                if (match && match[1]) return initAdmin(match[1]);
             }
         };
     </script>
