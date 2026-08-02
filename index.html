@@ -416,7 +416,7 @@
                 <span id="student-timer-clock" class="text-base font-extrabold text-error font-mono">--:--</span>
             </div>
 
-            <!-- Optional Event Banner (Appears if results published but not yet scratched, or just general info) -->
+            <!-- Optional Event Banner -->
             <div id="student-results-banner" class="hidden bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4">
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] font-bold uppercase tracking-widest bg-background/50 px-3 py-1 rounded border border-outline-variant">Event Update</span>
@@ -560,7 +560,7 @@
             <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation (Relative Percentile)</h3>
                         <p class="text-xs text-slate-500 mt-1">Evaluates Needs, Wants, and Investments with keyword micro-scoring. Scaled to 100th percentile.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
@@ -648,7 +648,7 @@
                         </div>
                         <div class="flex gap-2 w-full sm:w-auto">
                             <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Reset Timer</button>
-                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer & Limit</button>
+                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer</button>
                         </div>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
@@ -819,6 +819,40 @@
         document.addEventListener('cut', function(e) { if(studentState !== 'admin') e.preventDefault(); });
         document.addEventListener('paste', function(e) { if(studentState !== 'admin') e.preventDefault(); });
 
+        // --- LOCAL STORAGE STATE MANAGEMENT ---
+        function saveLocalState() {
+            if(studentState === 'admin') return; 
+            localStorage.setItem('fp_studentState', studentState);
+            localStorage.setItem('fp_studentDashView', studentDashView);
+            localStorage.setItem('fp_currentProgIndex', currentProgIndex);
+            localStorage.setItem('fp_currentCaseIndex', currentCaseIndex);
+            localStorage.setItem('fp_budgetState', JSON.stringify(budgetState));
+            localStorage.setItem('fp_resultsShown', resultsShownThisSession);
+            localStorage.setItem('fp_dismissedTwistTime', dismissedTwistTime || '');
+        }
+
+        function loadLocalState() {
+            const savedState = localStorage.getItem('fp_studentState');
+            if(savedState) studentState = savedState;
+            
+            const savedView = localStorage.getItem('fp_studentDashView');
+            if(savedView) studentDashView = savedView;
+            
+            const savedProgIdx = localStorage.getItem('fp_currentProgIndex');
+            if(savedProgIdx) currentProgIndex = parseInt(savedProgIdx);
+            
+            const savedCaseIdx = localStorage.getItem('fp_currentCaseIndex');
+            if(savedCaseIdx) currentCaseIndex = parseInt(savedCaseIdx);
+            
+            const savedBudget = localStorage.getItem('fp_budgetState');
+            if(savedBudget) {
+                try { budgetState = JSON.parse(savedBudget); } catch(e){}
+            }
+            
+            resultsShownThisSession = localStorage.getItem('fp_resultsShown') === 'true';
+            dismissedTwistTime = localStorage.getItem('fp_dismissedTwistTime') || null;
+        }
+
         function showToast(msg) {
             const el = document.createElement('div');
             if(studentState === 'admin') {
@@ -929,6 +963,7 @@
             const overlay = document.getElementById('scratch-card-overlay');
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
+            saveLocalState();
             renderStudentDash();
         }
 
@@ -961,7 +996,8 @@
 
         function setStudentView(view) {
             studentDashView = view;
-            studentState = view; // Keep state in sync
+            studentState = view;
+            saveLocalState();
             renderStudentDash();
         }
 
@@ -969,6 +1005,7 @@
             currentProgIndex += dir;
             if(currentProgIndex < 0) currentProgIndex = 0;
             if(currentProgIndex >= studentSubjectsList.length) currentProgIndex = studentSubjectsList.length - 1;
+            saveLocalState();
             renderStudentDash();
         }
 
@@ -976,6 +1013,7 @@
             currentCaseIndex += dir;
             if(currentCaseIndex < 0) currentCaseIndex = 0;
             if(currentCaseIndex >= studentCasesList.length) currentCaseIndex = studentCasesList.length - 1;
+            saveLocalState();
             renderStudentDash();
         }
 
@@ -1109,7 +1147,6 @@
 
             const isDashboard = ['dashboard', 'home', 'program', 'cases'].includes(studentState);
             
-            // Auto-Redirect to Cases if a NEW timer starts
             if (myConfig.timer_end_time !== lastKnownTimer) {
                 if (myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime()) {
                     if (isDashboard && studentDashView !== 'cases') {
@@ -1195,6 +1232,7 @@
             const overlay = document.getElementById('plot-twist-overlay');
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
+            saveLocalState();
         }
 
         async function fetchTeamResult(teamNum) {
@@ -1232,21 +1270,10 @@
                             document.getElementById('btn-close-scratch').classList.remove('opacity-100');
                             
                             setTimeout(initScratchCard, 50); 
-                            
-                            resultsShownThisSession = true;
                         }
                     }
                 }
             }
-        }
-
-        function dismissChocolateOverlay() { 
-            const overlay = document.getElementById('chocolate-overlay');
-            if(overlay) overlay.classList.add('hidden'); 
-        }
-        function reopenChocolateOverlay() { 
-            const overlay = document.getElementById('chocolate-overlay');
-            if(overlay) overlay.classList.remove('hidden'); 
         }
 
         function manageStudentTimer() {
@@ -1376,10 +1403,13 @@
                 let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
                 document.getElementById(`total-${cat}`).innerText = '₹' + catTotal.toLocaleString();
             }
+            saveLocalState();
         }
 
         function addBudgetRow(cat, focusIndex = -1) {
-            budgetState[cat].push({ desc: '', amount: '' }); renderBudgetBuilder();
+            budgetState[cat].push({ desc: '', amount: '' }); 
+            saveLocalState();
+            renderBudgetBuilder();
             if(focusIndex >= 0) {
                 setTimeout(() => {
                         const inputs = document.getElementById(`list-${cat}`).querySelectorAll('input[type="text"]');
@@ -1388,7 +1418,7 @@
             }
         }
 
-        function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); renderBudgetBuilder(); }
+        function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); saveLocalState(); renderBudgetBuilder(); }
         function checkEnter(e, cat, index) { if (e.key === 'Enter') { e.preventDefault(); addBudgetRow(cat, index); } }
 
         /* --- STUDENT FLOW --- */
@@ -1405,6 +1435,7 @@
 
             localStorage.setItem('fp_prn', prn);
             studentState = 'waiting';
+            saveLocalState();
             switchScreen('student-waiting-screen');
             startStudentPolling(prn);
         }
@@ -1434,6 +1465,18 @@
 
                     const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
                     
+                    const menuHTML = mates ? mates.map(m => `
+                        <li class="flex items-center gap-3 bg-background p-3 rounded-lg border border-outline-variant shadow-sm">
+                            <div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center text-primary font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
+                            <span class="font-sans text-on-surface-variant">${m.name}</span>
+                        </li>`).join('') : '';
+                        
+                    const mList = document.getElementById('menu-partners-list');
+                    if(mList) mList.innerHTML = menuHTML;
+                    
+                    document.getElementById('menu-team-number').innerText = toRoman(me.team_number);
+                    document.getElementById('menu-table-number').innerText = toRoman(tableNo);
+
                     if (studentState === 'waiting') {
                         document.getElementById('reveal-team-number').innerText = toRoman(me.team_number);
                         document.getElementById('reveal-table-number').innerText = toRoman(tableNo);
@@ -1441,21 +1484,11 @@
                             const otherMates = mates.filter(m => m.name !== me.name);
                             const names = otherMates.map(m => m.name).join(' & ');
                             document.getElementById('reveal-partner-names').innerText = names || 'Solo (Waiting for partners)';
-                            
-                            const menuHTML = mates.map(m => `
-                                <li class="flex items-center gap-3 bg-background p-3 rounded-lg border border-outline-variant shadow-sm">
-                                    <div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center text-primary font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
-                                    <span class="font-sans text-on-surface-variant">${m.name}</span>
-                                </li>`).join('');
-                            const mList = document.getElementById('menu-partners-list');
-                            if(mList) mList.innerHTML = menuHTML;
                         }
                         studentState = 'reveal';
+                        saveLocalState();
                         switchScreen('student-reveal-screen');
                     }
-
-                    document.getElementById('menu-team-number').innerText = toRoman(me.team_number);
-                    document.getElementById('menu-table-number').innerText = toRoman(tableNo);
 
                     const { data: teamRows } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).limit(1);
                     
@@ -1469,6 +1502,7 @@
                                 const parsedData = JSON.parse(teamData.case_answer);
                                 if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
                                     budgetState = parsedData;
+                                    saveLocalState();
                                     if (isBudgetRendered) renderBudgetBuilder();
                                 }
                             } catch (e) {}
@@ -1481,12 +1515,18 @@
                             if(builder) {
                                 builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
                             }
+                        } else {
+                            if (btn && btn.disabled) {
+                                btn.innerText = 'Submit Strategy';
+                                btn.disabled = false;
+                                if(builder) builder.querySelectorAll('input, button').forEach(el => el.disabled = false);
+                            }
                         }
                     }
                     return;
                 }
 
-                if (studentState !== 'waiting') { studentState = 'waiting'; switchScreen('student-waiting-screen'); }
+                if (studentState !== 'waiting') { studentState = 'waiting'; saveLocalState(); switchScreen('student-waiting-screen'); }
 
                 const { data: waiting, error: waitErr } = await supabaseClient.from('students').select('*').is('team_number', null).order('created_at', { ascending: true });
                 if (waitErr) return;
@@ -1507,10 +1547,11 @@
         }
 
         function goToDashboard() {
-            // Intelligent Redirect: if the timer is already running, skip the home hub
             const hasActiveTimer = myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime();
             studentDashView = hasActiveTimer ? 'cases' : 'home';
             studentState = studentDashView;
+            
+            saveLocalState();
             
             const headerElement = document.querySelector('#global-header');
             if(headerElement) headerElement.style.display = 'flex';
@@ -1544,6 +1585,7 @@
                 btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-md cursor-not-allowed font-sans';
                 const builder = document.getElementById('budget-builder-container');
                 if(builder) builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                saveLocalState();
             }
         }
 
@@ -2100,6 +2142,8 @@
             if(twistTimerInterval) clearInterval(twistTimerInterval);
             supabaseClient.auth.signOut(); 
             
+            localStorage.clear(); // Wipe student state on logout
+            
             const headerElement = document.querySelector('#global-header');
             if(headerElement) headerElement.style.display = 'flex';
             const parchmentBg = document.getElementById('parchment-bg');
@@ -2114,9 +2158,20 @@
             const prn = localStorage.getItem('fp_prn');
             if (prn) {
                 const headerElement = document.querySelector('#global-header');
-                if(headerElement) headerElement.style.display = 'none';
-                studentState = 'waiting';
-                switchScreen('student-waiting-screen');
+                if(headerElement) headerElement.style.display = 'flex';
+                
+                loadLocalState(); // Restore local state
+                
+                if (studentState === 'home' || studentState === 'program' || studentState === 'cases' || studentState === 'dashboard') {
+                    document.getElementById('header-menu-btn').classList.remove('hidden');
+                    switchScreen('student-dashboard-screen');
+                } else if (studentState === 'reveal') {
+                    switchScreen('student-reveal-screen');
+                } else {
+                    studentState = 'waiting';
+                    switchScreen('student-waiting-screen');
+                }
+                
                 startStudentPolling(prn);
                 return; 
             }
