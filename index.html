@@ -169,7 +169,7 @@
               <input type="password" id="admin-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-base" required minlength="6" />
               <p class="text-[11px] text-slate-400 mt-3 leading-tight">*If this is your first time using this ID, the password you type now will become your permanent password.</p>
             </div>
-            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-base hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
               Access Command Center
             </button>
           </form>
@@ -1026,6 +1026,16 @@
 
     /* --- STUDENT EDITING & CONCURRENCY LOCKING --- */
     async function openEditModal(prn) {
+      // Attempt to acquire lock via DB RPC function
+      const { data: locked, error: lockErr } = await supabaseClient.rpc('try_lock_student', {
+        target_prn: prn,
+        admin_email: currentAdminEmail
+      });
+
+      if (lockErr || !locked) {
+        return showToast('🔒 Locked: This student profile is currently being edited by another admin.');
+      }
+
       const { data: student, error } = await supabaseClient
         .from('students')
         .select('*')
@@ -1035,19 +1045,6 @@
       if (error || !student) {
         return showToast('Error fetching student profile.');
       }
-
-      // Check if locked by another admin
-      const now = new Date();
-      if (student.locked_by && student.lock_expires_at && new Date(student.lock_expires_at) > now && student.locked_by !== currentAdminEmail) {
-        return showToast(`🔒 Locked: This student profile is currently being edited by another admin (${student.locked_by}).`);
-      }
-
-      // Acquire Lock (valid for 2 minutes)
-      const expiresAt = new Date(now.getTime() + 120000).toISOString();
-      await supabaseClient.from('students').update({
-        locked_by: currentAdminEmail,
-        lock_expires_at: expiresAt
-      }).eq('prn', prn);
 
       currentlyEditingPrn = prn;
       document.getElementById('edit-original-prn').value = student.prn;
@@ -1059,11 +1056,10 @@
 
     async function closeEditModal() {
       if (currentlyEditingPrn) {
-        // Release lock
-        await supabaseClient.from('students').update({
-          locked_by: null,
-          lock_expires_at: null
-        }).eq('prn', currentlyEditingPrn);
+        await supabaseClient.rpc('release_student_lock', {
+          target_prn: currentlyEditingPrn,
+          admin_email: currentAdminEmail
+        });
         currentlyEditingPrn = null;
       }
       document.getElementById('edit-student-modal').classList.add('hidden');
@@ -1421,6 +1417,9 @@
     }
 
     function logout() {
+      if (currentlyEditingPrn) {
+        supabaseClient.rpc('release_student_lock', { target_prn: currentlyEditingPrn, admin_email: currentAdminEmail });
+      }
       if(pollInterval) clearInterval(pollInterval);
       supabaseClient.auth.signOut();
       switchScreen('login-register-screen');
@@ -1436,6 +1435,7 @@
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user && session.user.email) {
+        currentAdminEmail = session.user.email;
         const match = session.user.email.match(/admin(\d+)@/);
         if (match && match[1]) {
           return initAdmin(match[1]);
