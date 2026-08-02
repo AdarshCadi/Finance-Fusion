@@ -258,7 +258,7 @@
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID" required="" type="number" min="1" max="50">
-                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (I - L)</label>
+                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (1 - 50)</label>
                         </div>
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
@@ -744,11 +744,13 @@
         }
 
         async function loadSettings() {
-            const { data } = await supabaseClient.from('event_settings').select('*').limit(1).single();
-            if(data) {
-                myConfig = data;
-                updateStudentContentUI();
-            }
+            try {
+                const { data, error } = await supabaseClient.from('event_settings').select('*').limit(1);
+                if (data && data.length > 0) {
+                    myConfig = { ...myConfig, ...data[0] };
+                    updateStudentContentUI();
+                }
+            } catch(e) { console.error("loadSettings Error:", e); }
         }
 
         function updateStudentContentUI() {
@@ -780,32 +782,35 @@
         }
 
         async function fetchTeamResult(teamNum) {
-            const { data: team } = await supabaseClient.from('teams').select('*').eq('team_number', teamNum).single();
-            if (team && team.ranking !== null && team.ranking !== undefined) {
-                const banner = document.getElementById('student-results-banner');
-                const statusEl = document.getElementById('student-result-status');
-                const detailsEl = document.getElementById('student-result-details');
-                const chocBadge = document.getElementById('student-chocolate-badge');
-                
-                banner.classList.remove('hidden');
-                if (team.disqualified) {
-                    statusEl.innerText = `Disqualified`;
-                    detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable limit.`;
-                    banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10 mt-4";
-                    chocBadge.classList.add('hidden');
-                } else {
-                    statusEl.innerText = `Rank #${toRoman(team.ranking)} Overall 🎉`;
-                    detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
-                    banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10 mt-4";
-                    if (myConfig.chocolates_sent) {
-                        chocBadge.classList.remove('hidden');
-                        document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${toRoman(team.ranking)}! 🏆`;
-                        if (!chocolatesShownThisSession && studentState === 'dashboard') {
-                            document.getElementById('chocolate-overlay').classList.remove('hidden');
-                            chocolatesShownThisSession = true;
-                        }
-                    } else {
+            const { data: teamRows } = await supabaseClient.from('teams').select('*').eq('team_number', teamNum).limit(1);
+            if (teamRows && teamRows.length > 0) {
+                const team = teamRows[0];
+                if (team.ranking !== null && team.ranking !== undefined) {
+                    const banner = document.getElementById('student-results-banner');
+                    const statusEl = document.getElementById('student-result-status');
+                    const detailsEl = document.getElementById('student-result-details');
+                    const chocBadge = document.getElementById('student-chocolate-badge');
+                    
+                    banner.classList.remove('hidden');
+                    if (team.disqualified) {
+                        statusEl.innerText = `Disqualified`;
+                        detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable limit.`;
+                        banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10 mt-4";
                         chocBadge.classList.add('hidden');
+                    } else {
+                        statusEl.innerText = `Rank #${toRoman(team.ranking)} Overall 🎉`;
+                        detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
+                        banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10 mt-4";
+                        if (myConfig.chocolates_sent) {
+                            chocBadge.classList.remove('hidden');
+                            document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${toRoman(team.ranking)}! 🏆`;
+                            if (!chocolatesShownThisSession && studentState === 'dashboard') {
+                                document.getElementById('chocolate-overlay').classList.remove('hidden');
+                                chocolatesShownThisSession = true;
+                            }
+                        } else {
+                            chocBadge.classList.add('hidden');
+                        }
                     }
                 }
             }
@@ -943,18 +948,23 @@
         async function checkTeamMatch(prn) {
             try {
                 await loadSettings();
-                const { data: me, error: meErr } = await supabaseClient.from('students').select('*').eq('prn', prn).single();
+                
+                // Use limit(1) to avoid PGRST116 crashes
+                const { data: students, error: meErr } = await supabaseClient.from('students').select('*').eq('prn', prn).limit(1);
 
-                if (meErr || !me) {
+                if (meErr || !students || students.length === 0) {
+                    console.error("Student check failed:", meErr);
                     localStorage.removeItem('fp_prn'); switchScreen('login-register-screen'); return;
                 }
+                const me = students[0];
 
                 if (me.team_number) {
                     myTeamNumber = me.team_number;
                     const tableNo = Math.ceil(me.team_number / 5);
 
-                    // 1. Setup Data for Reveal & Dashboard
+                    // 1. Setup Data for Reveal & Dashboard Menu
                     const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
+                    
                     if (studentState === 'waiting') {
                         document.getElementById('reveal-team-number').innerText = toRoman(me.team_number);
                         document.getElementById('reveal-table-number').innerText = toRoman(tableNo);
@@ -963,45 +973,46 @@
                             const names = otherMates.map(m => m.name).join(' & ');
                             document.getElementById('reveal-partner-names').innerText = names || 'Solo (Waiting for partners)';
                             
-                            // Prep Dashboard Grid & Menu Grid silently
+                            // Prep Dashboard Menu Grid silently
                             const menuHTML = mates.map(m => `
                                 <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                                     <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
                                     <span class="font-sans text-slate-700">${m.name}</span>
                                 </li>`).join('');
-                            document.getElementById('assigned-partners-list').innerHTML = menuHTML;
                             document.getElementById('menu-partners-list').innerHTML = menuHTML;
                         }
                         studentState = 'reveal';
                         switchScreen('student-reveal-screen');
                     }
 
-                    // 2. Keep Dashboard & Menu UI up to date
+                    // 2. Keep Menu UI up to date (removed from dash body)
                     document.getElementById('menu-team-number').innerText = toRoman(me.team_number);
                     document.getElementById('menu-table-number').innerText = toRoman(tableNo);
-                    document.getElementById('dash-team-number').innerText = toRoman(me.team_number);
-                    document.getElementById('dash-table-number').innerText = toRoman(tableNo);
 
-                    const { data: teamData } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).single();
-                    const btn = document.getElementById('submit-answer-btn');
-                    const builder = document.getElementById('budget-builder-container');
-
-                    if (teamData && teamData.case_answer) {
-                        try {
-                            const parsedData = JSON.parse(teamData.case_answer);
-                            if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
-                                budgetState = parsedData;
-                                if (isBudgetRendered) renderBudgetBuilder();
+                    // Use limit(1) to safely check if team exists
+                    const { data: teamRows } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).limit(1);
+                    
+                    if (teamRows && teamRows.length > 0) {
+                        const teamData = teamRows[0];
+                        if (teamData.case_answer) {
+                            try {
+                                const parsedData = JSON.parse(teamData.case_answer);
+                                if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
+                                    budgetState = parsedData;
+                                    if (isBudgetRendered) renderBudgetBuilder();
+                                }
+                            } catch (e) {}
+                            
+                            const btn = document.getElementById('submit-answer-btn');
+                            if (btn) {
+                                btn.innerText = 'Submitted by Team ✓';
+                                btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed font-sans';
+                                btn.disabled = true;
                             }
-                        } catch (e) {}
-                        
-                        if (btn) {
-                            btn.innerText = 'Submitted by Team ✓';
-                            btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed font-sans';
-                            btn.disabled = true;
-                        }
-                        if(builder) {
-                            builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                            const builder = document.getElementById('budget-builder-container');
+                            if(builder) {
+                                builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                            }
                         }
                     }
                     return;
