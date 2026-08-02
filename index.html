@@ -169,7 +169,7 @@
               <input type="password" id="admin-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-base" required minlength="6" />
               <p class="text-[11px] text-slate-400 mt-3 leading-tight">*If this is your first time using this ID, the password you type now will become your permanent password.</p>
             </div>
-            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-base hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
               Access Command Center
             </button>
           </form>
@@ -464,7 +464,7 @@
     </div>
   </div>
 
-  <!-- Admin Modal for Editing Student Details (With Concurrency Lock) -->
+  <!-- Admin Modal for Editing Student Details (With Ultra-Secure Tab Lock) -->
   <div id="edit-student-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeUp">
       <div class="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 bg-slate-50">
@@ -522,13 +522,15 @@
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+    // UNIQUE TAB ID: Guarantees even two tabs in the same browser won't overlap edit locks
+    const adminSessionId = 'admin_tab_' + Math.random().toString(36).substr(2, 9);
+
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false, chocolates_sent: false };
     let globalTeamsData = [];
     let globalStudentsData = [];
     let myTeamNumber = null;
     let chocolatesShownThisSession = false;
-    let currentAdminEmail = '';
     let currentlyEditingPrn = null;
     
     let isBudgetRendered = false;
@@ -700,7 +702,7 @@
       }, 1000);
     }
 
-    // --- INTERACTIVE BUDGET BUILDER LOGIC ---
+    // --- INTERACTIVE BUDGET BUILDER LOGIC (Mobile Stacked Inputs) ---
     function renderBudgetBuilder() {
       const container = document.getElementById('budget-builder-container');
       if(!container) return;
@@ -967,7 +969,7 @@
       }
     }
 
-    /* --- MASTER ADMIN FLOW & CONCURRENCY LOCKS --- */
+    /* --- MASTER ADMIN FLOW & UNIQUE TAB LOCKS --- */
     async function handleAdminAuth(e) {
       e.preventDefault();
       const adminNum = document.getElementById('admin-id').value.trim();
@@ -978,7 +980,6 @@
       }
 
       const email = `admin${adminNum}@financefusion.local`;
-      currentAdminEmail = email;
 
       let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       
@@ -1024,18 +1025,9 @@
       fetchRoster();
     }
 
-    /* --- STUDENT EDITING & CONCURRENCY LOCKING --- */
+    /* --- STUDENT EDITING & STRICT JAVASCRIPT TAB LOCKING --- */
     async function openEditModal(prn) {
-      // Attempt to acquire lock via DB RPC function
-      const { data: locked, error: lockErr } = await supabaseClient.rpc('try_lock_student', {
-        target_prn: prn,
-        admin_email: currentAdminEmail
-      });
-
-      if (lockErr || !locked) {
-        return showToast('🔒 Locked: This student profile is currently being edited by another admin.');
-      }
-
+      // 1. Fetch current lock status directly from DB
       const { data: student, error } = await supabaseClient
         .from('students')
         .select('*')
@@ -1044,6 +1036,26 @@
 
       if (error || !student) {
         return showToast('Error fetching student profile.');
+      }
+
+      // 2. Check if locked by someone else's browser tab
+      const now = new Date();
+      if (student.locked_by && student.locked_by !== adminSessionId) {
+        const expiresAt = new Date(student.lock_expires_at);
+        if (expiresAt > now) {
+          return showToast(`🔒 Locked: This student is currently being edited by another admin window.`);
+        }
+      }
+
+      // 3. Acquire lock for THIS specific browser tab (valid for 2 minutes)
+      const newExpiry = new Date(now.getTime() + 120000).toISOString();
+      const { error: lockErr } = await supabaseClient.from('students').update({
+        locked_by: adminSessionId,
+        lock_expires_at: newExpiry
+      }).eq('prn', prn);
+
+      if (lockErr) {
+        return showToast('Error acquiring edit lock. Make sure you ran the SQL to add the lock columns!');
       }
 
       currentlyEditingPrn = prn;
@@ -1056,10 +1068,11 @@
 
     async function closeEditModal() {
       if (currentlyEditingPrn) {
-        await supabaseClient.rpc('release_student_lock', {
-          target_prn: currentlyEditingPrn,
-          admin_email: currentAdminEmail
-        });
+        // Release the lock when modal is closed
+        await supabaseClient.from('students').update({
+          locked_by: null,
+          lock_expires_at: null
+        }).eq('prn', currentlyEditingPrn);
         currentlyEditingPrn = null;
       }
       document.getElementById('edit-student-modal').classList.add('hidden');
@@ -1084,7 +1097,7 @@
         prn: newPrn,
         name: newName,
         team_number: newTeam,
-        locked_by: null,
+        locked_by: null,  // Release lock on save
         lock_expires_at: null
       }, { onConflict: 'prn' });
 
@@ -1418,7 +1431,7 @@
 
     function logout() {
       if (currentlyEditingPrn) {
-        supabaseClient.rpc('release_student_lock', { target_prn: currentlyEditingPrn, admin_email: currentAdminEmail });
+        supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
       }
       if(pollInterval) clearInterval(pollInterval);
       supabaseClient.auth.signOut();
@@ -1435,7 +1448,6 @@
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user && session.user.email) {
-        currentAdminEmail = session.user.email;
         const match = session.user.email.match(/admin(\d+)@/);
         if (match && match[1]) {
           return initAdmin(match[1]);
