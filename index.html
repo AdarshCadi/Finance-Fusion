@@ -8,10 +8,10 @@
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     
-    <!-- Google Fonts: Bodoni Moda & Hanken Grotesk + Inter for Dashboards -->
+    <!-- Google Fonts: Cinzel & Montserrat -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Hanken+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -85,15 +85,15 @@
                         "gutter": "24px"
                     },
                     fontFamily: {
-                        "display-lg": ["Bodoni Moda"],
-                        "headline-lg-mobile": ["Bodoni Moda"],
-                        "headline-md": ["Bodoni Moda"],
-                        "body-lg": ["Hanken Grotesk"],
-                        "headline-lg": ["Bodoni Moda"],
-                        "body-md": ["Hanken Grotesk"],
-                        "caption": ["Hanken Grotesk"],
-                        "label-md": ["Hanken Grotesk"],
-                        "sans": ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                        "display-lg": ["Cinzel", "serif"],
+                        "headline-lg-mobile": ["Cinzel", "serif"],
+                        "headline-md": ["Cinzel", "serif"],
+                        "body-lg": ["Montserrat", "sans-serif"],
+                        "headline-lg": ["Cinzel", "serif"],
+                        "body-md": ["Montserrat", "sans-serif"],
+                        "caption": ["Montserrat", "sans-serif"],
+                        "label-md": ["Montserrat", "sans-serif"],
+                        "sans": ["Montserrat", "sans-serif"]
                     },
                     fontSize: {
                         "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
@@ -182,7 +182,7 @@
                 <span class="material-symbols-outlined text-2xl" data-icon="menu_book">menu_book</span>
             </button>
             <h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-md md:font-headline-md tracking-[0.2em] text-primary absolute left-1/2 -translate-x-1/2 uppercase">FinFusion</h1>
-            <div class="w-10"></div> <!-- Spacer for centering -->
+            <div class="w-10"></div>
         </div>
     </header>
 
@@ -230,8 +230,8 @@
                     <!-- Master Admin Form -->
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID (1 - 50)" required="" type="number" min="1" max="50">
-                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (1 - 50)</label>
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID" required="" type="number" min="1" max="50">
+                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (I - L)</label>
                         </div>
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
@@ -324,7 +324,7 @@
             <!-- Chocolate Winner Celebration Overlay -->
             <div id="chocolate-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-500/95 via-orange-600/95 to-amber-700/95 z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fadeUp backdrop-blur-md">
                 <div class="text-6xl sm:text-7xl mb-4 animate-bounceSlow">🍫🎉🍫</div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
+                <h2 class="text-3xl sm:text-4xl font-extrabold font-display-lg tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
                 <p class="text-amber-100 text-sm sm:text-base max-w-md mx-auto mb-6">Congratulations! The Master Admin has rewarded your winning allocation strategy with delicious virtual chocolates!</p>
                 <div class="bg-white/10 border border-white/20 rounded-2xl p-4 w-full max-w-sm mb-6 shadow-inner">
                     <p id="overlay-team-rank" class="text-lg font-bold">Your Ranking: Loading...</p>
@@ -338,12 +338,12 @@
             <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 gap-4 mb-6 relative z-10">
                 <div>
                     <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Your Allocation</p>
-                    <h3 class="text-2xl font-extrabold tracking-tight">Team <span id="dash-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span></h3>
+                    <h3 class="text-2xl font-extrabold tracking-tight font-display-lg">Team <span id="dash-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span></h3>
                 </div>
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-sm shadow-sm">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span class="text-slate-600 font-medium">Table</span>
-                    <strong class="text-slate-800 text-base" id="dash-table-number"></strong>
+                    <strong class="text-slate-800 text-base font-display-lg" id="dash-table-number"></strong>
                 </div>
             </div>
 
@@ -361,23 +361,23 @@
                     <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
                     <button onclick="reopenChocolateOverlay()" id="student-chocolate-badge" class="hidden bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-sm hover:bg-amber-300 transition-all cursor-pointer">🍫 View Chocolates</button>
                 </div>
-                <h4 id="student-result-status" class="text-2xl font-extrabold tracking-tight mt-1"></h4>
+                <h4 id="student-result-status" class="text-2xl font-extrabold font-display-lg tracking-tight mt-1"></h4>
                 <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
             </div>
 
             <!-- Case Study Stream -->
             <div class="space-y-4 pt-2 border-t border-slate-100 relative z-10">
                 <div class="bg-blue-50/60 p-4 sm:p-5 rounded-2xl border border-blue-100">
-                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Subject 1 Basics</span>
-                    <h4 id="student-subject-title" class="text-base sm:text-lg font-bold mt-1 mb-2">Awaiting Subject Brief...</h4>
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Subject I Basics</span>
+                    <h4 id="student-subject-title" class="text-base sm:text-lg font-bold font-display-lg mt-1 mb-2">Awaiting Subject Brief...</h4>
                     <p id="student-subject-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the subject brief yet.</p>
                 </div>
 
                 <div class="bg-indigo-50/60 p-4 sm:p-5 rounded-2xl border border-indigo-100 relative">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study 1</span>
-                            <h4 id="student-case-title" class="text-base sm:text-lg font-bold mt-1 mb-2">Awaiting Case Details...</h4>
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study I</span>
+                            <h4 id="student-case-title" class="text-base sm:text-lg font-bold font-display-lg mt-1 mb-2">Awaiting Case Details...</h4>
                         </div>
                         <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right flex-shrink-0 ml-2">
                             <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Left</span>
@@ -410,7 +410,7 @@
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 clean-panel p-4 sm:p-5">
                 <div>
-                    <h2 class="font-bold text-xl tracking-tight">Master Admin Command Center</h2>
+                    <h2 class="font-bold text-xl tracking-tight font-display-lg">Master Admin Command Center</h2>
                     <div class="flex items-center gap-2 mt-1.5">
                         <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                         <p id="admin-role-badge" class="text-xs font-semibold text-slate-500 uppercase tracking-wider"></p>
@@ -426,7 +426,7 @@
 
             <!-- Settings -->
             <div id="org-settings" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-blue-500 mb-6 space-y-4">
-                <h3 class="font-semibold tracking-tight">Event Configurations</h3>
+                <h3 class="font-semibold tracking-tight font-display-lg">Event Configurations</h3>
                 <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
                     <div class="flex-1 min-w-[120px]">
                         <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Team Size</label>
@@ -450,7 +450,7 @@
             <div id="org-evaluation-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-lg tracking-tight">Automated Leaderboard & Evaluation (50-30-20 Rule)</h3>
+                        <h3 class="font-bold text-lg tracking-tight font-display-lg">Automated Leaderboard & Evaluation (50-30-20 Rule)</h3>
                         <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
@@ -481,11 +481,11 @@
 
             <!-- Broadcast Content -->
             <div id="org-content-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-blue-600 mb-6 space-y-6">
-                <h3 class="font-bold text-lg tracking-tight">Broadcast Subject & Case Context</h3>
+                <h3 class="font-bold text-lg tracking-tight font-display-lg">Broadcast Subject & Case Context</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
-                        <h4 class="font-semibold text-sm uppercase tracking-wide">Subject 1 Basics</h4>
+                        <h4 class="font-semibold text-sm uppercase tracking-wide">Subject I Basics</h4>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">Subject Name</label>
                             <input type="text" id="org-subject-title" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="e.g. Personal Finance" />
@@ -500,7 +500,7 @@
                     </div>
 
                     <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
-                        <h4 class="font-semibold text-sm uppercase tracking-wide">Case Study 1, Budget & Timer</h4>
+                        <h4 class="font-semibold text-sm uppercase tracking-wide">Case Study I, Budget & Timer</h4>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
                             <input type="text" id="org-case-title" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="e.g. Portfolio Allocation Dilemma" />
@@ -534,7 +534,7 @@
             <div class="clean-panel p-0 overflow-hidden flex flex-col h-[600px]">
                 <div class="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-white">
                     <div class="flex items-center gap-3">
-                        <h3 class="font-semibold tracking-tight">Live Student Roster</h3>
+                        <h3 class="font-semibold tracking-tight font-display-lg">Live Student Roster</h3>
                         <span class="flex h-3 w-3 relative">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
@@ -578,7 +578,7 @@
                     <input type="text" id="edit-student-prn" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Assigned Team</label>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Assigned Team (Arabic digits)</label>
                     <input type="number" id="edit-student-team" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" placeholder="e.g. 1" />
                 </div>
             </div>
@@ -619,6 +619,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // --- ROMAN NUMERAL HELPER ---
+        function toRoman(num) {
+            if (!num || isNaN(num)) return num;
+            const lookup = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1};
+            let roman = '', i;
+            for ( i in lookup ) {
+                while ( num >= lookup[i] ) {
+                    roman += i;
+                    num -= lookup[i];
+                }
+            }
+            return roman;
+        }
+
         // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://iirmhdhaihrkmeagaugq.supabase.co';
         const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
@@ -685,11 +699,11 @@
 
         function updateStudentContentUI() {
             if (myConfig.subject_title || myConfig.subject_content) {
-                document.getElementById('student-subject-title').innerText = myConfig.subject_title || 'Subject 1 Basics';
+                document.getElementById('student-subject-title').innerText = myConfig.subject_title || 'Subject I Basics';
                 document.getElementById('student-subject-content').innerText = myConfig.subject_content || '';
             }
             if (myConfig.case_title || myConfig.case_content) {
-                document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study 1';
+                document.getElementById('student-case-title').innerText = myConfig.case_title || 'Case Study I';
                 document.getElementById('student-case-content').innerText = myConfig.case_content || '';
                 
                 if(myConfig.case_content && myConfig.case_content.trim() !== '') {
@@ -716,12 +730,12 @@
                     banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10";
                     chocBadge.classList.add('hidden');
                 } else {
-                    statusEl.innerText = `Rank #${team.ranking} Overall 🎉`;
+                    statusEl.innerText = `Rank #${toRoman(team.ranking)} Overall 🎉`;
                     detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
                     banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10";
                     if (myConfig.chocolates_sent) {
                         chocBadge.classList.remove('hidden');
-                        document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${team.ranking}! 🏆`;
+                        document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${toRoman(team.ranking)}! 🏆`;
                         if (!chocolatesShownThisSession && studentState === 'dashboard') {
                             document.getElementById('chocolate-overlay').classList.remove('hidden');
                             chocolatesShownThisSession = true;
@@ -846,6 +860,10 @@
             const { error } = await supabaseClient.from('students').upsert({ prn, name }, { onConflict: 'prn' });
             if(error) return showToast('Error: ' + error.message);
             
+            // Immediately hide header for transition
+            const headerElement = document.querySelector('#global-header');
+            if(headerElement) headerElement.style.display = 'none';
+
             localStorage.setItem('fp_prn', prn);
             studentState = 'waiting';
             switchScreen('student-waiting-screen');
@@ -875,8 +893,8 @@
                     // 1. Setup Data for Reveal & Dashboard
                     const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
                     if (studentState === 'waiting') {
-                        document.getElementById('reveal-team-number').innerText = me.team_number;
-                        document.getElementById('reveal-table-number').innerText = tableNo;
+                        document.getElementById('reveal-team-number').innerText = toRoman(me.team_number);
+                        document.getElementById('reveal-table-number').innerText = toRoman(tableNo);
                         if (mates) {
                             const otherMates = mates.filter(m => m.name !== me.name);
                             const names = otherMates.map(m => m.name).join(' & ');
@@ -885,8 +903,8 @@
                             // Prep Dashboard Grid silently
                             document.getElementById('assigned-partners-list').innerHTML = mates.map(m => `
                                 <li class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">${m.name.charAt(0).toUpperCase()}</div>
-                                    ${m.name}
+                                    <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
+                                    <span class="font-sans">${m.name}</span>
                                 </li>`).join('');
                         }
                         studentState = 'reveal';
@@ -894,8 +912,8 @@
                     }
 
                     // 2. Keep Dashboard UI up to date
-                    document.getElementById('dash-team-number').innerText = me.team_number;
-                    document.getElementById('dash-table-number').innerText = tableNo;
+                    document.getElementById('dash-team-number').innerText = toRoman(me.team_number);
+                    document.getElementById('dash-table-number').innerText = toRoman(tableNo);
 
                     const { data: teamData } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).single();
                     const btn = document.getElementById('submit-answer-btn');
@@ -945,6 +963,8 @@
 
         function goToDashboard() {
             studentState = 'dashboard';
+            const headerElement = document.querySelector('#global-header');
+            if(headerElement) headerElement.style.display = 'flex';
             switchScreen('student-dashboard-screen');
         }
 
@@ -993,7 +1013,11 @@
                 return showToast('Login Error: ' + error.message);
             }
 
-            if (data && data.user) initAdmin(adminNum);
+            if (data && data.user) {
+                const headerElement = document.querySelector('#global-header');
+                if(headerElement) headerElement.style.display = 'flex';
+                initAdmin(adminNum);
+            }
         }
 
         async function initAdmin(adminNum) {
@@ -1011,7 +1035,7 @@
             document.getElementById('org-case-content').value = myConfig.case_content || '';
             document.getElementById('org-max-budget').value = myConfig.max_budget !== undefined ? myConfig.max_budget : 10000;
             
-            document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminNum}`;
+            document.getElementById('admin-role-badge').innerText = `Admin ID: ${toRoman(adminNum)}`;
             setInterval(fetchRoster, 5000);
             fetchRoster();
         }
@@ -1128,15 +1152,15 @@
 
             tbody.innerHTML = teamsList.map(t => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="py-3 px-4 font-extrabold text-center text-indigo-700">${t.disqualified || t.ranking === null ? '-' : '#' + t.ranking}</td>
-                    <td class="py-3 px-4 font-medium text-slate-800">Team ${t.team_number}</td>
-                    <td class="py-3 px-4 text-center font-semibold text-slate-700">$${t.grand_total.toLocaleString()}</td>
-                    <td class="py-3 px-4 text-center font-bold text-indigo-600">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
+                    <td class="py-3 px-4 font-extrabold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
+                    <td class="py-3 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
+                    <td class="py-3 px-4 text-center font-semibold text-slate-700 font-sans">$${t.grand_total.toLocaleString()}</td>
+                    <td class="py-3 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
                     <td class="py-3 px-4 text-center">
-                        ${t.disqualified ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold">Qualified</span>'}
+                        ${t.disqualified ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
                     </td>
                     <td class="py-3 px-4 text-right">
-                        <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all">View Sheet</button>
+                        <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all font-sans">View Sheet</button>
                     </td>
                 </tr>
             `).join('');
@@ -1217,13 +1241,13 @@
                 const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
                 return `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="py-3 px-4 sm:px-5 font-medium text-slate-800">${s.name}</td>
-                        <td class="py-3 px-4 sm:px-5 text-slate-500">${s.prn}</td>
-                        <td class="py-3 px-4 sm:px-5 text-center">
-                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
+                        <td class="py-3 px-4 sm:px-5 font-medium text-slate-800 font-sans">${s.name}</td>
+                        <td class="py-3 px-4 sm:px-5 text-slate-500 font-sans">${s.prn}</td>
+                        <td class="py-3 px-4 sm:px-5 text-center font-sans">
+                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${toRoman(s.team_number)}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
                         </td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600">${tableNo}</td>
-                        <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap">
+                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? toRoman(tableNo) : '-'}</td>
+                        <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
                             <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
                             ${hasTeamAnswer && s.team_number ? `
                                 <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
@@ -1237,15 +1261,15 @@
         }
 
         async function clearTeamAnswer(teamNumber) {
-            if(!confirm(`Are you sure you want to completely delete the submission for Team ${teamNumber}? The team will be able to submit a new strategy.`)) return;
+            if(!confirm(`Are you sure you want to completely delete the submission for Team ${toRoman(teamNumber)}? The team will be able to submit a new strategy.`)) return;
             await supabaseClient.from('teams').update({ case_answer: null, ranking: null, score: null, disqualified: false }).eq('team_number', teamNumber);
-            fetchRoster(); showToast(`Team ${teamNumber} answer cleared.`);
+            fetchRoster(); showToast(`Team ${toRoman(teamNumber)} answer cleared.`);
         }
 
         function openAnswerModal(teamNumber) {
             const team = globalTeamsData.find(t => t.team_number === teamNumber);
             if(team && team.case_answer) {
-                document.getElementById('modal-team-heading').innerText = `Team ${team.team_number} Strategy Submission`;
+                document.getElementById('modal-team-heading').innerText = `Team ${toRoman(team.team_number)} Strategy Submission`;
                 let displayHTML = '';
                 try {
                         const parsed = JSON.parse(team.case_answer);
@@ -1310,6 +1334,8 @@
         window.onload = async () => {
             const prn = localStorage.getItem('fp_prn');
             if (prn) {
+                const headerElement = document.querySelector('#global-header');
+                if(headerElement) headerElement.style.display = 'none';
                 studentState = 'waiting';
                 switchScreen('student-waiting-screen');
                 startStudentPolling(prn);
@@ -1319,7 +1345,11 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user && session.user.email) {
                 const match = session.user.email.match(/admin(\d+)@/);
-                if (match && match[1]) return initAdmin(match[1]);
+                if (match && match[1]) {
+                    const headerElement = document.querySelector('#global-header');
+                    if(headerElement) headerElement.style.display = 'flex';
+                    return initAdmin(match[1]);
+                }
             }
         };
     </script>
