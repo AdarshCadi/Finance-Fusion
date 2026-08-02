@@ -164,11 +164,11 @@
         }
 
         /* ── Minimal Toasts ── */
-        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; font-family: 'Inter', sans-serif; }
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; font-family: 'Inter', sans-serif; pointer-events: none;}
         .toast { 
             padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; 
             background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); 
-            color: #0f172a; animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            color: #0f172a; animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto;
         }
         @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -204,7 +204,7 @@
         </div>
         
         <!-- Timer / Unlock Button -->
-        <div id="twist-countdown-container" class="bg-surface-variant text-primary px-8 py-4 rounded-xl font-bold text-xl">
+        <div id="twist-countdown-container" class="bg-surface-variant text-primary px-8 py-4 rounded-xl font-bold text-xl border border-outline">
             Interface Locked: <span id="twist-timer" class="text-error">30</span>s
         </div>
         <button id="twist-dismiss-btn" onclick="dismissPlotTwist()" class="hidden bg-error text-on-error hover:bg-error/80 px-10 py-4 rounded-xl font-label-md uppercase tracking-widest shadow-lg transition-all">
@@ -369,7 +369,7 @@
         </main>
     </div>
 
-    <!-- SCREEN 4: Student Main Dashboard (Multi-View) -->
+    <!-- SCREEN 4: Student Main Dashboard (PAGINATED) -->
     <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-primary z-10 relative font-sans pt-24 pb-20">
         <div class="w-full max-w-3xl relative">
             
@@ -470,10 +470,11 @@
         </div>
     </div>
 
-    <!-- SCREEN 5: Master Admin Dashboard -->
+    <!-- SCREEN 5: Master Admin Dashboard (Tech Theme) -->
     <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-3 sm:p-4 md:p-8 bg-slate-50 text-slate-800 z-50 absolute inset-0 overflow-y-auto" style="font-family: 'Inter', sans-serif;">
         <div class="max-w-7xl mx-auto w-full space-y-6">
             
+            <!-- Top Controls -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 admin-panel p-4 sm:p-5">
                 <div>
                     <h2 class="font-bold text-xl tracking-tight text-slate-800">Master Admin Command Center</h2>
@@ -617,7 +618,16 @@
                             <label class="block text-xs font-medium text-slate-500 mb-1">Timer Duration (Mins)</label>
                             <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="admin-input text-center font-medium" />
                         </div>
-                        <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer & Limit</button>
+                        <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer</button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Add Buffer (Mins)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="org-buffer-mins" value="3" class="admin-input text-center font-medium" />
+                                <button onclick="addBufferTimer()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">+ Add Buffer</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -701,7 +711,7 @@
         </div>
     </div>
 
-    <div class="toast-container font-sans" id="toast-container"></div>
+    <div class="toast-container" id="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -754,15 +764,21 @@
         let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], Investments: [{ desc: '', amount: '' }] };
 
         const plotTwists = [
-            { icon: '🏥', title: 'Medical Emergency', desc: 'Hospital bill: ₹1,20,000' },
-            { icon: '🚗', title: 'The Car Says "No More!"', desc: 'Major repair: ₹60,000' },
-            { icon: '💻', title: '"Dad... I Need a Laptop!"', desc: 'New laptop for school: ₹80,000' },
-            { icon: '🏠', title: 'Rain Has Other Plans', desc: 'House repair after heavy rains: ₹1,50,000' },
-            { icon: '🎓', title: 'Admission Season', desc: 'School admission fee: ₹75,000' },
-            { icon: '🌴', title: 'Family Emergency Trip', desc: 'Travel expense: ₹90,000' },
-            { icon: '🐶', title: 'The Kids Adopted a Puppy... Without Asking!', desc: 'First-year pet expenses: ₹40,000' },
-            { icon: '📱', title: 'Oops... Someone Dropped the Phone!', desc: 'New phone purchase: ₹35,000' }
+            { icon: '🏥', title: 'Medical Emergency', desc: 'Hospital bill: ₹1,20,000', cost: 120000, key: 'hospital|medical|emergency' },
+            { icon: '🚗', title: 'The Car Says "No More!"', desc: 'Major repair: ₹60,000', cost: 60000, key: 'car|repair|vehicle' },
+            { icon: '💻', title: '"Dad... I Need a Laptop!"', desc: 'New laptop for school: ₹80,000', cost: 80000, key: 'laptop|computer|school' },
+            { icon: '🏠', title: 'Rain Has Other Plans', desc: 'House repair after heavy rains: ₹1,50,000', cost: 150000, key: 'house|repair|rain|roof' },
+            { icon: '🎓', title: 'Admission Season', desc: 'School admission fee: ₹75,000', cost: 75000, key: 'admission|school|fee' },
+            { icon: '🌴', title: 'Family Emergency Trip', desc: 'Travel expense: ₹90,000', cost: 90000, key: 'travel|trip|flight|ticket' },
+            { icon: '🐶', title: 'The Kids Adopted a Puppy... Without Asking!', desc: 'First-year pet expenses: ₹40,000', cost: 40000, key: 'pet|puppy|dog' },
+            { icon: '📱', title: 'Oops... Someone Dropped the Phone!', desc: 'New phone purchase: ₹35,000', cost: 35000, key: 'phone|mobile' }
         ];
+
+        // Global Anti-Cheating (Blocks copy/paste for students)
+        document.addEventListener('copy', function(e) { if(studentState !== 'admin') e.preventDefault(); });
+        document.addEventListener('cut', function(e) { if(studentState !== 'admin') e.preventDefault(); });
+        document.addEventListener('paste', function(e) { if(studentState !== 'admin') e.preventDefault(); });
+        document.addEventListener('contextmenu', function(e) { if(studentState !== 'admin') e.preventDefault(); });
 
         function showToast(msg) {
             const el = document.createElement('div');
@@ -883,6 +899,7 @@
                         <h4 class="text-3xl sm:text-4xl font-display-lg text-primary mt-3 mb-6 leading-tight">${c.title}</h4>
                         <p class="text-body-lg font-body-lg text-on-surface-variant whitespace-pre-wrap leading-relaxed w-full">${c.content}</p>
                     </div>`;
+                    
                     backBtn.disabled = (currentCaseIndex === 0);
                     nextBtn.disabled = (currentCaseIndex === studentCasesList.length - 1);
                     
@@ -1214,7 +1231,7 @@
                             document.getElementById('reveal-partner-names').innerText = names || 'Solo (Waiting for partners)';
                             
                             const menuHTML = mates.map(m => `
-                                <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                                <li class="flex items-center gap-3 bg-background p-3 rounded-lg border border-outline-variant shadow-sm">
                                     <div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center text-primary font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
                                     <span class="font-sans text-on-surface-variant">${m.name}</span>
                                 </li>`).join('');
@@ -1315,7 +1332,6 @@
 
         /* --- MASTER ADMIN FLOW --- */
         function renderAdminContentBuilder() {
-            // Render Subjects
             let subHtml = '';
             adminSubjects.forEach((sub, i) => {
                 subHtml += `
@@ -1336,7 +1352,6 @@
             });
             document.getElementById('admin-subjects-container').innerHTML = subHtml;
 
-            // Render Cases
             let caseHtml = '';
             adminCases.forEach((c, i) => {
                 caseHtml += `
@@ -1383,6 +1398,18 @@
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             if(error) showToast("Error: " + error.message);
             else showToast("🚨 Plot Twist Triggered!");
+        }
+
+        async function addBufferTimer() {
+            if (!myConfig.timer_end_time) return showToast('No active timer to add buffer to.');
+            const addMins = parseInt(document.getElementById('org-buffer-mins').value) || 3;
+            const currentEnd = new Date(myConfig.timer_end_time).getTime();
+            const newEnd = new Date(currentEnd + addMins * 60000).toISOString();
+            
+            myConfig.timer_end_time = newEnd;
+            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            if (error) showToast('Database Error: ' + error.message);
+            else showToast(`Added ${addMins} minutes buffer!`);
         }
 
         async function handleAdminAuth(e) {
@@ -1499,6 +1526,7 @@
             const targetNeeds = parseFloat(myConfig.target_needs) || 50;
             const targetWants = parseFloat(myConfig.target_wants) || 20;
             const targetInv = parseFloat(myConfig.target_inv) || 30;
+            const hasTwist = !!myConfig.plot_twist_triggered_at;
             
             let evaluatedTeams = [];
 
@@ -1554,7 +1582,23 @@
                     if(hasT2) invScore += 5;
                     if(hasT3) invScore += 5;
 
-                    let rawScore = macroScore + needsScore + wantsScore + invScore;
+                    let twistScore = 0;
+                    if (hasTwist) {
+                        let assignedTwist = plotTwists[team.team_number % plotTwists.length];
+                        let twistRegex = new RegExp(assignedTwist.key, 'i');
+                        let accommodatedTwist = false;
+
+                        [...(parsed.Needs || []), ...(parsed.Wants || [])].forEach(item => {
+                            if (twistRegex.test(item.desc.toLowerCase()) || parseFloat(item.amount) === assignedTwist.cost) {
+                                accommodatedTwist = true;
+                            }
+                        });
+
+                        if (accommodatedTwist) twistScore = 15; 
+                        else twistScore = -20; 
+                    }
+
+                    let rawScore = Math.max(0, macroScore + needsScore + wantsScore + invScore + twistScore);
 
                     evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, raw_score: rawScore, disqualified: false, submitted_at: team.submitted_at || '9999-99-99' });
                 } catch (e) {}
@@ -1598,7 +1642,7 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="py-4 px-4 font-bold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
                     <td class="py-4 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-4 px-4 text-center font-semibold text-secondary font-sans">₹${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-4 text-center font-semibold text-slate-700 font-sans">₹${t.grand_total.toLocaleString()}</td>
                     <td class="py-4 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : (t.percentile !== undefined ? t.percentile : t.score) + ' %ile'}</td>
                     <td class="py-4 px-4 text-center font-sans">
                         ${t.disqualified ? '<span class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
@@ -1679,19 +1723,6 @@
             else showToast('Content unpublished successfully.');
         }
 
-        async function startCaseTimerWithBudget() {
-            const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
-            const maxBgt = parseFloat(document.getElementById('org-max-budget').value) || 10000;
-            const endTime = new Date(new Date().getTime() + mins * 60000).toISOString();
-            
-            myConfig.timer_end_time = endTime;
-            myConfig.max_budget = maxBgt;
-
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Database Error: ' + error.message);
-            else showToast(`Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`);
-        }
-
         async function fetchRoster() {
             const { data: students } = await supabaseClient.from('students').select('*').order('created_at');
             const { data: teams } = await supabaseClient.from('teams').select('*');
@@ -1716,7 +1747,7 @@
                             <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-blue-50 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
                             ${hasTeamAnswer && s.team_number ? `
                                 <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
-                                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-1.5 rounded bg-indigo-50 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
+                                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-1.5 rounded bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
                             ` : ''}
                             <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm">Revoke</button>
                         </td>
