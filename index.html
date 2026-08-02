@@ -182,7 +182,7 @@
   <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-3 sm:p-4">
     <div class="w-full max-w-2xl clean-panel p-4 sm:p-8 relative overflow-hidden my-4 sm:my-6">
       
-      <!-- Big Screen Chocolate Winner Celebration Overlay (Covers the student screen) -->
+      <!-- Big Screen Chocolate Winner Celebration Overlay -->
       <div id="chocolate-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-500/95 via-orange-600/95 to-amber-700/95 z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fadeUp backdrop-blur-md">
         <div class="text-6xl sm:text-7xl mb-4 animate-bounceSlow">🍫🎉🍫</div>
         <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
@@ -235,7 +235,7 @@
           </ul>
         </div>
 
-        <!-- Results Banner (Hidden until Admin publishes results) -->
+        <!-- Results Banner -->
         <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
@@ -305,7 +305,6 @@
           </div>
         </div>
         <div class="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
-          <button onclick="toggleManualAdd()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg font-medium transition-all shadow-sm">Add Student</button>
           <button onclick="toggleContentPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case</button>
           <button onclick="toggleEvaluationPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all shadow-sm">Evaluate & Rank</button>
           <button onclick="toggleSettings()" class="flex-1 md:flex-none text-xs sm:text-sm px-3 sm:px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
@@ -335,7 +334,7 @@
         </div>
       </div>
 
-      <!-- Evaluation & Leaderboard Panel (With Send Chocolates Button) -->
+      <!-- Evaluation & Leaderboard Panel -->
       <div id="org-evaluation-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-indigo-600 mb-6 space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -433,29 +432,6 @@
         </div>
       </div>
 
-      <!-- Manual Entry Panel -->
-      <div id="manual-add-panel" class="hidden clean-panel p-4 sm:p-6 border-l-4 border-l-emerald-500 mb-6">
-        <h3 class="font-semibold text-slate-800 mb-5 tracking-tight">Manual Student Entry</h3>
-        <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
-          <div class="flex-1 min-w-[150px]">
-            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Full Name</label>
-            <input type="text" id="manual-name" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="Student Name" />
-          </div>
-          <div class="flex-1 min-w-[150px]">
-            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">PRN</label>
-            <input type="text" id="manual-prn" class="input-field w-full p-2.5 rounded-xl font-medium" placeholder="University ID" />
-          </div>
-          <div class="flex-1 min-w-[120px]">
-            <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Assign Team</label>
-            <input type="number" id="manual-team" class="input-field w-full p-2.5 rounded-xl text-center font-medium" placeholder="e.g. 1" />
-          </div>
-          <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-            <button onclick="addStudentManually()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Add Participant</button>
-          </div>
-        </div>
-        <p class="text-xs text-slate-500 mt-3">* Table number will be automatically calculated based on the assigned Team and your Event Settings.</p>
-      </div>
-
       <!-- Live Roster -->
       <div class="clean-panel p-0 overflow-hidden flex flex-col h-[600px]">
         <div class="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-white">
@@ -488,6 +464,35 @@
     </div>
   </div>
 
+  <!-- Admin Modal for Editing Student Details -->
+  <div id="edit-student-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeUp">
+      <div class="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 bg-slate-50">
+        <h3 class="font-bold text-slate-800 text-base sm:text-lg">Edit Student Profile</h3>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+      <div class="p-4 sm:p-6 space-y-4">
+        <input type="hidden" id="edit-original-prn" />
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Full Name</label>
+          <input type="text" id="edit-student-name" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">PRN (ID)</label>
+          <input type="text" id="edit-student-prn" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Assigned Team (Leave empty if waiting)</label>
+          <input type="number" id="edit-student-team" class="input-field w-full px-4 py-2.5 rounded-xl text-sm font-medium" placeholder="e.g. 1" />
+        </div>
+      </div>
+      <div class="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+        <button onclick="saveStudentEdits()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Admin Modal for Viewing Team Answers -->
   <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
@@ -500,7 +505,6 @@
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team ID</span>
           <p id="modal-team-heading" class="font-semibold text-indigo-900 mt-1"></p>
         </div>
-        <!-- Rendered JSON content will go here -->
         <div id="modal-team-answer" class="text-sm"></div>
       </div>
       <div class="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
@@ -521,6 +525,7 @@
     let pollInterval = null;
     let myConfig = { team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, subject_title: '', subject_content: '', case_title: '', case_content: '', timer_end_time: null, results_published: false, chocolates_sent: false };
     let globalTeamsData = [];
+    let globalStudentsData = [];
     let myTeamNumber = null;
     let chocolatesShownThisSession = false;
     
@@ -817,8 +822,8 @@
           document.getElementById('student-assigned').classList.remove('hidden');
           document.getElementById('assigned-team-number').innerText = me.team_number;
           
-          const teamsPerTable = myConfig.teams_per_table || 5;
-          document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / teamsPerTable);
+          // Table calculation: 1-5 = Table 1, 6-10 = Table 2, etc.
+          document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / 5);
 
           const { data: teamData } = await supabaseClient
             .from('teams')
@@ -895,7 +900,7 @@
               .order('team_number', { ascending: false })
               .limit(1);
 
-            const fallbackTeam = (lastTeam && lastTeam.length && lastTeam[0].team_number) ? lastTeam[0].team_number : 1;
+            const fallbackTeam = (lastTeam && lastTeam.length && lastTeam[0].team_number) ? lastTeam[0].team_number + 1 : 1;
             await supabaseClient.from('students').update({ team_number: fallbackTeam }).eq('prn', prn);
             await supabaseClient.from('teams').upsert({ team_number: fallbackTeam, case_answer: null });
           }
@@ -1015,6 +1020,57 @@
       
       setInterval(fetchRoster, 5000);
       fetchRoster();
+    }
+
+    /* --- STUDENT EDITING LOGIC --- */
+    function openEditModal(prn) {
+      const student = globalStudentsData.find(s => s.prn === prn);
+      if (student) {
+        document.getElementById('edit-original-prn').value = student.prn;
+        document.getElementById('edit-student-name').value = student.name || '';
+        document.getElementById('edit-student-prn').value = student.prn || '';
+        document.getElementById('edit-student-team').value = student.team_number !== null ? student.team_number : '';
+        document.getElementById('edit-student-modal').classList.remove('hidden');
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-student-modal').classList.add('hidden');
+    }
+
+    async function saveStudentEdits() {
+      const originalPrn = document.getElementById('edit-original-prn').value;
+      const newName = document.getElementById('edit-student-name').value.trim();
+      const newPrn = document.getElementById('edit-student-prn').value.trim();
+      const teamInput = document.getElementById('edit-student-team').value.trim();
+      const newTeam = teamInput ? parseInt(teamInput) : null;
+
+      if (!newName || !newPrn) {
+        return showToast('Name and PRN cannot be empty.');
+      }
+
+      // If PRN changed, we update or upsert
+      if (originalPrn !== newPrn) {
+        // Delete old record if PRN changed, then insert new
+        await supabaseClient.from('students').delete().eq('prn', originalPrn);
+      }
+
+      const { error } = await supabaseClient.from('students').upsert({
+        prn: newPrn,
+        name: newName,
+        team_number: newTeam
+      }, { onConflict: 'prn' });
+
+      if (error) {
+        showToast('Error updating student: ' + error.message);
+      } else {
+        if (newTeam) {
+          await supabaseClient.from('teams').upsert({ team_number: newTeam, case_answer: null }, { onConflict: 'team_number' });
+        }
+        showToast('Student details updated successfully!');
+        closeEditModal();
+        fetchRoster();
+      }
     }
 
     /* --- EVALUATION & RANKING LOGIC (50-30-20 RULE) --- */
@@ -1151,10 +1207,6 @@
       document.getElementById('org-settings').classList.toggle('hidden');
     }
 
-    function toggleManualAdd() {
-      document.getElementById('manual-add-panel').classList.toggle('hidden');
-    }
-
     function toggleContentPanel() {
       document.getElementById('org-content-panel').classList.toggle('hidden');
     }
@@ -1223,41 +1275,11 @@
       }
     }
 
-    async function addStudentManually() {
-      const name = document.getElementById('manual-name').value.trim();
-      const prn = document.getElementById('manual-prn').value.trim();
-      const teamInput = document.getElementById('manual-team').value.trim();
-
-      if (!name || !prn) {
-        return showToast('Name and PRN are required.');
-      }
-
-      let team_number = teamInput ? parseInt(teamInput) : null;
-
-      const { error } = await supabaseClient.from('students').upsert({ 
-        prn: prn, 
-        name: name, 
-        team_number: team_number 
-      }, { onConflict: 'prn' });
-
-      if (error) {
-        showToast('Error: ' + error.message);
-      } else {
-        if(team_number) {
-          await supabaseClient.from('teams').upsert({ team_number, case_answer: null });
-        }
-        showToast('Participant added successfully.');
-        document.getElementById('manual-name').value = '';
-        document.getElementById('manual-prn').value = '';
-        document.getElementById('manual-team').value = '';
-        fetchRoster();
-      }
-    }
-
     async function fetchRoster() {
       const { data: students } = await supabaseClient.from('students').select('*').order('created_at');
       const { data: teams } = await supabaseClient.from('teams').select('*');
       
+      globalStudentsData = students || [];
       const teamAnswers = {};
       if (teams) {
         teams.forEach(t => { teamAnswers[t.team_number] = t.case_answer; });
@@ -1266,6 +1288,8 @@
       
       document.getElementById('roster-body').innerHTML = students.map(s => {
         const hasTeamAnswer = s.team_number && teamAnswers[s.team_number];
+        // Table number rule: 1-5 = Table 1, 6-10 = Table 2, etc.
+        const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
         return `
           <tr class="hover:bg-slate-50 transition-colors">
             <td class="py-3 px-4 sm:px-5 font-medium text-slate-800">${s.name}</td>
@@ -1275,11 +1299,12 @@
                 ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` 
                 : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
             </td>
-            <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600">${s.team_number ? Math.ceil(s.team_number / myConfig.teams_per_table) : '-'}</td>
+            <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600">${tableNo}</td>
             <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap">
+              <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
               ${hasTeamAnswer && s.team_number ? `
-                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Team Answer</button>
-                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Team Sheet</button>
+                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
+                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
               ` : ''}
               <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all">Revoke</button>
             </td>
