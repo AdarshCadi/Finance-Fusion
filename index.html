@@ -169,7 +169,7 @@
               <input type="password" id="admin-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-base" required minlength="6" />
               <p class="text-[11px] text-slate-400 mt-3 leading-tight">*If this is your first time using this ID, the password you type now will become your permanent password.</p>
             </div>
-            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-base hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 text-white font-medium text-sm hover:bg-slate-900 shadow-md transition-all active:scale-[0.98]">
               Access Command Center
             </button>
           </form>
@@ -464,7 +464,7 @@
     </div>
   </div>
 
-  <!-- Admin Modal for Editing Student Details -->
+  <!-- Admin Modal for Editing Student Details (With Concurrency Lock) -->
   <div id="edit-student-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeUp">
       <div class="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 bg-slate-50">
@@ -528,6 +528,8 @@
     let globalStudentsData = [];
     let myTeamNumber = null;
     let chocolatesShownThisSession = false;
+    let currentAdminEmail = '';
+    let currentlyEditingPrn = null;
     
     let isBudgetRendered = false;
     let studentClockInterval = null;
@@ -698,7 +700,7 @@
       }, 1000);
     }
 
-    // --- INTERACTIVE BUDGET BUILDER LOGIC (Mobile Stacked Inputs) ---
+    // --- INTERACTIVE BUDGET BUILDER LOGIC ---
     function renderBudgetBuilder() {
       const container = document.getElementById('budget-builder-container');
       if(!container) return;
@@ -822,7 +824,6 @@
           document.getElementById('student-assigned').classList.remove('hidden');
           document.getElementById('assigned-team-number').innerText = me.team_number;
           
-          // Table calculation: 1-5 = Table 1, 6-10 = Table 2, etc.
           document.getElementById('assigned-table-number').innerText = Math.ceil(me.team_number / 5);
 
           const { data: teamData } = await supabaseClient
@@ -966,7 +967,7 @@
       }
     }
 
-    /* --- MASTER ADMIN FLOW (Seamless Setup) --- */
+    /* --- MASTER ADMIN FLOW & CONCURRENCY LOCKS --- */
     async function handleAdminAuth(e) {
       e.preventDefault();
       const adminNum = document.getElementById('admin-id').value.trim();
@@ -977,6 +978,7 @@
       }
 
       const email = `admin${adminNum}@financefusion.local`;
+      currentAdminEmail = email;
 
       let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       
@@ -1022,19 +1024,48 @@
       fetchRoster();
     }
 
-    /* --- STUDENT EDITING LOGIC --- */
-    function openEditModal(prn) {
-      const student = globalStudentsData.find(s => s.prn === prn);
-      if (student) {
-        document.getElementById('edit-original-prn').value = student.prn;
-        document.getElementById('edit-student-name').value = student.name || '';
-        document.getElementById('edit-student-prn').value = student.prn || '';
-        document.getElementById('edit-student-team').value = student.team_number !== null ? student.team_number : '';
-        document.getElementById('edit-student-modal').classList.remove('hidden');
+    /* --- STUDENT EDITING & CONCURRENCY LOCKING --- */
+    async function openEditModal(prn) {
+      const { data: student, error } = await supabaseClient
+        .from('students')
+        .select('*')
+        .eq('prn', prn)
+        .single();
+
+      if (error || !student) {
+        return showToast('Error fetching student profile.');
       }
+
+      // Check if locked by another admin
+      const now = new Date();
+      if (student.locked_by && student.lock_expires_at && new Date(student.lock_expires_at) > now && student.locked_by !== currentAdminEmail) {
+        return showToast(`🔒 Locked: This student profile is currently being edited by another admin (${student.locked_by}).`);
+      }
+
+      // Acquire Lock (valid for 2 minutes)
+      const expiresAt = new Date(now.getTime() + 120000).toISOString();
+      await supabaseClient.from('students').update({
+        locked_by: currentAdminEmail,
+        lock_expires_at: expiresAt
+      }).eq('prn', prn);
+
+      currentlyEditingPrn = prn;
+      document.getElementById('edit-original-prn').value = student.prn;
+      document.getElementById('edit-student-name').value = student.name || '';
+      document.getElementById('edit-student-prn').value = student.prn || '';
+      document.getElementById('edit-student-team').value = student.team_number !== null ? student.team_number : '';
+      document.getElementById('edit-student-modal').classList.remove('hidden');
     }
 
-    function closeEditModal() {
+    async function closeEditModal() {
+      if (currentlyEditingPrn) {
+        // Release lock
+        await supabaseClient.from('students').update({
+          locked_by: null,
+          lock_expires_at: null
+        }).eq('prn', currentlyEditingPrn);
+        currentlyEditingPrn = null;
+      }
       document.getElementById('edit-student-modal').classList.add('hidden');
     }
 
@@ -1049,16 +1080,16 @@
         return showToast('Name and PRN cannot be empty.');
       }
 
-      // If PRN changed, we update or upsert
       if (originalPrn !== newPrn) {
-        // Delete old record if PRN changed, then insert new
         await supabaseClient.from('students').delete().eq('prn', originalPrn);
       }
 
       const { error } = await supabaseClient.from('students').upsert({
         prn: newPrn,
         name: newName,
-        team_number: newTeam
+        team_number: newTeam,
+        locked_by: null,
+        lock_expires_at: null
       }, { onConflict: 'prn' });
 
       if (error) {
@@ -1067,8 +1098,9 @@
         if (newTeam) {
           await supabaseClient.from('teams').upsert({ team_number: newTeam, case_answer: null }, { onConflict: 'team_number' });
         }
-        showToast('Student details updated successfully!');
-        closeEditModal();
+        showToast('Student details updated & position adjusted successfully!');
+        currentlyEditingPrn = null;
+        document.getElementById('edit-student-modal').classList.add('hidden');
         fetchRoster();
       }
     }
@@ -1288,7 +1320,6 @@
       
       document.getElementById('roster-body').innerHTML = students.map(s => {
         const hasTeamAnswer = s.team_number && teamAnswers[s.team_number];
-        // Table number rule: 1-5 = Table 1, 6-10 = Table 2, etc.
         const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
         return `
           <tr class="hover:bg-slate-50 transition-colors">
