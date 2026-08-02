@@ -140,6 +140,16 @@
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
         .animate-fade-in { animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
+        /* ── Dashboard Base Styles ── */
+        .clean-panel { 
+            background: #ffffff; border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
+            border-radius: 1.5rem;
+        }
+        .input-field { background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; transition: all 0.2s ease; }
+        .input-field:focus { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 4px #eff6ff; outline: none; }
+        .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
         /* ── Minimal Toasts ── */
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { 
@@ -794,12 +804,12 @@
                     banner.classList.remove('hidden');
                     if (team.disqualified) {
                         statusEl.innerText = `Disqualified`;
-                        detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable limit.`;
+                        detailsEl.innerText = `Reason: Total budget (₹${team.grand_total || 0}) exceeded the maximum allowable limit.`;
                         banner.className = "bg-surface-container-highest border-l-4 border-error p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4";
                         chocBadge.classList.add('hidden');
                     } else {
                         statusEl.innerText = `Rank #${toRoman(team.ranking)} Overall 🎉`;
-                        detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
+                        detailsEl.innerText = `Total Budget Allocated: ₹${team.grand_total}`;
                         banner.className = "bg-surface-container-highest border-l-4 border-secondary p-6 sm:p-8 rounded-lg text-primary shadow-lg space-y-4 mb-8 relative z-10 mt-4";
                         if (myConfig.chocolates_sent) {
                             chocBadge.classList.remove('hidden');
@@ -883,7 +893,7 @@
                     <div class="absolute top-0 left-0 w-full h-0.5 bg-secondary opacity-30"></div>
                     <div class="flex justify-between items-center mb-5 pb-4 border-b border-outline-variant">
                         <h5 class="font-display-lg text-primary tracking-widest text-lg">${cat}</h5>
-                        <span class="font-label-md text-on-surface-variant text-xs sm:text-sm uppercase tracking-widest">Total: <span id="total-${cat}" class="text-secondary font-bold text-base">$${catTotal.toLocaleString()}</span></span>
+                        <span class="font-label-md text-on-surface-variant text-xs sm:text-sm uppercase tracking-widest">Total: <span id="total-${cat}" class="text-secondary font-bold text-base">₹${catTotal.toLocaleString()}</span></span>
                     </div>
                     <div id="list-${cat}" class="space-y-4">`;
 
@@ -892,7 +902,7 @@
                     <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                         <input type="text" class="flex-1 p-3 rounded text-sm font-body-md bg-surface-container border border-outline focus:border-secondary focus:ring-0 transition-colors" placeholder="Component Name" value="${item.desc}" oninput="updateBudget('${cat}', ${index}, 'desc', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
                         <div class="flex gap-2 items-center">
-                            <input type="number" class="flex-1 sm:w-32 p-3 rounded text-sm text-right font-semibold text-primary font-body-md bg-surface-container border border-outline focus:border-secondary focus:ring-0 transition-colors" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
+                            <input type="number" class="flex-1 sm:w-32 p-3 rounded text-sm text-right font-semibold text-primary font-body-md bg-surface-container border border-outline focus:border-secondary focus:ring-0 transition-colors" placeholder="₹ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
                             ${budgetState[cat].length > 1 ? `<button onclick="removeBudgetRow('${cat}', ${index})" class="text-on-surface-variant hover:text-error text-2xl font-bold px-2 flex items-center justify-center"><span class="material-symbols-outlined">close</span></button>` : `<div class="w-8"></div>`}
                         </div>
                     </div>`;
@@ -908,7 +918,7 @@
             budgetState[cat][index][field] = value;
             if(field === 'amount') {
                 let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-                document.getElementById(`total-${cat}`).innerText = '$' + catTotal.toLocaleString();
+                document.getElementById(`total-${cat}`).innerText = '₹' + catTotal.toLocaleString();
             }
         }
 
@@ -989,8 +999,6 @@
 
                     document.getElementById('menu-team-number').innerText = toRoman(me.team_number);
                     document.getElementById('menu-table-number').innerText = toRoman(tableNo);
-                    document.getElementById('dash-team-number').innerText = toRoman(me.team_number);
-                    document.getElementById('dash-table-number').innerText = toRoman(tableNo);
 
                     const { data: teamRows } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).limit(1);
                     
@@ -1240,7 +1248,7 @@
                 <tr class="hover:bg-surface-container transition-colors">
                     <td class="py-4 px-6 font-bold text-center text-primary font-display-lg">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
                     <td class="py-4 px-6 font-medium text-primary font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-4 px-6 text-center font-semibold text-secondary font-sans">$${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-6 text-center font-semibold text-secondary font-sans">₹${t.grand_total.toLocaleString()}</td>
                     <td class="py-4 px-6 text-center font-bold text-primary font-sans">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
                     <td class="py-4 px-6 text-center font-sans">
                         ${t.disqualified ? '<span class="bg-error-container text-on-error-container border border-error/20 px-3 py-1 rounded text-xs font-label-md uppercase font-sans">Disqualified</span>' : '<span class="bg-surface-variant text-on-surface-variant border border-outline px-3 py-1 rounded text-xs font-label-md uppercase font-sans">Qualified</span>'}
@@ -1328,7 +1336,7 @@
 
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             if (error) showToast('Database Error: ' + error.message);
-            else showToast(`Timer started for ${mins} mins! Max Budget set to $${maxBgt.toLocaleString()}`);
+            else showToast(`Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`);
         }
 
         async function fetchRoster() {
@@ -1386,7 +1394,7 @@
                                                 if(item.desc || item.amount) {
                                                         const amt = parseFloat(item.amount) || 0;
                                                         catTotal += amt;
-                                                        rowsHtml += `<div class="flex justify-between text-sm py-2 border-b border-outline-variant/50 last:border-0"><span class="text-on-surface-variant font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-primary font-sans">$${amt.toLocaleString()}</span></div>`;
+                                                        rowsHtml += `<div class="flex justify-between text-sm py-2 border-b border-outline-variant/50 last:border-0"><span class="text-on-surface-variant font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-primary font-sans">₹${amt.toLocaleString()}</span></div>`;
                                                 }
                                         });
                                 }
@@ -1397,7 +1405,7 @@
                                                 <h5 class="font-display-lg text-primary tracking-widest text-base mb-3">${cat}</h5>
                                                 ${rowsHtml}
                                                 <div class="flex justify-between mt-4 pt-3 border-t border-outline-variant font-bold text-sm text-secondary font-sans">
-                                                        <span>Subtotal</span><span>$${catTotal.toLocaleString()}</span>
+                                                        <span>Subtotal</span><span>₹${catTotal.toLocaleString()}</span>
                                                 </div>
                                         </div>`;
                                         grandTotal += catTotal;
@@ -1405,7 +1413,7 @@
                         });
                         displayHTML += `
                                 <div class="bg-surface-container-highest p-5 rounded-lg border border-secondary flex justify-between font-bold text-xl text-primary mt-6 shadow-sm font-sans">
-                                        <span>GRAND TOTAL</span><span>$${grandTotal.toLocaleString()}</span>
+                                        <span>GRAND TOTAL</span><span>₹${grandTotal.toLocaleString()}</span>
                                 </div>
                         </div>`;
                 } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-on-surface-variant p-5 bg-background rounded-lg border border-outline-variant font-sans">${team.case_answer}</div>`; }
