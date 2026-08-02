@@ -178,13 +178,40 @@
     <!-- Universal TopAppBar -->
     <header id="global-header" class="bg-background border-b border-outline-variant fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-16 shadow-sm shadow-surface-variant/20 backdrop-blur-md bg-opacity-90">
         <div class="w-full max-w-container-max flex items-center justify-between">
-            <button aria-label="Menu" class="p-2 -ml-2 text-primary hover:text-secondary transition-colors duration-300 opacity-80">
-                <span class="material-symbols-outlined text-2xl" data-icon="menu_book">menu_book</span>
-            </button>
+            <div class="w-10"></div> <!-- Left spacer -->
             <h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-md md:font-headline-md tracking-[0.2em] text-primary absolute left-1/2 -translate-x-1/2 uppercase">FinFusion</h1>
-            <div class="w-10"></div>
+            <!-- Right: Hamburger Menu (Hidden initially) -->
+            <button id="header-menu-btn" aria-label="Menu" onclick="toggleStudentMenu()" class="hidden p-2 -mr-2 text-primary hover:text-secondary transition-colors duration-300 opacity-80 z-50">
+                <span class="material-symbols-outlined text-3xl" id="menu-icon">menu</span>
+            </button>
         </div>
     </header>
+
+    <!-- Side Drawer Menu for Team Info -->
+    <div id="student-side-menu" class="fixed inset-y-0 right-0 w-80 bg-surface-bright border-l border-outline-variant shadow-2xl transform translate-x-full transition-transform duration-300 z-[45] pt-20 px-6 pb-6 overflow-y-auto hidden font-sans">
+        <div class="space-y-6 animate-fade-in">
+            <!-- Team & Table Card -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 text-center shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2 mt-2">Your Allocation</p>
+                <h3 class="text-3xl font-extrabold tracking-tight font-display-lg text-primary mb-3">Team <span id="menu-team-number"></span></h3>
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-sm shadow-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-slate-600 font-medium text-xs uppercase tracking-wider">Table</span>
+                    <strong class="text-slate-800 text-base font-display-lg" id="menu-table-number"></strong>
+                </div>
+            </div>
+            <!-- Teammates -->
+            <div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Your Teammates</h4>
+                <ul id="menu-partners-list" class="space-y-2 text-sm font-medium">
+                    <!-- Populated dynamically via JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Overlay for menu -->
+    <div id="menu-overlay" onclick="toggleStudentMenu()" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[40] hidden opacity-0 transition-opacity duration-300"></div>
 
     <!-- SCREEN 1: Login / Register -->
     <div id="login-register-screen" class="screen active w-full flex-col min-h-screen relative z-10 pt-24 pb-24">
@@ -317,12 +344,12 @@
         </main>
     </div>
 
-    <!-- SCREEN 4: Student Main Dashboard -->
-    <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-center p-3 sm:p-4 text-slate-800 z-10 relative font-sans pt-24">
-        <div class="w-full max-w-2xl clean-panel p-4 sm:p-8 relative overflow-hidden my-4 sm:my-6">
+    <!-- SCREEN 4: Student Main Dashboard (PAGINATED) -->
+    <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-slate-800 z-10 relative font-sans pt-24 pb-20">
+        <div class="w-full max-w-2xl relative">
             
             <!-- Chocolate Winner Celebration Overlay -->
-            <div id="chocolate-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-500/95 via-orange-600/95 to-amber-700/95 z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fadeUp backdrop-blur-md">
+            <div id="chocolate-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-500/95 via-orange-600/95 to-amber-700/95 z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fadeUp backdrop-blur-md rounded-2xl h-[60vh] mt-4">
                 <div class="text-6xl sm:text-7xl mb-4 animate-bounceSlow">🍫🎉🍫</div>
                 <h2 class="text-3xl sm:text-4xl font-extrabold font-display-lg tracking-tight mb-2">Virtual Chocolates Awarded!</h2>
                 <p class="text-amber-100 text-sm sm:text-base max-w-md mx-auto mb-6">Congratulations! The Master Admin has rewarded your winning allocation strategy with delicious virtual chocolates!</p>
@@ -334,29 +361,8 @@
                 </button>
             </div>
 
-            <!-- Dashboard Details Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 gap-4 mb-6 relative z-10">
-                <div>
-                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Your Allocation</p>
-                    <h3 class="text-2xl font-extrabold tracking-tight font-display-lg">Team <span id="dash-team-number" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"></span></h3>
-                </div>
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-sm shadow-sm">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-slate-600 font-medium">Table</span>
-                    <strong class="text-slate-800 text-base font-display-lg" id="dash-table-number"></strong>
-                </div>
-            </div>
-
-            <!-- Teammates Grid -->
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 mb-6 relative z-10">
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Your Teammates</h4>
-                <ul id="assigned-partners-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium">
-                    <!-- Populated dynamically via JS -->
-                </ul>
-            </div>
-
-            <!-- Results Banner -->
-            <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-3 mb-6 relative z-10">
+            <!-- Global Results Banner (Visible on all dash pages if published) -->
+            <div id="student-results-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-3 mb-6 relative z-10 mt-4">
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">Final Results Published</span>
                     <button onclick="reopenChocolateOverlay()" id="student-chocolate-badge" class="hidden bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-sm hover:bg-amber-300 transition-all cursor-pointer">🍫 View Chocolates</button>
@@ -365,42 +371,55 @@
                 <p id="student-result-details" class="text-sm text-blue-100 font-medium"></p>
             </div>
 
-            <!-- Case Study Stream -->
-            <div class="space-y-4 pt-2 border-t border-slate-100 relative z-10">
-                <div class="bg-blue-50/60 p-4 sm:p-5 rounded-2xl border border-blue-100">
+            <!-- PAGE 1: Subject Basics -->
+            <div id="dashboard-page-1" class="space-y-4 relative z-10 w-full animate-fade-in mt-4">
+                <div class="bg-blue-50/60 p-6 sm:p-8 rounded-2xl border border-blue-100 shadow-sm">
                     <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Subject I Basics</span>
-                    <h4 id="student-subject-title" class="text-base sm:text-lg font-bold font-display-lg mt-1 mb-2">Awaiting Subject Brief...</h4>
-                    <p id="student-subject-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">Organisers have not published the subject brief yet.</p>
+                    <h4 id="student-subject-title" class="text-xl sm:text-2xl font-bold font-display-lg mt-2 mb-4">Awaiting Subject Brief...</h4>
+                    <p id="student-subject-content" class="text-slate-700 text-base whitespace-pre-wrap leading-relaxed font-sans">Organisers have not published the subject brief yet.</p>
                 </div>
+                <div class="flex justify-end mt-6">
+                    <button onclick="nextDashboardPage()" class="bg-primary text-white font-label-md uppercase px-8 py-3 rounded-xl hover:bg-surface-tint transition-colors shadow-md flex items-center gap-2">
+                        Next <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
 
-                <div class="bg-indigo-50/60 p-4 sm:p-5 rounded-2xl border border-indigo-100 relative">
-                    <div class="flex justify-between items-start mb-2">
+            <!-- PAGE 2: Case Study & Builder -->
+            <div id="dashboard-page-2" class="space-y-4 relative z-10 w-full hidden animate-fade-in mt-4">
+                <div class="bg-indigo-50/60 p-6 sm:p-8 rounded-2xl border border-indigo-100 relative shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
                         <div>
                             <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Case Study I</span>
-                            <h4 id="student-case-title" class="text-base sm:text-lg font-bold font-display-lg mt-1 mb-2">Awaiting Case Details...</h4>
+                            <h4 id="student-case-title" class="text-xl sm:text-2xl font-bold font-display-lg mt-2 mb-2">Awaiting Case Details...</h4>
                         </div>
-                        <div id="student-timer-badge" class="hidden bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-sm text-right flex-shrink-0 ml-2">
-                            <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Left</span>
-                            <span id="student-timer-clock" class="text-xs sm:text-sm font-extrabold text-rose-600">--:--</span>
+                        <div id="student-timer-badge" class="hidden bg-white px-4 py-2 rounded-xl border border-indigo-200 shadow-sm text-right flex-shrink-0 ml-4">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Time Left</span>
+                            <span id="student-timer-clock" class="text-sm font-extrabold text-rose-600">--:--</span>
                         </div>
                     </div>
 
-                    <p id="student-case-content" class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed mb-4">Organisers have not published the case details yet.</p>
+                    <p id="student-case-content" class="text-slate-700 text-base whitespace-pre-wrap leading-relaxed mb-6 font-sans">Organisers have not published the case details yet.</p>
                     
-                    <div class="mt-4 pt-4 border-t border-indigo-200/50 hidden" id="student-submission-section">
-                        <label class="block text-sm font-bold text-indigo-800 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
+                    <div class="mt-6 pt-6 border-t border-indigo-200/50 hidden" id="student-submission-section">
+                        <label class="block text-sm font-bold text-indigo-900 uppercase tracking-wider mb-4">Your Allocation Strategy</label>
                         <div id="timer-waiting-notice" class="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs sm:text-sm font-medium mb-4">
                             ⏳ Waiting for Master Admin to start the submission timer... Inputs are currently locked.
                         </div>
-                        <div id="budget-builder-container" class="space-y-4 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
-                        <div class="flex justify-end mt-5">
-                            <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="w-full sm:w-auto bg-slate-400 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed" disabled>
-                                Submit Strategy
-                            </button>
-                        </div>
+                        <div id="budget-builder-container" class="space-y-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-50 pointer-events-none"></div>
                     </div>
                 </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between mt-6 gap-4">
+                    <button onclick="prevDashboardPage()" class="bg-surface-variant text-primary font-label-md uppercase px-8 py-3 rounded-xl hover:bg-surface-dim transition-colors shadow-sm flex items-center gap-2 justify-center">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span> Back
+                    </button>
+                    <button onclick="submitCaseAnswer()" id="submit-answer-btn" class="w-full sm:w-auto bg-slate-400 text-white px-8 py-3 rounded-xl font-label-md uppercase transition-all shadow-md cursor-not-allowed flex items-center justify-center" disabled>
+                        Submit Strategy
+                    </button>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -495,7 +514,7 @@
                             <textarea id="org-subject-content" rows="4" class="input-field w-full p-3 rounded-xl font-medium" placeholder="Enter fundamental concepts or notes..."></textarea>
                         </div>
                         <div class="flex justify-end pt-2">
-                            <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">Publish Subject Only</button>
+                            <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">Publish Subject</button>
                         </div>
                     </div>
 
@@ -525,7 +544,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
-                    <span class="text-xs text-slate-500 font-medium">* Use "Publish Case Details" to make text visible. Use "Start Timer & Budget" to lock in rules and open submissions.</span>
+                    <button onclick="unpublishContent()" class="w-full sm:w-auto bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">Unpublish Details</button>
                     <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">Publish Case Details</button>
                 </div>
             </div>
@@ -689,6 +708,41 @@
             setTimeout(() => { document.getElementById(id).classList.add('active'); }, 50);
         }
 
+        // --- DASHBOARD PAGINATION ---
+        function nextDashboardPage() {
+            document.getElementById('dashboard-page-1').classList.add('hidden');
+            document.getElementById('dashboard-page-2').classList.remove('hidden');
+        }
+        function prevDashboardPage() {
+            document.getElementById('dashboard-page-2').classList.add('hidden');
+            document.getElementById('dashboard-page-1').classList.remove('hidden');
+        }
+
+        // --- HAMBURGER MENU ---
+        function toggleStudentMenu() {
+            const menu = document.getElementById('student-side-menu');
+            const overlay = document.getElementById('menu-overlay');
+            const icon = document.getElementById('menu-icon');
+            
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('hidden'); 
+                setTimeout(() => {
+                    menu.classList.remove('translate-x-full');
+                    overlay.classList.remove('hidden');
+                    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                    icon.innerText = 'close';
+                }, 10);
+            } else {
+                menu.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    menu.classList.add('hidden'); 
+                }, 300);
+                icon.innerText = 'menu';
+            }
+        }
+
         async function loadSettings() {
             const { data } = await supabaseClient.from('event_settings').select('*').limit(1).single();
             if(data) {
@@ -710,9 +764,19 @@
                     document.getElementById('student-submission-section').classList.remove('hidden');
                     if (!isBudgetRendered) { renderBudgetBuilder(); isBudgetRendered = true; }
                     manageStudentTimer();
+                } else {
+                    document.getElementById('student-submission-section').classList.add('hidden');
                 }
+            } else {
+                document.getElementById('student-case-title').innerText = 'Awaiting Case Details...';
+                document.getElementById('student-case-content').innerText = 'Organisers have not published the case details yet.';
+                document.getElementById('student-submission-section').classList.add('hidden');
             }
             if (myConfig.results_published && myTeamNumber) fetchTeamResult(myTeamNumber);
+            else {
+                document.getElementById('student-results-banner').classList.add('hidden');
+                document.getElementById('student-chocolate-badge').classList.add('hidden');
+            }
         }
 
         async function fetchTeamResult(teamNum) {
@@ -727,12 +791,12 @@
                 if (team.disqualified) {
                     statusEl.innerText = `Disqualified`;
                     detailsEl.innerText = `Reason: Total budget ($${team.grand_total || 0}) exceeded the maximum allowable limit.`;
-                    banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10";
+                    banner.className = "bg-gradient-to-r from-rose-600 to-red-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10 mt-4";
                     chocBadge.classList.add('hidden');
                 } else {
                     statusEl.innerText = `Rank #${toRoman(team.ranking)} Overall 🎉`;
                     detailsEl.innerText = `Total Budget Allocated: $${team.grand_total}`;
-                    banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10";
+                    banner.className = "bg-gradient-to-r from-emerald-600 to-teal-700 p-5 sm:p-6 rounded-2xl text-white shadow-lg space-y-2 mb-6 relative z-10 mt-4";
                     if (myConfig.chocolates_sent) {
                         chocBadge.classList.remove('hidden');
                         document.getElementById('overlay-team-rank').innerText = `Your Team Secured Rank #${toRoman(team.ranking)}! 🏆`;
@@ -810,22 +874,22 @@
                 html += `
                 <div class="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">
                         <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-200/60">
-                                <h5 class="font-bold text-slate-700 uppercase tracking-widest text-xs">${cat}</h5>
-                                <span class="font-semibold text-slate-500 text-xs sm:text-sm">Total: <span id="total-${cat}" class="text-indigo-600 font-bold">$${catTotal.toLocaleString()}</span></span>
+                                <h5 class="font-bold text-slate-700 uppercase tracking-widest text-xs font-sans">${cat}</h5>
+                                <span class="font-semibold text-slate-500 text-xs sm:text-sm font-sans">Total: <span id="total-${cat}" class="text-indigo-600 font-bold">$${catTotal.toLocaleString()}</span></span>
                         </div>
                         <div id="list-${cat}" class="space-y-3">`;
                 
                 budgetState[cat].forEach((item, index) => {
                         html += `
                                 <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white p-2.5 sm:p-2 rounded-xl border border-slate-200/80 shadow-xs">
-                                        <input type="text" class="input-field flex-1 p-2.5 rounded-lg text-sm font-medium" placeholder="Component Name" value="${item.desc}" oninput="updateBudget('${cat}', ${index}, 'desc', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
+                                        <input type="text" class="input-field flex-1 p-2.5 rounded-lg text-sm font-medium font-sans" placeholder="Component Name" value="${item.desc}" oninput="updateBudget('${cat}', ${index}, 'desc', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
                                         <div class="flex gap-2 items-center">
-                                            <input type="number" class="input-field flex-1 sm:w-32 p-2.5 rounded-lg text-sm text-right font-semibold text-indigo-700" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
+                                            <input type="number" class="input-field flex-1 sm:w-32 p-2.5 rounded-lg text-sm text-right font-semibold text-indigo-700 font-sans" placeholder="$ Amount" value="${item.amount || ''}" oninput="updateBudget('${cat}', ${index}, 'amount', this.value)" onkeydown="checkEnter(event, '${cat}', ${index})">
                                             ${budgetState[cat].length > 1 ? `<button onclick="removeBudgetRow('${cat}', ${index})" class="text-slate-400 hover:text-red-500 text-2xl font-bold px-2">&times;</button>` : `<div class="w-6"></div>`}
                                         </div>
                                 </div>`;
                 });
-                html += `</div><button onclick="addBudgetRow('${cat}')" class="w-full sm:w-auto text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 text-center">+ Add ${cat} Row</button></div>`;
+                html += `</div><button onclick="addBudgetRow('${cat}')" class="w-full sm:w-auto text-xs text-indigo-600 font-semibold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 text-center font-sans">+ Add ${cat} Row</button></div>`;
             });
             container.innerHTML = html;
         }
@@ -860,7 +924,6 @@
             const { error } = await supabaseClient.from('students').upsert({ prn, name }, { onConflict: 'prn' });
             if(error) return showToast('Error: ' + error.message);
             
-            // Immediately hide header for transition
             const headerElement = document.querySelector('#global-header');
             if(headerElement) headerElement.style.display = 'none';
 
@@ -900,18 +963,22 @@
                             const names = otherMates.map(m => m.name).join(' & ');
                             document.getElementById('reveal-partner-names').innerText = names || 'Solo (Waiting for partners)';
                             
-                            // Prep Dashboard Grid silently
-                            document.getElementById('assigned-partners-list').innerHTML = mates.map(m => `
-                                <li class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm">
+                            // Prep Dashboard Grid & Menu Grid silently
+                            const menuHTML = mates.map(m => `
+                                <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                                     <div class="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
-                                    <span class="font-sans">${m.name}</span>
+                                    <span class="font-sans text-slate-700">${m.name}</span>
                                 </li>`).join('');
+                            document.getElementById('assigned-partners-list').innerHTML = menuHTML;
+                            document.getElementById('menu-partners-list').innerHTML = menuHTML;
                         }
                         studentState = 'reveal';
                         switchScreen('student-reveal-screen');
                     }
 
-                    // 2. Keep Dashboard UI up to date
+                    // 2. Keep Dashboard & Menu UI up to date
+                    document.getElementById('menu-team-number').innerText = toRoman(me.team_number);
+                    document.getElementById('menu-table-number').innerText = toRoman(tableNo);
                     document.getElementById('dash-team-number').innerText = toRoman(me.team_number);
                     document.getElementById('dash-table-number').innerText = toRoman(tableNo);
 
@@ -930,7 +997,7 @@
                         
                         if (btn) {
                             btn.innerText = 'Submitted by Team ✓';
-                            btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed';
+                            btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed font-sans';
                             btn.disabled = true;
                         }
                         if(builder) {
@@ -940,7 +1007,6 @@
                     return;
                 }
 
-                // If no team yet, ensure we are on waiting screen and perform logic
                 if (studentState !== 'waiting') { studentState = 'waiting'; switchScreen('student-waiting-screen'); }
 
                 const { data: waiting, error: waitErr } = await supabaseClient.from('students').select('*').is('team_number', null).order('created_at', { ascending: true });
@@ -965,6 +1031,12 @@
             studentState = 'dashboard';
             const headerElement = document.querySelector('#global-header');
             if(headerElement) headerElement.style.display = 'flex';
+            document.getElementById('header-menu-btn').classList.remove('hidden');
+            
+            // Ensure we start on page 1
+            document.getElementById('dashboard-page-1').classList.remove('hidden');
+            document.getElementById('dashboard-page-2').classList.add('hidden');
+            
             switchScreen('student-dashboard-screen');
         }
 
@@ -989,13 +1061,13 @@
             } else {
                 showToast('Team strategy submitted successfully!');
                 btn.innerText = 'Submitted by Team ✓';
-                btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed';
+                btn.className = 'w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-semibold transition-all shadow-sm cursor-not-allowed font-sans';
                 const builder = document.getElementById('budget-builder-container');
                 if(builder) builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
             }
         }
 
-        /* --- MASTER ADMIN FLOW & UNIQUE TAB LOCKS --- */
+        /* --- MASTER ADMIN FLOW --- */
         async function handleAdminAuth(e) {
             e.preventDefault();
             const adminNum = document.getElementById('admin-id').value.trim();
@@ -1008,7 +1080,7 @@
             if (error && error.message.includes("Invalid login credentials")) {
                 const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
                 if (signUpError) return showToast(signUpError.message.includes("already registered") ? 'Incorrect password.' : 'Error: ' + signUpError.message);
-                data = signUpData; error = null; showToast(`Master Admin ${adminNum} claimed! Password saved.`);
+                data = signUpData; error = null; showToast(`Master Admin ${toRoman(adminNum)} claimed! Password saved.`);
             } else if (error) {
                 return showToast('Login Error: ' + error.message);
             }
@@ -1016,6 +1088,7 @@
             if (data && data.user) {
                 const headerElement = document.querySelector('#global-header');
                 if(headerElement) headerElement.style.display = 'flex';
+                document.getElementById('header-menu-btn').classList.add('hidden'); // Hide menu icon for admins
                 initAdmin(adminNum);
             }
         }
@@ -1146,7 +1219,7 @@
             if(!tbody) return;
 
             if(teamsList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 italic">No submitted answers available to rank.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 italic font-sans">No submitted answers available to rank.</td></tr>`;
                 return;
             }
 
@@ -1156,7 +1229,7 @@
                     <td class="py-3 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
                     <td class="py-3 px-4 text-center font-semibold text-slate-700 font-sans">$${t.grand_total.toLocaleString()}</td>
                     <td class="py-3 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
-                    <td class="py-3 px-4 text-center">
+                    <td class="py-3 px-4 text-center font-sans">
                         ${t.disqualified ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
                     </td>
                     <td class="py-3 px-4 text-right">
@@ -1212,6 +1285,24 @@
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             if (error) showToast('Database Error: ' + error.message);
             else showToast('Case details published successfully.');
+        }
+
+        async function unpublishContent() {
+            if(!confirm("Are you sure you want to unpublish the Subject and Case Details? This will hide them from students.")) return;
+            
+            myConfig.subject_title = '';
+            myConfig.subject_content = '';
+            myConfig.case_title = '';
+            myConfig.case_content = '';
+            
+            document.getElementById('org-subject-title').value = '';
+            document.getElementById('org-subject-content').value = '';
+            document.getElementById('org-case-title').value = '';
+            document.getElementById('org-case-content').value = '';
+            
+            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            if (error) showToast('Database Error: ' + error.message);
+            else showToast('Content unpublished successfully.');
         }
 
         async function startCaseTimerWithBudget() {
@@ -1282,16 +1373,16 @@
                                                 if(item.desc || item.amount) {
                                                         const amt = parseFloat(item.amount) || 0;
                                                         catTotal += amt;
-                                                        rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800">$${amt.toLocaleString()}</span></div>`;
+                                                        rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600 font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800 font-sans">$${amt.toLocaleString()}</span></div>`;
                                                 }
                                         });
                                 }
                                 if(catTotal > 0) {
                                         displayHTML += `
                                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                                <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2">${cat}</h5>
+                                                <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2 font-sans">${cat}</h5>
                                                 ${rowsHtml}
-                                                <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700">
+                                                <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700 font-sans">
                                                         <span>Subtotal</span><span>$${catTotal.toLocaleString()}</span>
                                                 </div>
                                         </div>`;
@@ -1299,11 +1390,11 @@
                                 }
                         });
                         displayHTML += `
-                                <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md">
+                                <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
                                         <span>GRAND TOTAL</span><span>$${grandTotal.toLocaleString()}</span>
                                 </div>
                         </div>`;
-                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200">${team.case_answer}</div>`; }
+                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200 font-sans">${team.case_answer}</div>`; }
 
                 document.getElementById('modal-team-answer').innerHTML = displayHTML;
                 document.getElementById('answer-modal').classList.remove('hidden');
@@ -1348,6 +1439,7 @@
                 if (match && match[1]) {
                     const headerElement = document.querySelector('#global-header');
                     if(headerElement) headerElement.style.display = 'flex';
+                    document.getElementById('header-menu-btn').classList.add('hidden');
                     return initAdmin(match[1]);
                 }
             }
