@@ -8,10 +8,10 @@
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     
-    <!-- Google Fonts: Cinzel & Montserrat -->
+    <!-- Google Fonts: Cinzel & Montserrat for Students | Inter for Admin -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -140,18 +140,31 @@
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
         .animate-fade-in { animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        /* ── Dashboard Base Styles ── */
-        .clean-panel { 
-            background: #ffffff; border: 1px solid #e2e8f0; 
+        /* ── Admin Specific Styles (Blue/White Tech Theme) ── */
+        .admin-panel { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
             border-radius: 1.5rem;
         }
-        .input-field { background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; transition: all 0.2s ease; }
-        .input-field:focus { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 4px #eff6ff; outline: none; }
-        .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .admin-input { 
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            transition: all 0.2s ease; 
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            width: 100%;
+        }
+        .admin-input:focus { 
+            background: #ffffff;
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 4px #eff6ff; 
+            outline: none; 
+        }
 
         /* ── Minimal Toasts ── */
-        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; font-family: 'Inter', sans-serif; }
         .toast { 
             padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; 
             background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); 
@@ -172,10 +185,10 @@
 </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col relative antialiased bg-grain selection:bg-secondary-container selection:text-on-secondary-container font-sans">
     
-    <!-- Background Texture Overlay (Global) -->
-    <div class="fixed inset-0 pointer-events-none z-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/parchment.png')] mix-blend-multiply"></div>
+    <!-- Background Texture Overlay (Global - Applies only to Student) -->
+    <div id="parchment-bg" class="fixed inset-0 pointer-events-none z-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/parchment.png')] mix-blend-multiply"></div>
 
-    <!-- Universal TopAppBar -->
+    <!-- Universal TopAppBar (Student) -->
     <header id="global-header" class="bg-background border-b border-outline-variant fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-16 shadow-sm shadow-surface-variant/20 backdrop-blur-md bg-opacity-90">
         <div class="w-full max-w-container-max flex items-center justify-between">
             <div class="w-10"></div> <!-- Left spacer -->
@@ -187,8 +200,8 @@
         </div>
     </header>
 
-    <!-- Side Drawer Menu for Team Info -->
-    <div id="student-side-menu" class="fixed inset-y-0 right-0 w-80 bg-surface-bright border-l border-outline-variant shadow-2xl transform translate-x-full transition-transform duration-300 z-[45] pt-20 px-6 pb-6 overflow-y-auto hidden font-sans">
+    <!-- Side Drawer Menu for Team Info (Student) -->
+    <div id="student-side-menu" class="fixed inset-y-0 right-0 w-80 bg-surface-bright border-l border-outline-variant shadow-2xl transform translate-x-full transition-transform duration-300 z-[60] pt-20 px-6 pb-6 overflow-y-auto hidden font-sans">
         <div class="space-y-6 animate-fade-in">
             <!-- Team & Table Card -->
             <div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant text-center shadow-sm relative overflow-hidden">
@@ -211,9 +224,9 @@
         </div>
     </div>
     <!-- Overlay for menu -->
-    <div id="menu-overlay" onclick="toggleStudentMenu()" class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[40] hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="menu-overlay" onclick="toggleStudentMenu()" class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[55] hidden opacity-0 transition-opacity duration-300"></div>
 
-    <!-- SCREEN 1: Login / Register -->
+    <!-- SCREEN 1: Login / Register (Student Theme) -->
     <div id="login-register-screen" class="screen active w-full flex-col min-h-screen relative z-10 pt-24 pb-24">
         <main class="flex-grow flex flex-col items-center justify-center w-full px-margin-mobile">
             <!-- Form Container -->
@@ -238,11 +251,11 @@
                     <!-- Student Enrollment Form -->
                     <form id="student-form" class="flex flex-col gap-10 fade-in" onsubmit="handleStudentRegistration(event)">
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="student-name" name="student_name" placeholder="Full Legal Name" required="" type="text">
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors focus:shadow-[0_2px_0_0_#775a19] placeholder-transparent" id="student-name" name="student_name" placeholder="Full Legal Name" required="" type="text">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-name">Full Legal Name</label>
                         </div>
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="student-prn" name="student_prn" placeholder="Your PRN" required="" type="text">
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors focus:shadow-[0_2px_0_0_#775a19] placeholder-transparent" id="student-prn" name="student_prn" placeholder="Your PRN" required="" type="text">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-prn">Your PRN</label>
                         </div>
                         <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container to-background border border-secondary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-surface-container-low transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden" type="submit">
@@ -254,14 +267,14 @@
                         </div>
                     </form>
 
-                    <!-- Master Admin Form -->
+                    <!-- Master Admin Form (Login UI remains themed) -->
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID" required="" type="number" min="1" max="50">
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors focus:shadow-[0_2px_0_0_#775a19] placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID" required="" type="number" min="1" max="50">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (1 - 50)</label>
                         </div>
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors focus:shadow-[0_2px_0_0_#775a19] placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-password">Password</label>
                             <p class="text-[11px] text-on-surface-variant mt-2 tracking-wide font-caption">*First-time login securely sets your permanent password.</p>
                         </div>
@@ -269,16 +282,13 @@
                             <span class="relative z-10">Access Command Center</span>
                             <span class="material-symbols-outlined relative z-10 text-xl transition-transform duration-300 group-hover:translate-x-1" style="font-variation-settings: 'wght' 300;">admin_panel_settings</span>
                         </button>
-                        <div class="mt-4 text-center">
-                            <p class="font-label-md text-label-md text-primary tracking-wider uppercase">Lead the Strategy</p>
-                        </div>
                     </form>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- SCREEN 2: Student Astrolabe Waiting -->
+    <!-- SCREEN 2: Student Astrolabe Waiting (Student Theme) -->
     <div id="student-waiting-screen" class="screen w-full min-h-screen items-center justify-center pt-24 pb-24 relative z-10">
         <main class="relative z-10 flex flex-col items-center justify-center p-margin-mobile w-full max-w-2xl mx-auto opacity-0 animate-fade-in">
             <div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-12">
@@ -310,7 +320,7 @@
         </main>
     </div>
 
-    <!-- SCREEN 3: Partner Reveal -->
+    <!-- SCREEN 3: Partner Reveal (Student Theme) -->
     <div id="student-reveal-screen" class="screen w-full min-h-screen flex-col items-center justify-center pt-24 pb-24 relative z-10">
         <main class="flex-grow flex flex-col items-center justify-center px-margin-mobile w-full">
             <div class="w-full max-w-2xl mx-auto flex flex-col items-center text-center reveal-anim">
@@ -344,7 +354,7 @@
         </main>
     </div>
 
-    <!-- SCREEN 4: Student Main Dashboard (PAGINATED) -->
+    <!-- SCREEN 4: Student Main Dashboard (Student Theme) -->
     <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-primary z-10 relative font-sans pt-24 pb-20">
         <div class="w-full max-w-2xl relative">
             
@@ -423,153 +433,151 @@
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- SCREEN 5: Master Admin Dashboard -->
-    <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-3 sm:p-4 md:p-8 text-primary z-10 relative font-sans pt-24 pb-20">
+    <!-- SCREEN 5: Master Admin Dashboard (Reverted to Blue/White Tech Theme) -->
+    <div id="admin-dashboard-screen" class="screen flex-col min-h-screen p-3 sm:p-4 md:p-8 bg-slate-50 text-slate-800 z-50 absolute inset-0 overflow-y-auto" style="font-family: 'Inter', sans-serif;">
         <div class="max-w-7xl mx-auto w-full space-y-6">
             
-            <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-6 shadow-sm relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 admin-panel p-4 sm:p-5">
                 <div>
-                    <h2 class="font-bold text-2xl tracking-tight font-display-lg text-primary">Master Admin Command Center</h2>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-                        <p id="admin-role-badge" class="text-xs font-label-md text-on-surface-variant uppercase tracking-wider"></p>
+                    <h2 class="font-bold text-xl tracking-tight text-slate-800">Master Admin Command Center</h2>
+                    <div class="flex items-center gap-2 mt-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        <p id="admin-role-badge" class="text-xs font-semibold text-slate-500 uppercase tracking-wider"></p>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
-                    <button onclick="toggleContentPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-background border border-outline-variant text-primary font-label-md uppercase hover:bg-surface-variant rounded transition-all shadow-sm">Subject & Case</button>
-                    <button onclick="toggleEvaluationPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-background border border-outline-variant text-primary font-label-md uppercase hover:bg-surface-variant rounded transition-all shadow-sm">Evaluate & Rank</button>
-                    <button onclick="toggleSettings()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-background border border-outline-variant text-primary font-label-md uppercase hover:bg-surface-variant rounded transition-all shadow-sm">Settings</button>
-                    <button onclick="logout()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-error-container text-on-error-container border border-error/20 font-label-md uppercase hover:bg-error-container/80 rounded transition-all shadow-sm">Logout</button>
+                    <button onclick="toggleContentPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case</button>
+                    <button onclick="toggleEvaluationPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all shadow-sm">Evaluate & Rank</button>
+                    <button onclick="toggleSettings()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
+                    <button onclick="logout()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all shadow-sm">Logout</button>
                 </div>
             </div>
 
             <!-- Settings -->
-            <div id="org-settings" class="hidden w-full bg-surface-container border border-outline-variant rounded-lg p-6 shadow-sm relative overflow-hidden space-y-6">
-                <h3 class="font-semibold tracking-tight font-display-lg text-xl text-primary">Event Configurations</h3>
+            <div id="org-settings" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-blue-500 mb-6 space-y-4">
+                <h3 class="font-semibold tracking-tight text-slate-800">Event Configurations</h3>
                 <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
                     <div class="flex-1 min-w-[120px]">
-                        <label class="block text-xs font-label-md text-on-surface-variant mb-2 uppercase tracking-wide">Team Size</label>
-                        <input type="number" id="cfg-team-size" class="bg-background border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" />
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Team Size</label>
+                        <input type="number" id="cfg-team-size" class="admin-input text-center font-medium" />
                     </div>
                     <div class="flex-1 min-w-[120px]">
-                        <label class="block text-xs font-label-md text-on-surface-variant mb-2 uppercase tracking-wide">Total Tables</label>
-                        <input type="number" id="cfg-total-tables" class="bg-background border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" />
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Total Tables</label>
+                        <input type="number" id="cfg-total-tables" class="admin-input text-center font-medium" />
                     </div>
                     <div class="flex-1 min-w-[120px]">
-                        <label class="block text-xs font-label-md text-on-surface-variant mb-2 uppercase tracking-wide">Teams / Table</label>
-                        <input type="number" id="cfg-teams-per-table" class="bg-background border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" />
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Teams / Table</label>
+                        <input type="number" id="cfg-teams-per-table" class="admin-input text-center font-medium" />
                     </div>
                     <div class="flex gap-3 w-full md:w-auto mt-2 md:mt-0">
-                        <button onclick="saveSettings()" class="w-full md:w-auto bg-primary text-on-primary font-label-md uppercase px-6 py-3 rounded hover:bg-surface-tint transition-colors shadow-md">Save Config</button>
+                        <button onclick="saveSettings()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm">Save Config</button>
                     </div>
                 </div>
             </div>
 
             <!-- Leaderboard -->
-            <div id="org-evaluation-panel" class="hidden w-full bg-surface-container border border-outline-variant rounded-lg p-6 shadow-sm relative overflow-hidden space-y-6">
+            <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-bold text-xl tracking-tight font-display-lg text-primary">Automated Leaderboard & Evaluation</h3>
-                        <p class="text-xs text-on-surface-variant font-body-md mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by variance score.</p>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
+                        <p class="text-xs text-slate-500 mt-1">Evaluates Needs (50%), Wants (30%), Investments (20%). Ranks by score & earliest timestamp.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                        <button onclick="runEvaluation()" class="bg-background border border-outline-variant text-primary font-label-md uppercase px-4 py-2 hover:bg-surface-variant rounded transition-all shadow-sm">Compute Rankings</button>
-                        <button onclick="publishResults()" class="bg-primary text-on-primary font-label-md uppercase px-4 py-2 hover:bg-surface-tint rounded transition-colors shadow-sm">Publish Results</button>
-                        <button onclick="sendVirtualChocolates()" class="bg-secondary text-on-primary font-label-md uppercase px-4 py-2 hover:bg-secondary/80 rounded transition-colors shadow-sm flex items-center gap-2"><span class="material-symbols-outlined text-sm">redeem</span> Send Chocolates</button>
+                        <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
+                        <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
+                        <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">🍫 Send Chocolates</button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto bg-surface-container-lowest rounded border border-outline-variant">
-                    <table class="w-full text-left text-sm whitespace-nowrap font-sans">
-                        <thead class="bg-surface-container border-b border-outline-variant">
-                            <tr class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">
-                                <th class="py-4 px-4 text-center">Rank</th>
-                                <th class="py-4 px-4">Team No.</th>
-                                <th class="py-4 px-4 text-center">Grand Total</th>
-                                <th class="py-4 px-4 text-center">Score (Variance)</th>
-                                <th class="py-4 px-4 text-center">Status</th>
-                                <th class="py-4 px-4 text-right">Action</th>
+                <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr class="text-slate-600 uppercase text-xs tracking-wider">
+                                <th class="py-4 px-4 text-center font-semibold">Rank</th>
+                                <th class="py-4 px-4 font-semibold">Team No.</th>
+                                <th class="py-4 px-4 text-center font-semibold">Grand Total</th>
+                                <th class="py-4 px-4 text-center font-semibold">Score (Variance)</th>
+                                <th class="py-4 px-4 text-center font-semibold">Status</th>
+                                <th class="py-4 px-4 text-right font-semibold">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="leaderboard-body" class="divide-y divide-outline-variant">
-                            <tr><td colspan="6" class="py-8 text-center text-on-surface-variant font-body-md italic">Click "Compute Rankings" to evaluate team submissions.</td></tr>
+                        <tbody id="leaderboard-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="6" class="py-8 text-center text-slate-400 italic">Click "Compute Rankings" to evaluate team submissions.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <!-- Broadcast Content -->
-            <div id="org-content-panel" class="hidden w-full bg-surface-container border border-outline-variant rounded-lg p-6 shadow-sm relative overflow-hidden space-y-6">
-                <h3 class="font-bold text-xl tracking-tight font-display-lg text-primary">Broadcast Subject & Case Context</h3>
+            <div id="org-content-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-blue-600 mb-6 space-y-6">
+                <h3 class="font-bold text-lg tracking-tight text-slate-800">Broadcast Subject & Case Context</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4 bg-background p-6 rounded-lg border border-outline-variant">
-                        <h4 class="font-label-md text-secondary uppercase tracking-widest text-xs">Subject I Basics</h4>
+                    <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Subject I Basics</h4>
                         <div>
-                            <label class="block text-xs font-label-md text-on-surface-variant mb-1 uppercase">Subject Name</label>
-                            <input type="text" id="org-subject-title" class="bg-surface-container-lowest border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" placeholder="e.g. Personal Finance" />
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Subject Name</label>
+                            <input type="text" id="org-subject-title" class="admin-input font-medium" placeholder="e.g. Personal Finance" />
                         </div>
                         <div>
-                            <label class="block text-xs font-label-md text-on-surface-variant mb-1 uppercase">Subject Context / Basics</label>
-                            <textarea id="org-subject-content" rows="4" class="bg-surface-container-lowest border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" placeholder="Enter fundamental concepts or notes..."></textarea>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Subject Context / Basics</label>
+                            <textarea id="org-subject-content" rows="4" class="admin-input font-medium" placeholder="Enter fundamental concepts or notes..."></textarea>
                         </div>
                         <div class="flex justify-end pt-2">
-                            <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-background border border-outline-variant text-primary font-label-md uppercase px-6 py-2.5 rounded hover:bg-surface-variant transition-colors shadow-sm">Publish Subject</button>
+                            <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm">Publish Subject</button>
                         </div>
                     </div>
 
-                    <div class="space-y-4 bg-background p-6 rounded-lg border border-outline-variant">
-                        <h4 class="font-label-md text-secondary uppercase tracking-widest text-xs">Case Study I, Budget & Timer</h4>
+                    <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Case Study I, Budget & Timer</h4>
                         <div>
-                            <label class="block text-xs font-label-md text-on-surface-variant mb-1 uppercase">Case Title</label>
-                            <input type="text" id="org-case-title" class="bg-surface-container-lowest border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" placeholder="e.g. Portfolio Allocation Dilemma" />
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
+                            <input type="text" id="org-case-title" class="admin-input font-medium" placeholder="e.g. Portfolio Allocation Dilemma" />
                         </div>
                         <div>
-                            <label class="block text-xs font-label-md text-on-surface-variant mb-1 uppercase">Case Problem Statement & Context</label>
-                            <textarea id="org-case-content" rows="2" class="bg-surface-container-lowest border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" placeholder="Enter scenario details and questions..."></textarea>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Case Problem Statement & Context</label>
+                            <textarea id="org-case-content" rows="2" class="admin-input font-medium" placeholder="Enter scenario details and questions..."></textarea>
                         </div>
                         <div>
-                            <label class="block text-xs font-label-md text-error mb-1 uppercase tracking-wider">Max Allocatable Budget (Hidden)</label>
-                            <input type="number" id="org-max-budget" class="bg-surface-container-lowest border border-error/50 text-error font-bold text-body-md p-3 rounded focus:border-error focus:ring-0 w-full" placeholder="e.g. 10000" />
+                            <label class="block text-xs font-medium text-rose-600 font-bold mb-1 uppercase tracking-wider">Max Allocatable Budget (Hidden)</label>
+                            <input type="number" id="org-max-budget" class="admin-input text-rose-600 font-bold" placeholder="e.g. 10000" />
                         </div>
                         
                         <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end pt-1">
                             <div class="flex-1">
-                                <label class="block text-xs font-label-md text-on-surface-variant mb-1 uppercase">Timer Duration (Mins)</label>
-                                <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="bg-surface-container-lowest border border-outline text-primary text-center text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" />
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Timer Duration (Mins)</label>
+                                <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="admin-input text-center font-medium" />
                             </div>
-                            <button onclick="startCaseTimerWithBudget()" class="bg-error text-on-error font-label-md uppercase px-4 py-3 rounded hover:bg-error/80 transition-colors shadow-sm whitespace-nowrap">Start Timer & Budget</button>
+                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer & Budget</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-outline-variant">
-                    <button onclick="unpublishContent()" class="w-full sm:w-auto bg-error-container text-on-error-container border border-error/20 font-label-md uppercase px-6 py-3 rounded hover:bg-error-container/80 transition-colors shadow-sm">Unpublish Details</button>
-                    <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-primary text-on-primary font-label-md uppercase px-8 py-3 rounded hover:bg-surface-tint transition-colors shadow-md">Publish Case Details</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
+                    <button onclick="unpublishContent()" class="w-full sm:w-auto bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">Unpublish Details</button>
+                    <button onclick="saveEventContentOnly()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm">Publish Case Details</button>
                 </div>
             </div>
 
             <!-- Live Roster -->
-            <div class="w-full bg-surface-container border border-outline-variant rounded-lg shadow-sm relative overflow-hidden flex flex-col h-[600px]">
-                <div class="p-6 border-b border-outline-variant flex justify-between items-center bg-background">
+            <div class="admin-panel p-0 overflow-hidden flex flex-col h-[600px]">
+                <div class="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-white">
                     <div class="flex items-center gap-3">
-                        <h3 class="font-bold tracking-tight font-display-lg text-xl text-primary">Live Student Roster</h3>
+                        <h3 class="font-semibold tracking-tight text-slate-800">Live Student Roster</h3>
                         <span class="flex h-3 w-3 relative">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                     </div>
-                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-error-container text-on-error-container border border-error/20 font-label-md uppercase rounded hover:bg-error-container/80 transition-colors shadow-sm">Clear All</button>
+                    <button onclick="deleteAllStudents()" class="text-xs px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-lg font-medium transition-all shadow-sm">Clear All</button>
                 </div>
-                <div class="overflow-auto flex-1 bg-surface-container-lowest">
-                    <table class="w-full text-left text-sm whitespace-nowrap font-sans">
-                        <thead class="sticky top-0 bg-surface-container border-b border-outline-variant z-10 shadow-sm">
-                            <tr class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">
+                <div class="overflow-auto flex-1 bg-white">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
+                            <tr class="text-slate-600 uppercase tracking-wider text-xs">
                                 <th class="py-4 px-6 font-semibold">Participant Name</th>
                                 <th class="py-4 px-6 font-semibold">PRN</th>
                                 <th class="py-4 px-6 font-semibold text-center">Assigned Team</th>
@@ -577,69 +585,69 @@
                                 <th class="py-4 px-6 font-semibold text-right">Manage</th>
                             </tr>
                         </thead>
-                        <tbody id="roster-body" class="divide-y divide-outline-variant"></tbody>
+                        <tbody id="roster-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Modal for Editing Student -->
-    <div id="edit-student-modal" class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 font-sans text-primary">
-        <div class="bg-surface-container-lowest rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-fadeUp border border-outline-variant">
-            <div class="flex justify-between items-center p-5 border-b border-outline-variant bg-background">
-                <h3 class="font-bold text-lg font-display-lg text-primary">Edit Student Profile</h3>
-                <button onclick="closeEditModal()" class="text-on-surface-variant hover:text-primary text-2xl font-bold">&times;</button>
+    <!-- Admin Modal for Editing Student (Tech Theme) -->
+    <div id="edit-student-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-3 sm:p-4 text-slate-800" style="font-family: 'Inter', sans-serif;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeUp">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800">Edit Student Profile</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
-            <div class="p-6 space-y-5">
+            <div class="p-6 space-y-4">
                 <input type="hidden" id="edit-original-prn" />
                 <div>
-                    <label class="block text-xs font-label-md text-on-surface-variant mb-2 uppercase tracking-wide">Full Name</label>
-                    <input type="text" id="edit-student-name" class="bg-background border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" />
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Full Name</label>
+                    <input type="text" id="edit-student-name" class="admin-input font-medium" />
                 </div>
                 <div>
-                    <label class="block text-xs font-label-md text-on-surface-variant mb-2 uppercase tracking-wide">PRN (ID)</label>
-                    <input type="text" id="edit-student-prn" class="bg-background border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" />
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">PRN (ID)</label>
+                    <input type="text" id="edit-student-prn" class="admin-input font-medium" />
                 </div>
                 <div>
-                    <label class="block text-xs font-label-md text-on-surface-variant mb-2 uppercase tracking-wide">Assigned Team (Arabic digits)</label>
-                    <input type="number" id="edit-student-team" class="bg-background border border-outline text-primary text-body-md p-3 rounded focus:border-secondary focus:ring-0 w-full" placeholder="e.g. 1" />
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Assigned Team (Arabic digits)</label>
+                    <input type="number" id="edit-student-team" class="admin-input font-medium" placeholder="e.g. 1" />
                 </div>
             </div>
-            <div class="p-5 border-t border-outline-variant bg-background flex justify-end gap-3">
-                <button onclick="closeEditModal()" class="px-5 py-2.5 bg-surface-variant hover:bg-surface-dim text-primary rounded text-sm font-label-md uppercase transition-colors">Cancel</button>
-                <button onclick="saveStudentEdits()" class="px-6 py-2.5 bg-primary hover:bg-surface-tint text-on-primary rounded text-sm font-label-md uppercase shadow-md transition-colors">Save Changes</button>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                <button onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+                <button onclick="saveStudentEdits()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Save Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- Admin Modal for Viewing Answer -->
-    <div id="answer-modal" class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 font-sans text-primary">
-        <div class="bg-surface-container-lowest rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp border border-outline-variant">
-            <div class="flex justify-between items-center p-5 border-b border-outline-variant bg-background flex-shrink-0">
-                <h3 class="font-bold text-lg font-display-lg text-primary">Team Strategy Review</h3>
-                <button onclick="closeAnswerModal()" class="text-on-surface-variant hover:text-primary text-2xl font-bold">&times;</button>
+    <!-- Admin Modal for Viewing Answer (Tech Theme) -->
+    <div id="answer-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-3 sm:p-4 text-slate-800" style="font-family: 'Inter', sans-serif;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-fadeUp">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
+                <h3 class="font-bold text-lg text-slate-800">Team Strategy Review</h3>
+                <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
-            <div class="p-6 overflow-y-auto flex-1 font-sans">
-                <div class="mb-6 border-b border-outline-variant pb-4">
-                    <span class="text-xs font-label-md text-on-surface-variant uppercase tracking-widest">Team ID</span>
-                    <p id="modal-team-heading" class="font-semibold text-primary text-lg mt-1"></p>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="mb-6 border-b border-slate-100 pb-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team ID</span>
+                    <p id="modal-team-heading" class="font-semibold text-indigo-900 text-lg mt-1"></p>
                 </div>
                 <div id="modal-team-answer" class="text-sm"></div>
             </div>
-            <div class="p-5 border-t border-outline-variant bg-background flex justify-end flex-shrink-0">
-                <button onclick="closeAnswerModal()" class="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-surface-tint text-on-primary rounded text-sm font-label-md uppercase shadow-md transition-colors">Done Reading</button>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
+                <button onclick="closeAnswerModal()" class="w-full sm:w-auto px-8 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold shadow-md transition-all">Done Reading</button>
             </div>
         </div>
     </div>
 
     <!-- Universal Footer -->
-    <footer class="bg-surface-container border-t border-outline-variant opacity-90 w-full py-unit flex flex-col items-center gap-4 px-margin-mobile relative z-20 mt-auto pt-8 pb-6">
+    <footer id="global-footer" class="bg-surface-container border-t border-outline-variant opacity-90 w-full py-unit flex flex-col items-center gap-4 px-margin-mobile relative z-20 mt-auto pt-8 pb-6">
         <p class="text-label-md font-label-md text-primary tracking-widest uppercase mb-2">LET THE DANCING BEGIN!</p>
         <p class="text-caption font-caption text-on-surface-variant mb-4">CICM presented by PES University</p>
     </footer>
 
-    <div class="toast-container font-sans" id="toast-container"></div>
+    <div class="toast-container" id="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -670,7 +678,7 @@
         let globalStudentsData = [];
         
         let myTeamNumber = null;
-        let studentState = 'login'; // login, waiting, reveal, dashboard
+        let studentState = 'login'; // login, waiting, reveal, dashboard, admin
         let chocolatesShownThisSession = false;
         let currentlyEditingPrn = null;
         let isBudgetRendered = false;
@@ -681,8 +689,13 @@
 
         function showToast(msg) {
             const el = document.createElement('div');
-            el.className = 'toast flex items-center gap-2 bg-surface-container-highest text-primary border-outline-variant font-sans font-medium'; 
-            el.innerHTML = `<span class="material-symbols-outlined text-secondary text-lg">info</span> ${msg}`;
+            // If admin, use simpler toast class, otherwise use the surface container
+            if(studentState === 'admin') {
+                el.className = 'toast flex items-center gap-2';
+            } else {
+                el.className = 'toast flex items-center gap-2 bg-surface-container-highest text-primary border-outline-variant font-sans font-medium'; 
+            }
+            el.innerHTML = `<span class="material-symbols-outlined text-blue-500 text-lg">info</span> ${msg}`;
             document.getElementById('toast-container').appendChild(el);
             setTimeout(() => el.remove(), 4000);
         }
@@ -854,7 +867,7 @@
                 if (distance < 0) {
                     clearInterval(studentClockInterval);
                     clock.innerText = "TIME'S UP";
-                    clock.className = "text-sm font-extrabold text-error";
+                    clock.className = "text-xs sm:text-sm font-extrabold text-error";
                     if (notice) notice.classList.add('hidden');
                     if(builder && !submitBtn.classList.contains('bg-secondary')) {
                         builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
@@ -1107,15 +1120,21 @@
             }
 
             if (data && data.user) {
-                const headerElement = document.querySelector('#global-header');
-                if(headerElement) headerElement.style.display = 'flex';
-                document.getElementById('header-menu-btn').classList.add('hidden'); // Hide menu icon for admins
                 initAdmin(adminNum);
             }
         }
 
         async function initAdmin(adminNum) {
             studentState = 'admin';
+            
+            // Hide the global components that belong to the student theme
+            const headerElement = document.querySelector('#global-header');
+            if(headerElement) headerElement.style.display = 'none';
+            const parchmentBg = document.getElementById('parchment-bg');
+            if(parchmentBg) parchmentBg.style.display = 'none';
+            const globalFooter = document.getElementById('global-footer');
+            if(globalFooter) globalFooter.style.display = 'none';
+
             switchScreen('admin-dashboard-screen');
             await loadSettings();
             
@@ -1240,21 +1259,21 @@
             if(!tbody) return;
 
             if(teamsList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-on-surface-variant italic font-sans">No submitted answers available to rank.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 italic font-sans">No submitted answers available to rank.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = teamsList.map(t => `
-                <tr class="hover:bg-surface-container transition-colors">
-                    <td class="py-4 px-6 font-bold text-center text-primary font-display-lg">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
-                    <td class="py-4 px-6 font-medium text-primary font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-4 px-6 text-center font-semibold text-secondary font-sans">₹${t.grand_total.toLocaleString()}</td>
-                    <td class="py-4 px-6 text-center font-bold text-primary font-sans">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
-                    <td class="py-4 px-6 text-center font-sans">
-                        ${t.disqualified ? '<span class="bg-error-container text-on-error-container border border-error/20 px-3 py-1 rounded text-xs font-label-md uppercase font-sans">Disqualified</span>' : '<span class="bg-surface-variant text-on-surface-variant border border-outline px-3 py-1 rounded text-xs font-label-md uppercase font-sans">Qualified</span>'}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="py-3 px-4 font-extrabold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
+                    <td class="py-3 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
+                    <td class="py-3 px-4 text-center font-semibold text-slate-700 font-sans">₹${t.grand_total.toLocaleString()}</td>
+                    <td class="py-3 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : t.score + '% variance'}</td>
+                    <td class="py-3 px-4 text-center font-sans">
+                        ${t.disqualified ? '<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
                     </td>
-                    <td class="py-4 px-6 text-right">
-                        <button onclick="openAnswerModal(${t.team_number})" class="text-primary hover:text-secondary text-xs font-label-md uppercase px-4 py-2 rounded bg-background border border-outline-variant transition-all font-sans">View Sheet</button>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all font-sans">View Sheet</button>
                     </td>
                 </tr>
             `).join('');
@@ -1352,20 +1371,20 @@
                 const hasTeamAnswer = s.team_number && teamAnswers[s.team_number];
                 const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
                 return `
-                    <tr class="hover:bg-surface-container transition-colors border-b border-outline-variant/50">
-                        <td class="py-4 px-6 font-medium text-primary font-sans">${s.name}</td>
-                        <td class="py-4 px-6 text-on-surface-variant font-sans">${s.prn}</td>
-                        <td class="py-4 px-6 text-center font-sans">
-                            ${s.team_number ? `<span class="bg-surface-variant text-on-surface-variant border border-outline px-3 py-1 rounded text-xs font-label-md uppercase">Team ${toRoman(s.team_number)}</span>` : `<span class="text-on-surface-variant italic text-xs">Waiting...</span>`}
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                        <td class="py-3 px-4 sm:px-5 font-medium text-slate-800 font-sans">${s.name}</td>
+                        <td class="py-3 px-4 sm:px-5 text-slate-500 font-sans">${s.prn}</td>
+                        <td class="py-3 px-4 sm:px-5 text-center font-sans">
+                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${toRoman(s.team_number)}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
                         </td>
-                        <td class="py-4 px-6 text-center font-medium text-primary font-display-lg">${s.team_number ? toRoman(tableNo) : '-'}</td>
-                        <td class="py-4 px-6 text-right whitespace-nowrap font-sans">
-                            <button onclick="openEditModal('${s.prn}')" class="text-primary hover:text-secondary text-xs font-label-md uppercase px-4 py-2 rounded bg-background border border-outline-variant transition-all mr-2 shadow-sm">Edit</button>
+                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? toRoman(tableNo) : '-'}</td>
+                        <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
+                            <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
                             ${hasTeamAnswer && s.team_number ? `
-                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-error hover:text-on-error text-xs font-label-md uppercase px-4 py-2 rounded bg-error-container hover:bg-error border border-error/20 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
-                                <button onclick="openAnswerModal(${s.team_number})" class="text-primary hover:text-secondary text-xs font-label-md uppercase px-4 py-2 rounded bg-background border border-outline-variant transition-all mr-2 shadow-sm">View Sheet</button>
+                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-500 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
+                                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-white text-xs font-semibold px-4 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
                             ` : ''}
-                            <button onclick="deleteStudent('${s.prn}')" class="text-error hover:text-on-error text-xs font-label-md uppercase px-4 py-2 rounded bg-error-container hover:bg-error border border-error/20 transition-all shadow-sm">Revoke</button>
+                            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 transition-all shadow-sm">Revoke</button>
                         </td>
                     </tr>
                 `;
@@ -1394,17 +1413,16 @@
                                                 if(item.desc || item.amount) {
                                                         const amt = parseFloat(item.amount) || 0;
                                                         catTotal += amt;
-                                                        rowsHtml += `<div class="flex justify-between text-sm py-2 border-b border-outline-variant/50 last:border-0"><span class="text-on-surface-variant font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-primary font-sans">₹${amt.toLocaleString()}</span></div>`;
+                                                        rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600 font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800 font-sans">₹${amt.toLocaleString()}</span></div>`;
                                                 }
                                         });
                                 }
                                 if(catTotal > 0) {
                                         displayHTML += `
-                                        <div class="bg-background p-5 rounded-lg border border-outline-variant shadow-sm relative">
-                                                <div class="absolute top-0 left-0 w-full h-0.5 bg-secondary opacity-30"></div>
-                                                <h5 class="font-display-lg text-primary tracking-widest text-base mb-3">${cat}</h5>
+                                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                                <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2 font-sans">${cat}</h5>
                                                 ${rowsHtml}
-                                                <div class="flex justify-between mt-4 pt-3 border-t border-outline-variant font-bold text-sm text-secondary font-sans">
+                                                <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700 font-sans">
                                                         <span>Subtotal</span><span>₹${catTotal.toLocaleString()}</span>
                                                 </div>
                                         </div>`;
@@ -1412,11 +1430,11 @@
                                 }
                         });
                         displayHTML += `
-                                <div class="bg-surface-container-highest p-5 rounded-lg border border-secondary flex justify-between font-bold text-xl text-primary mt-6 shadow-sm font-sans">
+                                <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
                                         <span>GRAND TOTAL</span><span>₹${grandTotal.toLocaleString()}</span>
                                 </div>
                         </div>`;
-                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-on-surface-variant p-5 bg-background rounded-lg border border-outline-variant font-sans">${team.case_answer}</div>`; }
+                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200 font-sans">${team.case_answer}</div>`; }
 
                 document.getElementById('modal-team-answer').innerHTML = displayHTML;
                 document.getElementById('answer-modal').classList.remove('hidden');
@@ -1441,7 +1459,17 @@
         function logout() {
             if (currentlyEditingPrn) supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
             if(pollInterval) clearInterval(pollInterval);
-            supabaseClient.auth.signOut(); switchScreen('login-register-screen');
+            supabaseClient.auth.signOut(); 
+            
+            // Re-show global elements when logging out back to student view
+            const headerElement = document.querySelector('#global-header');
+            if(headerElement) headerElement.style.display = 'flex';
+            const parchmentBg = document.getElementById('parchment-bg');
+            if(parchmentBg) parchmentBg.style.display = 'block';
+            const globalFooter = document.getElementById('global-footer');
+            if(globalFooter) globalFooter.style.display = 'flex';
+            
+            switchScreen('login-register-screen');
         }
 
         window.onload = async () => {
@@ -1459,9 +1487,6 @@
             if (session && session.user && session.user.email) {
                 const match = session.user.email.match(/admin(\d+)@/);
                 if (match && match[1]) {
-                    const headerElement = document.querySelector('#global-header');
-                    if(headerElement) headerElement.style.display = 'flex';
-                    document.getElementById('header-menu-btn').classList.add('hidden');
                     return initAdmin(match[1]);
                 }
             }
