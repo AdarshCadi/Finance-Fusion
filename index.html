@@ -133,7 +133,6 @@
                 <p class="text-sm text-on-surface-variant mb-6">Thank you for participating in the simulation.</p>
             </div>
             
-            <!-- Logout always visible at the bottom of the scroll -->
             <div class="w-full mt-10 pt-6 border-t border-outline-variant">
                 <p class="text-xs text-on-surface-variant uppercase tracking-widest mb-4">Session Complete?</p>
                 <button onclick="studentLogout()" class="w-full bg-surface-variant text-error border border-error/30 font-bold py-4 rounded-xl hover:bg-error hover:text-white transition-all shadow-sm flex items-center justify-center gap-2">
@@ -146,19 +145,12 @@
     <!-- CHOCOLATE GIFT BOX OVERLAY -->
     <div id="gift-box-overlay" class="fixed inset-0 bg-secondary/95 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-6 text-on-primary font-sans text-center">
         <h2 class="text-4xl md:text-6xl font-display-lg font-bold mb-16 text-primary tracking-tight drop-shadow-sm">A Gift from the Organizers!</h2>
-        
         <div class="relative w-64 h-64 mx-auto cursor-pointer animate-box-bounce" onclick="openGiftBox()">
-            <!-- Chocolate inside -->
             <div id="gift-chocolate" class="absolute inset-0 flex items-center justify-center text-[8rem] opacity-0 transform scale-50 transition-all duration-[1200ms] ease-out z-10 drop-shadow-2xl">🍫</div>
-            <!-- Box front -->
             <div id="gift-box-front" class="absolute inset-0 flex items-center justify-center text-[10rem] z-20 transition-all duration-[800ms] ease-in-out origin-bottom transform drop-shadow-2xl">🎁</div>
         </div>
-        
         <p id="gift-hint" class="mt-12 text-xl font-bold uppercase tracking-widest text-primary/80 animate-pulse">Tap the box to open!</p>
-        
-        <button id="gift-close-btn" onclick="closeGiftBox()" class="hidden mt-16 bg-primary text-secondary-fixed font-bold px-10 py-4 rounded-xl shadow-2xl uppercase tracking-widest transition-transform hover:scale-105">
-            Enjoy & Close
-        </button>
+        <button id="gift-close-btn" onclick="closeGiftBox()" class="hidden mt-16 bg-primary text-secondary-fixed font-bold px-10 py-4 rounded-xl shadow-2xl uppercase tracking-widest transition-transform hover:scale-105">Enjoy & Close</button>
     </div>
 
     <!-- PLOT TWIST OVERLAY (CASE 1 ONLY) -->
@@ -166,15 +158,12 @@
         <h1 class="text-error font-display-lg text-5xl md:text-7xl mb-4 tracking-widest uppercase animate-pulse">🚨 Plot Twist! 🚨</h1>
         <p class="text-xl md:text-2xl font-semibold mb-2">Just when your team thinks the budget is perfect...</p>
         <p class="text-secondary text-2xl md:text-3xl font-display-lg mb-6">Life happens! 😬</p>
-        
         <p class="max-w-xl text-surface-dim text-sm md:text-base leading-relaxed mb-8">Each team will receive one Surprise Event Card.<br>You must immediately revise your budget without increasing the family's income.</p>
-        
         <div class="bg-surface-container-highest border border-outline-variant rounded-2xl p-8 max-w-sm w-full shadow-2xl mb-8 transform hover:scale-105 transition-transform text-primary">
             <div id="twist-icon" class="text-6xl mb-4"></div>
             <h3 id="twist-title" class="text-2xl font-bold font-display-lg text-primary mb-2"></h3>
             <p id="twist-desc" class="text-error font-bold text-xl tracking-wider"></p>
         </div>
-        
         <div id="twist-countdown-container" class="bg-surface-variant text-primary px-8 py-4 rounded-xl font-bold text-xl border border-outline">
             Interface Locked: <span id="twist-timer" class="text-error">30</span>s
         </div>
@@ -186,12 +175,10 @@
     <!-- SCRATCH CARD RESULTS OVERLAY -->
     <div id="scratch-card-overlay" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl z-[110] hidden flex-col items-center justify-center p-6 font-sans">
         <h1 class="text-secondary font-display-lg text-4xl md:text-5xl mb-8 tracking-widest uppercase text-center drop-shadow-lg">The Final Results</h1>
-        
         <div id="scratch-card-inner" class="relative w-full max-w-md h-[450px] md:h-[500px] bg-surface-container rounded-3xl shadow-[0_0_60px_rgba(255,215,0,0.3)] flex flex-col items-center justify-center p-8 text-center overflow-hidden transition-shadow duration-500 border border-outline-variant">
             <div id="scratch-content-area" class="flex flex-col items-center justify-center h-full w-full opacity-100">
                 <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Global Rank</span>
                 <p id="scratch-rank" class="text-7xl md:text-8xl font-black text-primary font-display-lg mb-8 drop-shadow-sm"></p>
-                
                 <div class="space-y-4 w-full px-4">
                     <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
                         <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Percentile</p>
@@ -202,7 +189,6 @@
                         <p id="scratch-marks" class="text-2xl font-bold text-primary mt-1"></p>
                     </div>
                 </div>
-                
                 <button onclick="dismissScratchCard()" id="btn-close-scratch" class="mt-8 bg-primary text-on-primary font-label-md uppercase px-8 py-3 rounded-xl hover:bg-surface-tint transition-all opacity-0 pointer-events-none">
                     Close & Continue
                 </button>
@@ -249,7 +235,6 @@
         <main class="flex-grow flex flex-col items-center justify-center w-full px-margin-mobile">
             <div class="w-full max-w-[460px] bg-surface-container-lowest relative border border-outline-variant rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)]">
                 <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary"></div>
-                
                 <div class="p-10 md:p-14">
                     <div class="text-center mb-10 flex flex-col items-center">
                         <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant mb-6">
@@ -281,15 +266,15 @@
 
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" required="" type="number" min="1" max="50">
-                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:text-secondary pointer-events-none uppercase tracking-wider">Master Admin ID (1-50)</label>
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" required="" type="text">
+                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:text-secondary pointer-events-none uppercase tracking-wider">Master Admin Name (Anime)</label>
                         </div>
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" required="" type="password" minlength="6">
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors placeholder-transparent" id="admin-password" required="" type="password" minlength="6">
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:text-secondary pointer-events-none uppercase tracking-wider">Password</label>
                             <p class="text-[11px] text-on-surface-variant mt-2 tracking-wide font-caption">*First-time login securely sets your permanent password.</p>
                         </div>
-                        <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container-highest to-surface-variant border border-primary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-outline-variant transition-all duration-300 flex items-center justify-center gap-3 group relative" type="submit">
+                        <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container-highest to-surface-variant border border-primary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-outline-variant transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden" type="submit">
                             <span class="relative z-10">Command Center</span>
                             <span class="material-symbols-outlined relative z-10 text-xl transition-transform duration-300 group-hover:translate-x-1">admin_panel_settings</span>
                         </button>
@@ -337,7 +322,6 @@
     <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-primary z-10 relative font-sans pt-24 pb-20">
         <div class="w-full max-w-3xl relative">
 
-            <!-- Global Timer Badge -->
             <div id="student-timer-badge" class="hidden bg-surface-container border border-error/50 px-5 py-2.5 rounded-lg shadow-sm flex items-center justify-between mb-6 mx-auto w-fit gap-4">
                 <span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"><span class="material-symbols-outlined text-error text-sm animate-pulse">timer</span> Time Left</span>
                 <span id="student-timer-clock" class="text-base font-extrabold text-error font-mono">--:--</span>
@@ -374,7 +358,7 @@
                     <button onclick="setStudentView('cases')" class="bg-surface-container hover:bg-surface-variant transition-colors border border-outline-variant rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm group">
                         <span class="material-symbols-outlined text-5xl text-secondary mb-4 group-hover:scale-110 transition-transform">analytics</span>
                         <h3 class="font-display-lg text-2xl text-primary mb-2">Cases</h3>
-                        <p class="font-body-md text-sm text-on-surface-variant">Access case studies and allocation tools.</p>
+                        <p class="font-body-md text-sm text-on-surface-variant">Access case studies.</p>
                     </button>
                 </div>
             </div>
@@ -1308,26 +1292,36 @@
 
         /* --- MASTER ADMIN FLOW --- */
         async function handleAdminAuth(e) {
-            e.preventDefault(); const adminNum = document.getElementById('admin-id').value.trim(), password = document.getElementById('admin-password').value.trim();
-            if (adminNum < 1 || adminNum > 50) return showToast('Please enter a valid Master Admin ID (1 - 50).');
-            const email = `admin${adminNum}@financefusion.local`;
+            e.preventDefault(); 
+            const adminName = document.getElementById('admin-id').value.trim().toLowerCase();
+            const password = document.getElementById('admin-password').value.trim();
+            
+            const validAdmins = ['luffy', 'zoro', 'naruto', 'sasuke', 'goku', 'vegeta', 'ichigo', 'edward', 'saitama', 'levi', 'eren', 'mikasa', 'tanjiro', 'nezuko', 'gojo', 'yuji', 'light', 'l', 'spike', 'gintoki'];
+            
+            if (!validAdmins.includes(adminName)) {
+                return showToast('Invalid Admin Name. Please use an authorized Anime ID.');
+            }
+
+            const email = `${adminName}@financefusion.local`;
             let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            
             if (error && error.message.includes("Invalid login credentials")) {
                 const { data: sD, error: sE } = await supabaseClient.auth.signUp({ email, password });
                 if (sE) return showToast(sE.message.includes("already registered") ? 'Incorrect password.' : 'Error: ' + sE.message);
-                data = sD; showToast(`Master Admin ${toRoman(adminNum)} claimed!`);
+                data = sD; showToast(`Master Admin ${adminName.toUpperCase()} claimed!`);
             } else if (error) return showToast('Login Error: ' + error.message);
-            if (data && data.user) { document.querySelector('#global-header').style.display = 'flex'; document.getElementById('header-menu-btn').classList.add('hidden'); initAdmin(adminNum); }
+            
+            if (data && data.user) { document.querySelector('#global-header').style.display = 'flex'; document.getElementById('header-menu-btn').classList.add('hidden'); initAdmin(adminName); }
         }
 
-        async function initAdmin(adminNum) {
+        async function initAdmin(adminName) {
             studentState = 'admin'; document.querySelector('#global-header').style.display = 'none'; document.getElementById('parchment-bg').style.display = 'none';
             switchScreen('admin-dashboard-screen');
             await loadSettings();
             document.getElementById('cfg-team-size').value = myConfig.team_size; document.getElementById('cfg-total-tables').value = myConfig.total_tables; document.getElementById('cfg-teams-per-table').value = myConfig.teams_per_table;
             document.getElementById('cfg-target-needs').value = myConfig.target_needs; document.getElementById('cfg-target-wants').value = myConfig.target_wants; document.getElementById('cfg-target-inv').value = myConfig.target_inv;
             document.getElementById('c1-max-budget').value = myConfig.max_budget || 10000;
-            document.getElementById('admin-role-badge').innerText = `Admin ID: ${toRoman(adminNum)}`;
+            document.getElementById('admin-role-badge').innerText = `Admin: ${adminName.toUpperCase()}`;
             setInterval(fetchRoster, 5000); fetchRoster(); manageAdminTimer();
         }
 
@@ -1571,8 +1565,13 @@
             }
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user && session.user.email) {
-                const match = session.user.email.match(/admin(\d+)@/);
-                if (match && match[1]) { document.querySelector('#global-header').style.display = 'flex'; document.getElementById('header-menu-btn').classList.add('hidden'); return initAdmin(match[1]); }
+                const validAdmins = ['luffy', 'zoro', 'naruto', 'sasuke', 'goku', 'vegeta', 'ichigo', 'edward', 'saitama', 'levi', 'eren', 'mikasa', 'tanjiro', 'nezuko', 'gojo', 'yuji', 'light', 'l', 'spike', 'gintoki'];
+                const match = session.user.email.match(/^(.+)@financefusion\.local$/);
+                if (match && match[1] && validAdmins.includes(match[1])) { 
+                    document.querySelector('#global-header').style.display = 'flex'; 
+                    document.getElementById('header-menu-btn').classList.add('hidden'); 
+                    return initAdmin(match[1]); 
+                }
             }
         };
     </script>
