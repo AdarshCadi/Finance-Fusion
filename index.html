@@ -1249,11 +1249,15 @@
                     
                     submissionSection.classList.remove('hidden');
                     
-                    // Render correct builder
+                    // Render correct builder only if it hasn't been rendered yet for this specific case
                     if(c.isCase2) {
-                        renderCase2Builder();
+                        if (!document.getElementById('list-case2')) {
+                            renderCase2Builder();
+                        }
                     } else {
-                        renderBudgetBuilder();
+                        if (!document.getElementById('list-Needs')) {
+                            renderBudgetBuilder();
+                        }
                     }
                 }
             }
