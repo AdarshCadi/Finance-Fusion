@@ -65,23 +65,18 @@
         /* ── Screen Transitions ── */
         .screen { display: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px); }
         .screen.active { display: flex; opacity: 1; transform: translateY(0); }
-        
         .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
         .reveal-anim { animation: subtleReveal 1s ease-out forwards; }
         @keyframes subtleReveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ── Astrolabe Animations (RESTORED) ── */
+        /* ── Astrolabe & Icons ── */
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes spin-slow-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
         @keyframes pulse-glow { 0%, 100% { opacity: 0.8; box-shadow: 0 0 15px rgba(119, 90, 25, 0.2); } 50% { opacity: 1; box-shadow: 0 0 25px rgba(119, 90, 25, 0.6); } }
-        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
         .animate-spin-slow { animation: spin-slow 16s linear infinite; }
         .animate-spin-slow-reverse { animation: spin-slow-reverse 24s linear infinite; }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
-        .animate-fade-in { animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         /* ── Chocolate Box ── */
         @keyframes boxBounce { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-10px); } }
@@ -290,27 +285,13 @@
     </div>
 
     <!-- SCREEN 2: Astrolabe Waiting -->
-    <!-- FULLY RESTORED ASTROLABE SVG RINGS & ANIMATION OPACITY CLASS -->
     <div id="student-waiting-screen" class="screen w-full min-h-screen items-center justify-center pt-24 pb-24 relative z-10">
         <main class="relative z-10 flex flex-col items-center justify-center p-margin-mobile w-full max-w-2xl mx-auto opacity-0 animate-fade-in">
             <div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-12">
-                <svg class="absolute inset-0 w-full h-full text-outline opacity-20" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" fill="none" r="49" stroke="currentColor" stroke-width="0.25"></circle>
-                    <circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="1 3" stroke-width="0.5"></circle>
-                </svg>
-                <svg class="absolute inset-0 w-full h-full text-secondary opacity-60 animate-spin-slow" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" fill="none" r="43" stroke="currentColor" stroke-width="0.75"></circle>
-                    <circle cx="50" cy="50" fill="none" r="39" stroke="currentColor" stroke-dasharray="2 6" stroke-width="0.5"></circle>
-                    <circle cx="50" cy="7" fill="currentColor" r="1.5"></circle>
-                </svg>
-                <svg class="absolute w-[75%] h-[75%] text-secondary opacity-80 animate-spin-slow-reverse" viewBox="0 0 100 100">
-                    <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(30 50 50)"></ellipse>
-                    <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(-30 50 50)"></ellipse>
-                    <ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(90 50 50)"></ellipse>
-                </svg>
-                <div class="w-3 h-3 md:w-4 md:h-4 bg-primary rotate-45 animate-pulse-glow flex items-center justify-center relative z-20">
-                    <div class="absolute inset-0 border border-secondary scale-150 rotate-45 opacity-50"></div>
-                </div>
+                <svg class="absolute inset-0 w-full h-full text-outline opacity-20" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" r="49" stroke="currentColor" stroke-width="0.25"></circle><circle cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="1 3" stroke-width="0.5"></circle></svg>
+                <svg class="absolute inset-0 w-full h-full text-secondary opacity-60 animate-spin-slow" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" r="43" stroke="currentColor" stroke-width="0.75"></circle><circle cx="50" cy="50" fill="none" r="39" stroke="currentColor" stroke-dasharray="2 6" stroke-width="0.5"></circle><circle cx="50" cy="7" fill="currentColor" r="1.5"></circle></svg>
+                <svg class="absolute w-[75%] h-[75%] text-secondary opacity-80 animate-spin-slow-reverse" viewBox="0 0 100 100"><ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(30 50 50)"></ellipse><ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(-30 50 50)"></ellipse><ellipse cx="50" cy="50" fill="none" rx="46" ry="14" stroke="currentColor" stroke-width="0.5" transform="rotate(90 50 50)"></ellipse></svg>
+                <div class="w-3 h-3 md:w-4 md:h-4 bg-primary rotate-45 animate-pulse-glow flex items-center justify-center relative z-20"><div class="absolute inset-0 border border-secondary scale-150 rotate-45 opacity-50"></div></div>
             </div>
             <div class="text-center flex flex-col items-center gap-4">
                 <h1 class="font-display-lg text-display-lg text-primary tracking-tight">Searching for partner...</h1>
@@ -398,7 +379,7 @@
                 <div id="case-content" class="min-h-[200px]"></div>
 
                 <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-6 sm:p-8 shadow-sm relative mt-6" id="student-submission-section">
-                    <!-- Builder injected here dynamically based on case index -->
+                    <!-- Builder injected here dynamically -->
                 </div>
 
                 <div class="flex justify-between items-center mt-8 bg-surface-container p-3 rounded-lg border border-outline-variant">
@@ -787,7 +768,6 @@
             setTimeout(() => el.remove(), 4000);
         }
 
-        let scratchCanvas, scratchCtx, scratchIsCleared = false, isScratching = false;
         function initScratchCard(tier) {
             scratchCanvas = document.getElementById('scratch-pad');
             if(!scratchCanvas) return;
@@ -1067,7 +1047,17 @@
                 if(go) { go.classList.remove('hidden'); go.classList.add('flex'); lastChocolatesSent = true; saveLocalState(); }
             } else if (!myConfig.chocolates_sent) { lastChocolatesSent = false; saveLocalState(); }
 
-            if(isDash) { renderStudentDash(); checkPlotTwist(); }
+            if(isDash) { 
+                const contentHash = JSON.stringify(studentSubjectsList) + JSON.stringify(studentCasesList);
+                if (window.lastContentHash !== contentHash) {
+                    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                        renderStudentDash(); window.lastContentHash = contentHash; window.dashRendered = true;
+                    }
+                } else if (!window.dashRendered) {
+                    renderStudentDash(); window.dashRendered = true; window.lastContentHash = contentHash;
+                }
+                checkPlotTwist(); 
+            }
 
             if (myConfig.results_published && myTeamNumber) fetchTeamResult(myTeamNumber, 1);
             else { const r1 = document.getElementById('student-results-banner'); if(r1) r1.classList.add('hidden'); }
@@ -1276,7 +1266,7 @@
                         const t = teamRows[0];
                         const b1 = document.getElementById('submit-answer-btn-1'), a1 = document.getElementById('c1-builder-area');
                         if (t.case_answer) {
-                            try { const p = JSON.parse(t.case_answer); if (p && p.Needs) { budgetState = p; saveLocalState(); if (isBudgetRendered) renderBudgetBuilder(); } } catch (e) {}
+                            try { const p = JSON.parse(t.case_answer); if (p && p.Needs) { budgetState = p; saveLocalState(); if (document.getElementById('c1-builder-area')) renderBudgetBuilder(); } } catch (e) {}
                             if (b1) { b1.innerText = 'Submitted ✓'; b1.className = 'w-full sm:w-auto bg-secondary text-white px-12 py-3 rounded font-label-md uppercase cursor-not-allowed opacity-80'; b1.disabled = true; }
                             if (a1) a1.querySelectorAll('input, button').forEach(el => el.disabled = true);
                         } else { if (b1 && b1.disabled && myConfig.timer_end_time && new Date(myConfig.timer_end_time)>Date.now()) { b1.innerText = 'Submit Strategy'; b1.disabled = false; b1.className='w-full sm:w-auto bg-primary text-on-primary font-label-md uppercase px-12 py-3 rounded shadow-md'; if(a1) a1.querySelectorAll('input, button').forEach(el => el.disabled = false); } }
