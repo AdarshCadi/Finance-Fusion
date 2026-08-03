@@ -191,7 +191,7 @@
         </button>
     </div>
 
-    <!-- FULL SCREEN PLOT TWIST OVERLAY -->
+    <!-- FULL SCREEN PLOT TWIST OVERLAY (CASE 1 ONLY) -->
     <div id="plot-twist-overlay" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl z-[100] hidden flex-col items-center justify-center p-6 text-on-primary font-sans text-center">
         <h1 class="text-error font-display-lg text-5xl md:text-7xl mb-4 tracking-widest uppercase animate-pulse">🚨 Plot Twist! 🚨</h1>
         <p class="text-xl md:text-2xl font-semibold mb-2">Just when your team thinks the budget is perfect...</p>
@@ -215,7 +215,7 @@
 
     <!-- SCRATCH CARD RESULTS OVERLAY -->
     <div id="scratch-card-overlay" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl z-[110] hidden flex-col items-center justify-center p-6 font-sans">
-        <h1 class="text-secondary font-display-lg text-4xl md:text-5xl mb-8 tracking-widest uppercase text-center drop-shadow-lg">The Final Results</h1>
+        <h1 class="text-secondary font-display-lg text-4xl md:text-5xl mb-8 tracking-widest uppercase text-center drop-shadow-lg" id="scratch-card-title">The Final Results</h1>
         <div id="scratch-card-inner" class="relative w-full max-w-md h-[450px] md:h-[500px] bg-surface-container rounded-3xl shadow-[0_0_60px_rgba(255,215,0,0.3)] flex flex-col items-center justify-center p-8 text-center overflow-hidden transition-shadow duration-500 border border-outline-variant">
             <div id="scratch-content-area" class="flex flex-col items-center justify-center h-full w-full opacity-100">
                 <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Global Rank</span>
@@ -392,6 +392,12 @@
     <div id="student-dashboard-screen" class="screen flex-col min-h-screen items-center justify-start p-3 sm:p-4 text-primary z-10 relative font-sans pt-24 pb-20">
         <div class="w-full max-w-3xl relative">
 
+            <div id="student-results-banner" class="hidden bg-emerald-50 border border-emerald-200 px-5 py-3 rounded-xl shadow-sm mb-6 flex flex-col items-center justify-center gap-2 text-center w-full relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400"></div>
+                <span class="text-xs font-bold text-emerald-800 uppercase tracking-widest mt-1">Official Evaluation Result</span>
+                <span id="student-result-status" class="text-2xl font-extrabold text-emerald-700 font-display-lg">--</span>
+            </div>
+
             <div id="student-timer-badge" class="hidden bg-surface-container border border-error/50 px-5 py-2.5 rounded-lg shadow-sm flex items-center justify-between mb-6 mx-auto w-fit gap-4">
                 <span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"><span class="material-symbols-outlined text-error text-sm animate-pulse">timer</span> Time Left</span>
                 <span id="student-timer-clock" class="text-base font-extrabold text-error font-mono">--:--</span>
@@ -478,7 +484,7 @@
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
-                    <button onclick="toggleContentPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subject & Case Builder</button>
+                    <button onclick="showContentRouter()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg font-medium transition-all shadow-sm">Subjects & Cases</button>
                     <button onclick="toggleEvaluationPanel()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 rounded-lg font-medium transition-all shadow-sm">Evaluate & Rank</button>
                     <button onclick="toggleSettings()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-medium transition-all shadow-sm">Settings</button>
                     <button onclick="logout()" class="flex-1 md:flex-none text-xs sm:text-sm px-4 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg font-medium transition-all shadow-sm">Logout</button>
@@ -486,7 +492,7 @@
             </div>
 
             <!-- Settings -->
-            <div id="org-settings" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-blue-500 mb-6 space-y-4">
+            <div id="org-settings" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-slate-500 mb-6 space-y-4">
                 <h3 class="font-semibold tracking-tight text-slate-800">Event Configurations</h3>
                 <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
                     <div class="flex-1 min-w-[120px]">
@@ -504,7 +510,7 @@
                 </div>
                 
                 <div class="pt-4 border-t border-slate-100 mt-4">
-                    <h4 class="text-sm font-semibold text-slate-700 mb-3">Evaluation Target Allocation (%)</h4>
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3">Evaluation Target Allocation (Case 1 Only)</h4>
                     <div class="flex flex-wrap gap-4 sm:gap-5 items-end">
                         <div class="flex-1 min-w-[120px]">
                             <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Target Needs %</label>
@@ -525,16 +531,20 @@
                 </div>
             </div>
 
-            <!-- Leaderboard -->
+            <!-- Leaderboard & Evaluation -->
             <div id="org-evaluation-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-600 mb-6 space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h3 class="font-bold text-lg tracking-tight text-slate-800">Automated Leaderboard & Evaluation</h3>
-                        <p class="text-xs text-slate-500 mt-1">Evaluates Needs, Wants, and Investments with keyword micro-scoring. Scaled to 100th percentile.</p>
+                        <p class="text-xs text-slate-500 mt-1">Select evaluation mode to view rankings for the respective case studies.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <div class="bg-indigo-50 rounded-lg p-1 mr-2 flex shadow-sm border border-indigo-200">
+                            <button onclick="setEvalTab('case1')" id="eval-tab-case1" class="px-4 py-2 text-xs font-bold rounded bg-indigo-600 text-white shadow-sm transition-all">Case 1</button>
+                            <button onclick="setEvalTab('case2')" id="eval-tab-case2" class="px-4 py-2 text-xs font-bold rounded text-indigo-700 hover:bg-indigo-100 transition-all">Case 2</button>
+                        </div>
                         <button onclick="runEvaluation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Compute Rankings</button>
-                        <button onclick="publishResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
+                        <button onclick="publishResults()" id="btn-pub-results" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm">Publish Results</button>
                         <button onclick="sendVirtualChocolates()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">🍫 Send Chocolates</button>
                         <button onclick="publishFeedbackForm()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center gap-2">Publish Feedback</button>
                     </div>
@@ -546,7 +556,7 @@
                             <tr class="text-slate-600 uppercase text-xs tracking-wider">
                                 <th class="py-4 px-4 text-center font-semibold">Rank</th>
                                 <th class="py-4 px-4 font-semibold">Team No.</th>
-                                <th class="py-4 px-4 text-center font-semibold">Grand Total</th>
+                                <th class="py-4 px-4 text-center font-semibold" id="table-head-total">Grand Total</th>
                                 <th class="py-4 px-4 text-center font-semibold">Raw Score</th>
                                 <th class="py-4 px-4 text-center font-semibold">Percentile</th>
                                 <th class="py-4 px-4 text-center font-semibold">Status</th>
@@ -560,78 +570,150 @@
                 </div>
             </div>
 
-            <!-- Dynamic Content Broadcast Panel -->
-            <div id="org-content-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-blue-600 mb-6 space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-                    <h3 class="font-bold text-lg tracking-tight text-slate-800">Broadcast Dynamic Curriculum</h3>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button onclick="unpublishContent()" class="flex-1 sm:flex-none bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm">Unpublish All</button>
-                        <button onclick="saveEventContentOnly()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm">Publish All</button>
-                    </div>
+            <!-- Interstitial Menu for Subject/Cases -->
+            <div id="org-content-menu" class="hidden admin-panel p-10 border-l-4 border-blue-500 mb-6 space-y-6 text-center animate-fadeUp">
+                <h3 class="font-bold text-2xl tracking-tight text-slate-800 mb-2">Curriculum Management</h3>
+                <p class="text-slate-500 text-sm mb-8 max-w-lg mx-auto">Select whether you would like to edit educational subjects or interactive case studies.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-6 max-w-2xl mx-auto">
+                    <button onclick="showAdminSubjectsPanel()" class="flex-1 bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md p-8 rounded-2xl transition-all group">
+                        <span class="material-symbols-outlined text-5xl text-blue-500 mb-4 group-hover:scale-110 transition-transform">menu_book</span>
+                        <h4 class="font-bold text-xl text-slate-800">Subjects</h4>
+                        <p class="text-xs text-slate-500 mt-2">Upload and manage theoretical materials.</p>
+                    </button>
+                    <button onclick="showAdminCasesPanel()" class="flex-1 bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md p-8 rounded-2xl transition-all group">
+                        <span class="material-symbols-outlined text-5xl text-indigo-500 mb-4 group-hover:scale-110 transition-transform">analytics</span>
+                        <h4 class="font-bold text-xl text-slate-800">Case Studies</h4>
+                        <p class="text-xs text-slate-500 mt-2">Upload scenarios, configure timers and twists.</p>
+                    </button>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Dynamic Subjects Container -->
-                    <div>
-                        <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-4">
-                            <h4 class="font-semibold text-slate-700 uppercase tracking-widest text-sm">Subjects</h4>
-                            <button onclick="addAdminSubject()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg">+ Add Subject</button>
-                        </div>
-                        <div id="admin-subjects-container" class="space-y-4"></div>
-                    </div>
-
-                    <!-- Dynamic Cases Container -->
-                    <div>
-                        <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-4">
-                            <h4 class="font-semibold text-slate-700 uppercase tracking-widest text-sm">Case Studies</h4>
-                            <button onclick="addAdminCase()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg">+ Add Case Study</button>
-                        </div>
-                        <div id="admin-cases-container" class="space-y-4"></div>
-                    </div>
+                <div class="mt-8 pt-6 border-t border-slate-100 text-left">
+                    <button onclick="unpublishContent()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-4 py-2 rounded-lg font-semibold transition-all shadow-sm">Unpublish ALL Curriculum</button>
                 </div>
+            </div>
 
-                <!-- Live Interventions (Plot Twist) -->
-                <h4 class="font-semibold text-slate-700 uppercase tracking-widest text-sm border-b border-slate-200 pb-2 mt-6">Live Interventions</h4>
-                <div class="bg-red-50 p-4 sm:p-5 rounded-2xl border border-red-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h4 class="font-bold text-red-700 text-lg">🚨 Send Urgent Notification</h4>
-                        <p class="text-red-600 text-sm">Locks all student interfaces for 30 seconds and assigns a random Surprise Event Card.</p>
+            <!-- Dynamic Subjects Panel -->
+            <div id="org-subjects-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-blue-500 mb-6 space-y-6 animate-fadeUp">
+                <div class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <div class="flex items-center gap-3">
+                        <button onclick="showContentRouter()" class="text-slate-400 hover:text-slate-600 flex items-center justify-center p-1"><span class="material-symbols-outlined">arrow_back</span></button>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Manage Subjects</h3>
                     </div>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button onclick="unpublishPlotTwist()" class="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm whitespace-nowrap">Reset Twist</button>
-                        <button onclick="triggerPlotTwist()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md transition-all whitespace-nowrap">
-                            Trigger Plot Twist
-                        </button>
+                    <button onclick="addAdminSubject()" class="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm">+ Add Subject</button>
+                </div>
+                <div id="admin-subjects-container" class="space-y-4"></div>
+            </div>
+
+            <!-- Dynamic Cases Panel -->
+            <div id="org-cases-panel" class="hidden admin-panel p-4 sm:p-6 border-l-4 border-indigo-500 mb-6 space-y-6 animate-fadeUp">
+                <div class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <div class="flex items-center gap-3">
+                        <button onclick="showContentRouter()" class="text-slate-400 hover:text-slate-600 flex items-center justify-center p-1"><span class="material-symbols-outlined">arrow_back</span></button>
+                        <h3 class="font-bold text-lg tracking-tight text-slate-800">Manage Case Studies</h3>
                     </div>
                 </div>
 
-                <!-- Event Constraints & Timer Rules -->
-                <h4 class="font-semibold text-slate-700 uppercase tracking-widest text-sm border-b border-slate-200 pb-2 mt-6">Event Constraints & Rules</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Max Allocatable Budget (Hidden)</label>
-                        <input type="number" id="org-max-budget" class="admin-input text-rose-600 font-bold" placeholder="e.g. 10000" />
+                <!-- Case 1 Block -->
+                <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-indigo-900 uppercase tracking-widest text-sm flex items-center gap-2"><span class="material-symbols-outlined text-indigo-600">assignment</span> Case 1: Allocation & Planning</h4>
+                        <div class="flex gap-2" id="case1-actions"></div>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
-                        <div class="flex-1">
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Timer Duration (Mins)</label>
-                            <input type="number" id="org-timer-mins" min="1" max="120" value="10" class="admin-input text-center font-medium" />
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
+                            <input type="text" id="case1-title" class="admin-input font-medium" placeholder="Case 1 Title" oninput="updateCaseContent(0, 'title', this.value)" />
                         </div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Reset Timer</button>
-                            <button onclick="startCaseTimerWithBudget()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">Start Timer</button>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Case Description / Problem Statement</label>
+                            <textarea rows="3" id="case1-desc" class="admin-input font-medium" placeholder="Scenario details..." oninput="updateCaseContent(0, 'content', this.value)"></textarea>
                         </div>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
-                        <div class="flex-1">
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Add Buffer (Mins)</label>
-                            <div class="flex gap-2">
-                                <input type="number" id="org-buffer-mins" value="3" class="admin-input text-center font-medium" />
-                                <button onclick="addBufferTimer()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm whitespace-nowrap">+ Add Buffer</button>
+                    
+                    <h5 class="font-semibold text-slate-700 text-xs uppercase tracking-widest border-b border-slate-200 pb-2 mb-3">Case 1 Features (Plot Twist & Timer)</h5>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Max Allocatable Budget</label>
+                                <input type="number" id="org-max-budget" class="admin-input text-rose-600 font-bold mb-3" placeholder="e.g. 10000" />
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Timer (Mins)</label>
+                                        <input type="number" id="org-timer-mins" value="10" class="admin-input text-center font-medium" />
+                                    </div>
+                                    <button onclick="startCaseTimerWithBudget(1)" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm">Start</button>
+                                </div>
+                                <div class="flex gap-2 items-end mt-3">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Buffer (Mins)</label>
+                                        <input type="number" id="org-buffer-mins" value="3" class="admin-input text-center font-medium" />
+                                    </div>
+                                    <button onclick="addBufferTimer(1)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm">+ Buffer</button>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Case 1 Status:</span>
+                                <div id="admin-timer-display" class="hidden text-rose-600 font-bold text-sm bg-rose-50 px-2 py-1 rounded"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-200 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-red-700 text-sm mb-1">🚨 Trigger Plot Twist (Case 1 Only)</h4>
+                                <p class="text-red-600 text-xs mb-4 leading-relaxed">Locks all student interfaces for 30 seconds and assigns a random Surprise Event Card to revise budget.</p>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="triggerPlotTwist()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all text-center">
+                                    Execute Twist Now
+                                </button>
+                                <button onclick="unpublishPlotTwist()" class="w-full bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 px-4 py-2 rounded-lg text-xs font-semibold shadow-sm transition-all text-center">
+                                    Reset Twist State
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div id="admin-timer-display" class="hidden text-rose-600 font-bold text-sm sm:text-base mt-2 flex items-center gap-2"></div>
+                </div>
+
+                <!-- Case 2 Block -->
+                <div class="bg-teal-50/50 p-5 rounded-2xl border border-teal-100 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-teal-900 uppercase tracking-widest text-sm flex items-center gap-2"><span class="material-symbols-outlined text-teal-600">monitoring</span> Case 2: Investment Analysis</h4>
+                        <div class="flex gap-2" id="case2-actions"></div>
+                    </div>
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
+                            <input type="text" id="case2-title" class="admin-input font-medium" placeholder="Case 2 Title" oninput="updateCaseContent(1, 'title', this.value)" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Case Description / Problem Statement</label>
+                            <textarea rows="3" id="case2-desc" class="admin-input font-medium" placeholder="Scenario details..." oninput="updateCaseContent(1, 'content', this.value)"></textarea>
+                        </div>
+                    </div>
+                    
+                    <h5 class="font-semibold text-slate-700 text-xs uppercase tracking-widest border-b border-slate-200 pb-2 mb-3">Case 2 Timer Settings (No Twist)</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex gap-2 items-end mb-3">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Timer (Mins)</label>
+                                    <input type="number" id="org-timer-mins-case2" value="10" class="admin-input text-center font-medium" />
+                                </div>
+                                <button onclick="startCaseTimerWithBudget(2)" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm">Start</button>
+                            </div>
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Buffer (Mins)</label>
+                                    <input type="number" id="org-buffer-mins-case2" value="3" class="admin-input text-center font-medium" />
+                                </div>
+                                <button onclick="addBufferTimer(2)" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm">+ Buffer</button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center">
+                             <span class="text-xs font-bold text-slate-500 uppercase mb-2">Case 2 Timer Status:</span>
+                             <div id="admin-timer2-display" class="hidden text-teal-700 font-bold text-lg bg-teal-50 px-4 py-2 rounded-lg border border-teal-100"></div>
+                             <p class="text-[10px] text-slate-400 mt-2">Operates entirely independently of Case 1.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -658,6 +740,8 @@
                                 <th class="py-4 px-6 font-semibold">PRN</th>
                                 <th class="py-4 px-6 font-semibold text-center">Assigned Team</th>
                                 <th class="py-4 px-6 font-semibold text-center">Table No.</th>
+                                <th class="py-4 px-6 font-semibold text-center">C1 Status</th>
+                                <th class="py-4 px-6 font-semibold text-center">C2 Status</th>
                                 <th class="py-4 px-6 font-semibold text-right">Manage</th>
                             </tr>
                         </thead>
@@ -705,9 +789,12 @@
                 <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto flex-1">
-                <div class="mb-6 border-b border-slate-100 pb-4">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team ID</span>
-                    <p id="modal-team-heading" class="font-semibold text-indigo-900 text-lg mt-1"></p>
+                <div class="mb-6 border-b border-slate-100 pb-4 flex justify-between items-end">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team ID</span>
+                        <p id="modal-team-heading" class="font-semibold text-indigo-900 text-lg mt-1"></p>
+                    </div>
+                    <div id="modal-case-indicator" class="text-xs font-bold px-3 py-1 rounded bg-slate-100 text-slate-600 uppercase tracking-widest"></div>
                 </div>
                 <div id="modal-team-answer" class="text-sm"></div>
             </div>
@@ -753,16 +840,24 @@
             team_size: 2, total_tables: 30, teams_per_table: 5, max_budget: 10000, 
             subject_title: 'DYNAMIC', case_title: 'DYNAMIC', 
             subject_content: '[]', case_content: '[]', 
-            timer_end_time: null, results_published: false, chocolates_sent: false,
+            timer_end_time: null, timer2_end_time: null, 
+            results_published: false, results2_published: false, chocolates_sent: false,
             target_needs: 50, target_wants: 20, target_inv: 30,
-            plot_twist_triggered_at: null, feedback_published: false
+            plot_twist_triggered_at: null, feedback_published: false,
+            case1_evaluated: false
         };
         
-        let adminSubjects = [{ title: '', content: '' }];
-        let adminCases = [{ title: '', content: '' }];
+        // Admin Curriculum Arrays
+        let adminSubjects = [{ title: '', content: '', published: false }];
+        // Hardcode Case 1 and Case 2 indices
+        let adminCases = [
+            { title: 'Case 1: Allocation', content: '', published: false, isCase2: false },
+            { title: 'Case 2: Investment Analysis', content: '', published: false, isCase2: true }
+        ];
         
         let globalTeamsData = [];
         let globalStudentsData = [];
+        let activeEvalTab = 'case1';
         
         let myTeamNumber = null;
         let studentState = 'login'; 
@@ -772,7 +867,8 @@
         let studentSubjectsList = [];
         let studentCasesList = [];
 
-        let lastKnownTimer = null;
+        let lastKnownTimer1 = null;
+        let lastKnownTimer2 = null;
         let lastChocolatesSent = false;
         let resultsShownThisSession = false;
         let dismissedTwistTime = null;
@@ -781,6 +877,7 @@
         let studentClockInterval = null;
         let twistTimerInterval = null;
         let adminClockInterval = null;
+        let adminClock2Interval = null;
 
         // Scratch Card Variables
         let isScratching = false;
@@ -790,6 +887,7 @@
 
         const budgetCategories = ['Needs', 'Wants', 'Investments'];
         let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], Investments: [{ desc: '', amount: '' }] };
+        let budgetStateCase2 = [{ desc: '', amount: '' }]; // desc = money invested, amount = pnl (though visually custom)
 
         const plotTwists = [
             { icon: '🏥', title: 'Medical Emergency', desc: 'Hospital bill: ₹1,20,000', cost: 120000, key: 'hospital|medical|emergency' },
@@ -815,6 +913,7 @@
             localStorage.setItem('fp_currentProgIndex', currentProgIndex);
             localStorage.setItem('fp_currentCaseIndex', currentCaseIndex);
             localStorage.setItem('fp_budgetState', JSON.stringify(budgetState));
+            localStorage.setItem('fp_budgetStateCase2', JSON.stringify(budgetStateCase2));
             localStorage.setItem('fp_resultsShown', resultsShownThisSession);
             localStorage.setItem('fp_dismissedTwistTime', dismissedTwistTime || '');
             localStorage.setItem('fp_lastChocState', lastChocolatesSent);
@@ -836,6 +935,11 @@
             const savedBudget = localStorage.getItem('fp_budgetState');
             if(savedBudget) {
                 try { budgetState = JSON.parse(savedBudget); } catch(e){}
+            }
+
+            const savedBudget2 = localStorage.getItem('fp_budgetStateCase2');
+            if(savedBudget2) {
+                try { budgetStateCase2 = JSON.parse(savedBudget2); } catch(e){}
             }
             
             resultsShownThisSession = localStorage.getItem('fp_resultsShown') === 'true';
@@ -1130,10 +1234,12 @@
                     submissionSection.classList.add('hidden');
                 } else {
                     let c = studentCasesList[currentCaseIndex];
+                    let displayTitle = c.isCase2 ? "Case Study II" : "Case Study I";
+                    
                     contentDiv.innerHTML = `
                     <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-8 sm:p-10 flex flex-col items-start shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden text-left mb-6">
                         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
-                        <span class="text-label-md font-label-md uppercase tracking-widest text-secondary">Case Study ${toRoman(currentCaseIndex+1)}</span>
+                        <span class="text-label-md font-label-md uppercase tracking-widest text-secondary">${displayTitle}</span>
                         <h4 class="text-3xl sm:text-4xl font-display-lg text-primary mt-3 mb-6 leading-tight">${c.title}</h4>
                         <p class="text-body-lg font-body-lg text-on-surface-variant whitespace-pre-wrap leading-relaxed w-full">${c.content}</p>
                     </div>`;
@@ -1142,7 +1248,11 @@
                     nextBtn.disabled = (currentCaseIndex === studentCasesList.length - 1);
                     
                     submissionSection.classList.remove('hidden');
-                    if(document.getElementById('budget-builder-container').innerHTML === '') {
+                    
+                    // Render correct builder
+                    if(c.isCase2) {
+                        renderCase2Builder();
+                    } else {
                         renderBudgetBuilder();
                     }
                 }
@@ -1180,8 +1290,11 @@
                     myConfig = { ...myConfig, ...data[0] };
                     
                     if (myConfig.subject_title === 'DYNAMIC') {
-                        try { adminSubjects = JSON.parse(myConfig.subject_content) || [{title:'', content:''}]; } catch(e){}
-                        try { adminCases = JSON.parse(myConfig.case_content) || [{title:'', content:''}]; } catch(e){}
+                        try { adminSubjects = JSON.parse(myConfig.subject_content) || [{title:'', content:'', published: false}]; } catch(e){}
+                        try { adminCases = JSON.parse(myConfig.case_content) || [
+                            { title: 'Case 1: Allocation', content: '', published: false, isCase2: false },
+                            { title: 'Case 2: Investment Analysis', content: '', published: false, isCase2: true }
+                        ]; } catch(e){}
                     }
                     
                     if(studentState === 'admin') {
@@ -1199,23 +1312,25 @@
             studentCasesList = [];
 
             if (myConfig.subject_title === 'DYNAMIC') {
-                try { studentSubjectsList = JSON.parse(myConfig.subject_content).filter(s => s.title || s.content) || []; } catch(e){}
-                try { studentCasesList = JSON.parse(myConfig.case_content).filter(c => c.title || c.content) || []; } catch(e){}
+                try { 
+                    let parsedSubs = JSON.parse(myConfig.subject_content) || []; 
+                    studentSubjectsList = parsedSubs.filter(s => s.published);
+                } catch(e){}
+                try { 
+                    let parsedCases = JSON.parse(myConfig.case_content) || []; 
+                    studentCasesList = parsedCases.filter(c => c.published);
+                } catch(e){}
             }
 
             const isDashboard = ['dashboard', 'home', 'program', 'cases'].includes(studentState);
             
-            if (myConfig.timer_end_time !== lastKnownTimer) {
-                if (myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime()) {
-                    if (isDashboard && studentDashView !== 'cases') {
-                        showToast("⏳ Timer Started! Redirecting to Cases...");
-                        setStudentView('cases');
-                    }
-                }
-                lastKnownTimer = myConfig.timer_end_time;
+            // Auto redirect on timer change logic
+            let activeTimerForStudent = null;
+            if(studentCasesList.length > 0) {
+                let currentIsCase2 = (studentCasesList[currentCaseIndex] && studentCasesList[currentCaseIndex].isCase2);
+                activeTimerForStudent = currentIsCase2 ? myConfig.timer2_end_time : myConfig.timer_end_time;
             }
 
-            // Check Chocolates Broadcast
             if (myConfig.chocolates_sent === true && !lastChocolatesSent && isDashboard) {
                 const giftOverlay = document.getElementById('gift-box-overlay');
                 if(giftOverlay) {
@@ -1235,13 +1350,17 @@
             }
 
             const timerBadge = document.getElementById('student-timer-badge');
-            if (myConfig.timer_end_time && studentCasesList.length > 0) {
+            if (activeTimerForStudent && studentCasesList.length > 0) {
                 if(timerBadge) timerBadge.classList.remove('hidden');
             } else {
                 if(timerBadge) timerBadge.classList.add('hidden');
             }
 
-            if (myConfig.results_published && myTeamNumber) fetchTeamResult(myTeamNumber);
+            // Results UI showing depending on case index
+            let currentIsCase2 = studentCasesList[currentCaseIndex]?.isCase2;
+            let resultsToShow = currentIsCase2 ? myConfig.results2_published : myConfig.results_published;
+
+            if (resultsToShow && myTeamNumber) fetchTeamResult(myTeamNumber, currentIsCase2);
             else {
                 const resultsBanner = document.getElementById('student-results-banner');
                 if(resultsBanner) resultsBanner.classList.add('hidden');
@@ -1280,6 +1399,13 @@
         function checkPlotTwist() {
             if(studentState === 'admin' || !myTeamNumber) return;
             
+            // Only applicable to Case 1
+            let currentIsCase2 = studentCasesList[currentCaseIndex]?.isCase2;
+            if(currentIsCase2) {
+                document.getElementById('plot-twist-overlay')?.classList.add('hidden');
+                return;
+            }
+
             const overlay = document.getElementById('plot-twist-overlay');
             if(!overlay) return;
 
@@ -1336,33 +1462,40 @@
             saveLocalState();
         }
 
-        async function fetchTeamResult(teamNum) {
+        async function fetchTeamResult(teamNum, isCase2 = false) {
             const { data: teamRows } = await supabaseClient.from('teams').select('*').eq('team_number', teamNum).limit(1);
             if (teamRows && teamRows.length > 0) {
                 const team = teamRows[0];
-                if (team.ranking !== null && team.ranking !== undefined) {
+                
+                let tRanking = isCase2 ? team.case2_ranking : team.ranking;
+                let tPercentile = isCase2 ? team.case2_percentile : team.percentile;
+                let tScore = isCase2 ? team.case2_score : team.score;
+                let tDisqualified = isCase2 ? team.case2_disqualified : team.disqualified;
+                
+                if (tRanking !== null && tRanking !== undefined) {
                     
                     const banner = document.getElementById('student-results-banner');
                     const statusEl = document.getElementById('student-result-status');
                     
                     if(banner) banner.classList.remove('hidden');
-                    if (team.disqualified) {
+                    if (tDisqualified) {
                         if(statusEl) statusEl.innerText = `Disqualified`;
                     } else {
-                        if(statusEl) statusEl.innerText = `${team.percentile || 0}th Percentile 🎉`;
+                        if(statusEl) statusEl.innerText = `${tPercentile || 0}th Percentile 🎉`;
                     }
                     
                     if (!resultsShownThisSession && ['dashboard', 'home', 'program', 'cases'].includes(studentState)) {
                         const scratchOverlay = document.getElementById('scratch-card-overlay');
                         
-                        document.getElementById('scratch-rank').innerText = team.disqualified ? "DQ" : `#${team.ranking}`;
-                        document.getElementById('scratch-percentile').innerText = team.disqualified ? "N/A" : `${team.percentile || 0} %ile`;
-                        document.getElementById('scratch-marks').innerText = team.disqualified ? "N/A" : `${team.score || 0}`; 
+                        document.getElementById('scratch-card-title').innerText = isCase2 ? "Case 2 Results" : "Case 1 Results";
+                        document.getElementById('scratch-rank').innerText = tDisqualified ? "DQ" : `#${tRanking}`;
+                        document.getElementById('scratch-percentile').innerText = tDisqualified ? "N/A" : `${tPercentile || 0} %ile`;
+                        document.getElementById('scratch-marks').innerText = tDisqualified ? "N/A" : `${tScore || 0}`; 
                         
                         let tier = 'white';
-                        if (!team.disqualified && team.ranking) {
-                            if (team.ranking <= 10) tier = 'gold';
-                            else if (team.ranking <= 35) tier = 'silver';
+                        if (!tDisqualified && tRanking) {
+                            if (tRanking <= 10) tier = 'gold';
+                            else if (tRanking <= 35) tier = 'silver';
                             else tier = 'bronze';
                         }
 
@@ -1379,7 +1512,8 @@
                             
                             setTimeout(() => { initScratchCard(tier); }, 50); 
                             
-                            resultsShownThisSession = true;
+                            // Only set this if it's Case 1 otherwise they wont see Case 2
+                            resultsShownThisSession = true; 
                             saveLocalState();
                         }
                     }
@@ -1394,7 +1528,14 @@
             const submitBtn = document.getElementById('submit-answer-btn');
             const notice = document.getElementById('timer-waiting-notice');
 
-            if (!myConfig.timer_end_time) {
+            let currentIsCase2 = false;
+            if(studentCasesList.length > 0) {
+                currentIsCase2 = studentCasesList[currentCaseIndex]?.isCase2;
+            }
+            
+            let activeTargetTimer = currentIsCase2 ? myConfig.timer2_end_time : myConfig.timer_end_time;
+
+            if (!activeTargetTimer) {
                 if(badge) badge.classList.add('hidden');
                 if (notice) notice.classList.remove('hidden');
                 if (builder) builder.classList.add('opacity-50', 'pointer-events-none');
@@ -1407,7 +1548,7 @@
 
             const updateStudentClock = () => {
                 const now = new Date().getTime();
-                const distance = new Date(myConfig.timer_end_time).getTime() - now;
+                const distance = new Date(activeTargetTimer).getTime() - now;
 
                 if (distance < 0) {
                     clearInterval(studentClockInterval);
@@ -1442,36 +1583,57 @@
         }
 
         function manageAdminTimer() {
-            const display = document.getElementById('admin-timer-display');
-            if (!display) return;
+            const display1 = document.getElementById('admin-timer-display');
+            const display2 = document.getElementById('admin-timer2-display');
             
+            // Timer 1 (Case 1)
             if (!myConfig.timer_end_time) {
-                display.classList.add('hidden');
+                if(display1) display1.classList.add('hidden');
                 if(adminClockInterval) clearInterval(adminClockInterval);
-                return;
+            } else {
+                if(display1) display1.classList.remove('hidden');
+                if (adminClockInterval) clearInterval(adminClockInterval);
+                const updateAdminClock = () => {
+                    const now = new Date().getTime();
+                    const distance = new Date(myConfig.timer_end_time).getTime() - now;
+                    if (distance < 0) {
+                        clearInterval(adminClockInterval);
+                        if(display1) display1.innerHTML = `<span class="material-symbols-outlined">timer_off</span> Expired (00:00)`;
+                    } else {
+                        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((distance % (1000 * 60)) / 1000);
+                        if(display1) display1.innerHTML = `<span class="material-symbols-outlined animate-pulse">timer</span> Live: ${m}:${s < 10 ? '0' : ''}${s}`;
+                    }
+                };
+                updateAdminClock(); 
+                adminClockInterval = setInterval(updateAdminClock, 1000);
             }
-            
-            display.classList.remove('hidden');
-            if (adminClockInterval) clearInterval(adminClockInterval);
-            
-            const updateAdminClock = () => {
-                const now = new Date().getTime();
-                const distance = new Date(myConfig.timer_end_time).getTime() - now;
-                
-                if (distance < 0) {
-                    clearInterval(adminClockInterval);
-                    display.innerHTML = `<span class="material-symbols-outlined">timer_off</span> Timer Expired (00:00)`;
-                } else {
-                    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((distance % (1000 * 60)) / 1000);
-                    display.innerHTML = `<span class="material-symbols-outlined animate-pulse">timer</span> Live: ${m}:${s < 10 ? '0' : ''}${s}`;
-                }
-            };
-            
-            updateAdminClock(); 
-            adminClockInterval = setInterval(updateAdminClock, 1000);
+
+            // Timer 2 (Case 2)
+            if (!myConfig.timer2_end_time) {
+                if(display2) display2.classList.add('hidden');
+                if(adminClock2Interval) clearInterval(adminClock2Interval);
+            } else {
+                if(display2) display2.classList.remove('hidden');
+                if (adminClock2Interval) clearInterval(adminClock2Interval);
+                const updateAdminClock2 = () => {
+                    const now = new Date().getTime();
+                    const distance = new Date(myConfig.timer2_end_time).getTime() - now;
+                    if (distance < 0) {
+                        clearInterval(adminClock2Interval);
+                        if(display2) display2.innerHTML = `<span class="material-symbols-outlined text-sm">timer_off</span> Timer Expired (00:00)`;
+                    } else {
+                        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((distance % (1000 * 60)) / 1000);
+                        if(display2) display2.innerHTML = `<span class="material-symbols-outlined animate-pulse text-sm">timer</span> Live: ${m}:${s < 10 ? '0' : ''}${s}`;
+                    }
+                };
+                updateAdminClock2(); 
+                adminClock2Interval = setInterval(updateAdminClock2, 1000);
+            }
         }
 
+        // --- CASE 1 BUILDER ---
         function renderBudgetBuilder() {
             const container = document.getElementById('budget-builder-container');
             if(!container) return;
@@ -1508,6 +1670,48 @@
             container.innerHTML = html;
         }
 
+        // --- CASE 2 BUILDER ---
+        function renderCase2Builder() {
+            const container = document.getElementById('budget-builder-container');
+            if(!container) return;
+            let html = `
+                <div class="bg-background border border-outline-variant rounded-lg p-5 sm:p-6 shadow-sm relative">
+                    <div class="absolute top-0 left-0 w-full h-0.5 bg-teal-600 opacity-30"></div>
+                    <div class="flex justify-between items-center mb-5 pb-4 border-b border-outline-variant">
+                        <h5 class="font-display-lg text-primary tracking-widest text-lg">Investment Portfolio</h5>
+                    </div>
+                    <div class="grid grid-cols-12 gap-3 mb-2 px-2 hidden sm:grid">
+                        <div class="col-span-8 text-xs font-bold text-slate-500 uppercase tracking-widest">Money Invested</div>
+                        <div class="col-span-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Unrealised PnL (₹)</div>
+                    </div>
+                    <div id="list-case2" class="space-y-4">
+            `;
+
+            budgetStateCase2.forEach((item, index) => {
+                html += `
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                    <div class="flex-1">
+                        <label class="sm:hidden text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Money Invested</label>
+                        <input type="text" class="w-full p-3 rounded text-sm font-body-md bg-surface-container border border-outline focus:border-teal-600 focus:ring-0 transition-colors" placeholder="Description of Investment" value="${item.desc}" oninput="updateBudgetCase2(${index}, 'desc', this.value)" onkeydown="checkEnterCase2(event, ${index})">
+                    </div>
+                    <div class="flex gap-2 items-center sm:w-48">
+                        <div class="flex-1">
+                             <label class="sm:hidden text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Unrealised PnL</label>
+                             <input type="number" class="w-full p-3 rounded text-sm text-right font-semibold text-primary font-body-md bg-surface-container border border-outline focus:border-teal-600 focus:ring-0 transition-colors" placeholder="₹ +/-" value="${item.amount || ''}" oninput="updateBudgetCase2(${index}, 'amount', this.value)" onkeydown="checkEnterCase2(event, ${index})">
+                        </div>
+                        <div class="mt-4 sm:mt-0">
+                            ${budgetStateCase2.length > 1 ? `<button onclick="removeBudgetRowCase2(${index})" class="text-on-surface-variant hover:text-error text-2xl font-bold px-2 flex items-center justify-center h-full"><span class="material-symbols-outlined">close</span></button>` : `<div class="w-8"></div>`}
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            html += `</div>
+                <button onclick="addBudgetRowCase2()" class="w-full sm:w-auto text-xs text-primary font-label-md uppercase tracking-widest mt-6 hover:text-teal-700 transition-colors bg-surface-container border border-outline-variant px-6 py-3 rounded text-center flex items-center justify-center gap-2 mx-auto shadow-sm"><span class="material-symbols-outlined text-sm">add</span> Add Row</button>
+            </div>`;
+            container.innerHTML = html;
+        }
+
         function updateBudget(cat, index, field, value) {
             budgetState[cat][index][field] = value;
             if(field === 'amount') {
@@ -1528,9 +1732,26 @@
                 }, 50);
             }
         }
-
         function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); saveLocalState(); renderBudgetBuilder(); }
         function checkEnter(e, cat, index) { if (e.key === 'Enter') { e.preventDefault(); addBudgetRow(cat, index); } }
+
+        function updateBudgetCase2(index, field, value) {
+            budgetStateCase2[index][field] = value;
+            saveLocalState();
+        }
+        function addBudgetRowCase2(focusIndex = -1) {
+            budgetStateCase2.push({ desc: '', amount: '' });
+            saveLocalState();
+            renderCase2Builder();
+            if(focusIndex >= 0) {
+                setTimeout(() => {
+                    const inputs = document.getElementById(`list-case2`).querySelectorAll('input[type="text"]');
+                    if(inputs.length > focusIndex + 1) inputs[focusIndex + 1].focus();
+                }, 50);
+            }
+        }
+        function removeBudgetRowCase2(index) { budgetStateCase2.splice(index, 1); saveLocalState(); renderCase2Builder(); }
+        function checkEnterCase2(e, index) { if(e.key === 'Enter') { e.preventDefault(); addBudgetRowCase2(index); } }
 
         /* --- STUDENT FLOW --- */
         async function handleStudentRegistration(e) {
@@ -1601,20 +1822,33 @@
                         switchScreen('student-reveal-screen');
                     }
 
-                    const { data: teamRows } = await supabaseClient.from('teams').select('case_answer').eq('team_number', me.team_number).limit(1);
+                    const { data: teamRows } = await supabaseClient.from('teams').select('case_answer, case2_answer').eq('team_number', me.team_number).limit(1);
                     
                     if (teamRows && teamRows.length > 0) {
                         const teamData = teamRows[0];
                         const btn = document.getElementById('submit-answer-btn');
                         const builder = document.getElementById('budget-builder-container');
 
-                        if (teamData.case_answer) {
+                        let currentIsCase2 = false;
+                        if(studentCasesList.length > 0) {
+                            currentIsCase2 = studentCasesList[currentCaseIndex]?.isCase2;
+                        }
+                        
+                        let targetAnswerStr = currentIsCase2 ? teamData.case2_answer : teamData.case_answer;
+
+                        if (targetAnswerStr) {
                             try {
-                                const parsedData = JSON.parse(teamData.case_answer);
-                                if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
-                                    budgetState = parsedData;
-                                    saveLocalState();
-                                    if (isBudgetRendered) renderBudgetBuilder();
+                                const parsedData = JSON.parse(targetAnswerStr);
+                                if(currentIsCase2) {
+                                    if(Array.isArray(parsedData)) budgetStateCase2 = parsedData;
+                                } else {
+                                    if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
+                                        budgetState = parsedData;
+                                    }
+                                }
+                                saveLocalState();
+                                if (isBudgetRendered) {
+                                    if(currentIsCase2) renderCase2Builder(); else renderBudgetBuilder();
                                 }
                             } catch (e) {}
                             
@@ -1658,7 +1892,8 @@
         }
 
         function goToDashboard() {
-            const hasActiveTimer = myConfig.timer_end_time && new Date(myConfig.timer_end_time).getTime() > new Date().getTime();
+            let activeTimer = myConfig.timer_end_time || myConfig.timer2_end_time;
+            const hasActiveTimer = activeTimer && new Date(activeTimer).getTime() > new Date().getTime();
             studentDashView = hasActiveTimer ? 'cases' : 'home';
             studentState = studentDashView;
             
@@ -1674,18 +1909,41 @@
 
         async function submitCaseAnswer() {
             if (!myTeamNumber) return showToast('Team assignment is still pending.');
-            const { data: currentTeam } = await supabaseClient.from('teams').select('case_answer').eq('team_number', myTeamNumber).single();
-            if (currentTeam && currentTeam.case_answer) return showToast('Your team has already submitted a strategy!');
+            
+            let currentIsCase2 = false;
+            if(studentCasesList.length > 0) currentIsCase2 = studentCasesList[currentCaseIndex]?.isCase2;
+
+            const { data: currentTeam } = await supabaseClient.from('teams').select('*').eq('team_number', myTeamNumber).single();
+            if (currentIsCase2 && currentTeam && currentTeam.case2_answer) return showToast('Your team has already submitted a strategy for Case 2!');
+            if (!currentIsCase2 && currentTeam && currentTeam.case_answer) return showToast('Your team has already submitted a strategy for Case 1!');
 
             let hasData = false;
-            budgetCategories.forEach(cat => { budgetState[cat].forEach(item => { if (item.desc || item.amount) hasData = true; }); });
+            let finalJson = "";
+
+            if(currentIsCase2) {
+                budgetStateCase2.forEach(item => { if(item.desc || item.amount) hasData = true; });
+                finalJson = JSON.stringify(budgetStateCase2);
+            } else {
+                budgetCategories.forEach(cat => { budgetState[cat].forEach(item => { if (item.desc || item.amount) hasData = true; }); });
+                finalJson = JSON.stringify(budgetState);
+            }
+
             if (!hasData) return showToast('Please add at least one component before submitting.');
 
             const btn = document.getElementById('submit-answer-btn');
             btn.innerText = 'Submitting...'; btn.disabled = true;
             const submissionTime = new Date().toISOString();
 
-            const { error } = await supabaseClient.from('teams').upsert({ team_number: myTeamNumber, case_answer: JSON.stringify(budgetState), submitted_at: submissionTime });
+            let updatePayload = { team_number: myTeamNumber };
+            if (currentIsCase2) {
+                updatePayload.case2_answer = finalJson;
+                updatePayload.case2_submitted_at = submissionTime;
+            } else {
+                updatePayload.case_answer = finalJson;
+                updatePayload.submitted_at = submissionTime;
+            }
+
+            const { error } = await supabaseClient.from('teams').upsert(updatePayload);
             
             if (error) {
                 showToast('Error saving answer: ' + error.message);
@@ -1701,73 +1959,102 @@
         }
 
         /* --- MASTER ADMIN FLOW --- */
+        function showContentRouter() {
+            document.getElementById('org-settings').classList.add('hidden');
+            document.getElementById('org-evaluation-panel').classList.add('hidden');
+            document.getElementById('org-subjects-panel').classList.add('hidden');
+            document.getElementById('org-cases-panel').classList.add('hidden');
+            document.getElementById('org-content-menu').classList.remove('hidden');
+        }
+
+        function showAdminSubjectsPanel() {
+            document.getElementById('org-content-menu').classList.add('hidden');
+            document.getElementById('org-subjects-panel').classList.remove('hidden');
+            renderAdminContentBuilder();
+        }
+
+        function showAdminCasesPanel() {
+            document.getElementById('org-content-menu').classList.add('hidden');
+            document.getElementById('org-cases-panel').classList.remove('hidden');
+            renderAdminContentBuilder();
+        }
+
         function renderAdminContentBuilder() {
             let subHtml = '';
             adminSubjects.forEach((sub, i) => {
                 subHtml += `
-                <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 relative mb-4">
+                <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 relative mb-4 transition-all ${sub.published ? 'border-l-4 border-l-emerald-500 bg-white' : ''}">
                     <div class="flex justify-between items-center">
-                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Subject ${toRoman(i+1)}</h4>
-                        <button type="button" onclick="unpublishAdminSubject(${i})" class="text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 px-3 py-1 rounded-lg border border-rose-200 shadow-sm">Unpublish</button>
+                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Subject ${toRoman(i+1)} ${sub.published ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded ml-2">Published</span>' : ''}</h4>
+                        <div class="flex gap-2">
+                            ${sub.published ? 
+                                `<button type="button" onclick="togglePublishSubject(${i})" class="text-xs font-semibold text-amber-600 hover:text-amber-800 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200 shadow-sm">Unpublish</button>` :
+                                `<button type="button" onclick="togglePublishSubject(${i})" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 shadow-sm">Publish</button>`
+                            }
+                            <button type="button" onclick="deleteAdminSubject(${i})" class="text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 px-3 py-1 rounded-lg border border-rose-200 shadow-sm"><span class="material-symbols-outlined text-sm">delete</span></button>
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Subject Name</label>
-                        <input type="text" class="admin-input font-medium" placeholder="e.g. Personal Finance" value="${sub.title}" oninput="adminSubjects[${i}].title = this.value" />
+                        <input type="text" class="admin-input font-medium" placeholder="Subject Title" value="${sub.title}" oninput="adminSubjects[${i}].title = this.value" />
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Subject Context / Basics</label>
-                        <textarea rows="3" class="admin-input font-medium" placeholder="Enter fundamental concepts or notes..." oninput="adminSubjects[${i}].content = this.value">${sub.content}</textarea>
+                        <textarea rows="3" class="admin-input font-medium" placeholder="Subject Content..." oninput="adminSubjects[${i}].content = this.value">${sub.content}</textarea>
                     </div>
                 </div>`;
             });
             document.getElementById('admin-subjects-container').innerHTML = subHtml;
 
-            let caseHtml = '';
-            adminCases.forEach((c, i) => {
-                caseHtml += `
-                <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 relative mb-4">
-                    <div class="flex justify-between items-center">
-                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Case Study ${toRoman(i+1)}</h4>
-                        <button type="button" onclick="unpublishAdminCase(${i})" class="text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 px-3 py-1 rounded-lg border border-rose-200 shadow-sm">Unpublish</button>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Case Title</label>
-                        <input type="text" class="admin-input font-medium" placeholder="e.g. Portfolio Allocation Dilemma" value="${c.title}" oninput="adminCases[${i}].title = this.value" />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Case Problem Statement & Context</label>
-                        <textarea rows="3" class="admin-input font-medium" placeholder="Enter scenario details and questions..." oninput="adminCases[${i}].content = this.value">${c.content}</textarea>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('admin-cases-container').innerHTML = caseHtml;
+            // Render Cases Status
+            const c1 = adminCases[0];
+            const c2 = adminCases[1];
+            
+            document.getElementById('case1-title').value = c1.title;
+            document.getElementById('case1-desc').value = c1.content;
+            document.getElementById('case1-actions').innerHTML = c1.published ? 
+                `<button type="button" onclick="togglePublishCase(0)" class="text-xs font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">Unpublish</button>` :
+                `<button type="button" onclick="togglePublishCase(0)" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">Publish</button>`;
+                
+            document.getElementById('case2-title').value = c2.title;
+            document.getElementById('case2-desc').value = c2.content;
+            document.getElementById('case2-actions').innerHTML = c2.published ? 
+                `<button type="button" onclick="togglePublishCase(1)" class="text-xs font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">Unpublish</button>` :
+                `<button type="button" onclick="togglePublishCase(1)" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">Publish</button>`;
         }
 
-        function addAdminSubject() { adminSubjects.push({title:'', content:''}); renderAdminContentBuilder(); }
-        function unpublishAdminSubject(i) { 
-            if(!confirm('Unpublish and remove this subject?')) return;
-            adminSubjects.splice(i, 1); 
-            if(adminSubjects.length === 0) adminSubjects.push({title:'', content:''});
-            renderAdminContentBuilder();
-            saveEventContentOnly(true); 
+        function updateCaseContent(idx, field, val) {
+            adminCases[idx][field] = val;
+            saveEventContentOnly(true);
         }
+
+        function addAdminSubject() { adminSubjects.push({title:'', content:'', published: false}); renderAdminContentBuilder(); }
         
-        function addAdminCase() { adminCases.push({title:'', content:''}); renderAdminContentBuilder(); }
-        function unpublishAdminCase(i) { 
-            if(!confirm('Unpublish and remove this case?')) return;
-            adminCases.splice(i, 1); 
-            if(adminCases.length === 0) adminCases.push({title:'', content:''});
+        function deleteAdminSubject(i) {
+            if(!confirm('Delete this subject completely?')) return;
+            adminSubjects.splice(i, 1);
+            if(adminSubjects.length === 0) adminSubjects.push({title:'', content:'', published: false});
             renderAdminContentBuilder();
-            saveEventContentOnly(true); 
+            saveEventContentOnly();
+        }
+
+        function togglePublishSubject(i) {
+            adminSubjects[i].published = !adminSubjects[i].published;
+            renderAdminContentBuilder();
+            saveEventContentOnly();
+        }
+
+        function togglePublishCase(i) {
+            adminCases[i].published = !adminCases[i].published;
+            renderAdminContentBuilder();
+            saveEventContentOnly();
         }
 
         async function triggerPlotTwist() {
-            if(!confirm("Are you sure? This will lock all students out of their interface for 30 seconds and assign them a random Surprise Event Card!")) return;
+            if(!confirm("Are you sure? This will lock all students out of their interface for 30 seconds and assign them a random Surprise Event Card! (Applies to Case 1)")) return;
             const twistTime = new Date().toISOString();
             myConfig.plot_twist_triggered_at = twistTime;
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             if(error) showToast("Error: " + error.message);
-            else showToast("🚨 Plot Twist Triggered!");
+            else showToast("🚨 Plot Twist Triggered for Case 1!");
         }
 
         async function unpublishPlotTwist() {
@@ -1778,47 +2065,47 @@
             else showToast("Plot Twist has been reset.");
         }
 
-        async function startCaseTimerWithBudget() {
-            const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
-            const maxBgt = parseFloat(document.getElementById('org-max-budget').value) || 10000;
-            const endTime = new Date(Date.now() + mins * 60000).toISOString();
-            
-            myConfig.timer_end_time = endTime;
-            myConfig.max_budget = maxBgt;
-
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Database Error: ' + error.message);
-            else {
-                showToast(`Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`);
-                manageAdminTimer();
+        async function startCaseTimerWithBudget(caseNum) {
+            if(caseNum === 1) {
+                const mins = parseInt(document.getElementById('org-timer-mins').value) || 10;
+                const maxBgt = parseFloat(document.getElementById('org-max-budget').value) || 10000;
+                const endTime = new Date(Date.now() + mins * 60000).toISOString();
+                myConfig.timer_end_time = endTime;
+                myConfig.max_budget = maxBgt;
+                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                if (error) showToast('Database Error: ' + error.message);
+                else { showToast(`Case 1 Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`); manageAdminTimer(); }
+            } else {
+                const mins = parseInt(document.getElementById('org-timer-mins-case2').value) || 10;
+                const endTime = new Date(Date.now() + mins * 60000).toISOString();
+                myConfig.timer2_end_time = endTime;
+                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                if (error) showToast('Database Error: ' + error.message);
+                else { showToast(`Case 2 Timer started for ${mins} mins!`); manageAdminTimer(); }
             }
         }
 
-        async function resetTimer() {
-            myConfig.timer_end_time = null;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Database Error: ' + error.message);
-            else {
-                showToast("Timer has been reset.");
-                manageAdminTimer();
-            }
-        }
-
-        async function addBufferTimer() {
-            if (!myConfig.timer_end_time) return showToast('No active timer to add buffer to.');
-            const addMins = parseInt(document.getElementById('org-buffer-mins').value) || 3;
-            
-            const currentEnd = new Date(myConfig.timer_end_time).getTime();
-            const now = Date.now();
-            const baseTime = Math.max(now, currentEnd); 
-            const newEnd = new Date(baseTime + addMins * 60000).toISOString();
-            
-            myConfig.timer_end_time = newEnd;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Database Error: ' + error.message);
-            else {
-                showToast(`Added ${addMins} minutes buffer!`);
-                manageAdminTimer();
+        async function addBufferTimer(caseNum) {
+            if (caseNum === 1) {
+                if (!myConfig.timer_end_time) return showToast('No active timer for Case 1.');
+                const addMins = parseInt(document.getElementById('org-buffer-mins').value) || 3;
+                const currentEnd = new Date(myConfig.timer_end_time).getTime();
+                const now = Date.now();
+                const baseTime = Math.max(now, currentEnd); 
+                myConfig.timer_end_time = new Date(baseTime + addMins * 60000).toISOString();
+                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                if (error) showToast('Database Error: ' + error.message);
+                else { showToast(`Added ${addMins} minutes buffer to Case 1!`); manageAdminTimer(); }
+            } else {
+                if (!myConfig.timer2_end_time) return showToast('No active timer for Case 2.');
+                const addMins = parseInt(document.getElementById('org-buffer-mins-case2').value) || 3;
+                const currentEnd = new Date(myConfig.timer2_end_time).getTime();
+                const now = Date.now();
+                const baseTime = Math.max(now, currentEnd); 
+                myConfig.timer2_end_time = new Date(baseTime + addMins * 60000).toISOString();
+                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                if (error) showToast('Database Error: ' + error.message);
+                else { showToast(`Added ${addMins} minutes buffer to Case 2!`); manageAdminTimer(); }
             }
         }
 
@@ -1921,7 +2208,7 @@
             if (error) {
                 showToast('Error updating student: ' + error.message);
             } else {
-                if (newTeam) await supabaseClient.from('teams').upsert({ team_number: newTeam, case_answer: null }, { onConflict: 'team_number' });
+                if (newTeam) await supabaseClient.from('teams').upsert({ team_number: newTeam }, { onConflict: 'team_number' });
                 showToast('Student details updated & position adjusted successfully!');
                 currentlyEditingPrn = null;
                 document.getElementById('edit-student-modal').classList.add('hidden');
@@ -1929,7 +2216,34 @@
             }
         }
 
+        function setEvalTab(tabStr) {
+            activeEvalTab = tabStr;
+            const t1 = document.getElementById('eval-tab-case1');
+            const t2 = document.getElementById('eval-tab-case2');
+            
+            if(tabStr === 'case1') {
+                t1.className = "px-4 py-2 text-xs font-bold rounded bg-indigo-600 text-white shadow-sm transition-all";
+                t2.className = "px-4 py-2 text-xs font-bold rounded text-indigo-700 hover:bg-indigo-100 transition-all";
+                document.getElementById('table-head-total').innerText = "Grand Total";
+            } else {
+                t2.className = "px-4 py-2 text-xs font-bold rounded bg-indigo-600 text-white shadow-sm transition-all";
+                t1.className = "px-4 py-2 text-xs font-bold rounded text-indigo-700 hover:bg-indigo-100 transition-all";
+                document.getElementById('table-head-total').innerText = "Total Invested";
+            }
+            fetchLeaderboardData();
+        }
+
         async function runEvaluation() {
+            if(activeEvalTab === 'case2') {
+                if(!myConfig.case1_evaluated || !myConfig.results_published) {
+                    return showToast("Cannot evaluate Case 2: Case 1 rankings must be computed and published first.");
+                }
+                return evaluateCase2();
+            }
+            return evaluateCase1();
+        }
+
+        async function evaluateCase1() {
             const { data: teams } = await supabaseClient.from('teams').select('*');
             if (!teams || teams.length === 0) return showToast('No team submissions found to evaluate.');
 
@@ -2010,7 +2324,6 @@
                     }
 
                     let rawScore = Math.max(0, macroScore + needsScore + wantsScore + invScore + twistScore);
-
                     evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, raw_score: rawScore, disqualified: false, submitted_at: team.submitted_at || '9999-99-99' });
                 } catch (e) {}
             });
@@ -2036,8 +2349,64 @@
                 await supabaseClient.from('teams').update({ ranking: t.ranking, score: t.raw_score, disqualified: t.disqualified, grand_total: t.grand_total, percentile: t.percentile }).eq('team_number', t.team_number);
             }
 
-            renderLeaderboard(evaluatedTeams);
-            showToast('Evaluation complete! Percentiles calculated.');
+            myConfig.case1_evaluated = true;
+            await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+
+            fetchLeaderboardData();
+            showToast('Case 1 Evaluation complete! Percentiles calculated.');
+        }
+
+        async function evaluateCase2() {
+            const { data: teams } = await supabaseClient.from('teams').select('*');
+            if (!teams || teams.length === 0) return showToast('No team submissions found to evaluate.');
+
+            let evaluatedTeams = [];
+
+            teams.forEach(team => {
+                if (!team.case2_answer) return;
+                try {
+                    const parsed = JSON.parse(team.case2_answer); // Array of {desc, amount(pnl)}
+                    let totalInvested = 0; // we don't have invested amount parsing explicitly as float from desc easily if it's text, but let's just score based on PnL
+                    let totalPnL = 0;
+
+                    parsed.forEach(item => {
+                        totalPnL += parseFloat(item.amount) || 0;
+                    });
+                    
+                    let rawScore = Math.max(0, 50 + (totalPnL * 0.01)); // Arbitrary scoring logic for Case 2
+                    
+                    evaluatedTeams.push({ 
+                        team_number: team.team_number, 
+                        grand_total: totalPnL, // mapping total to display field
+                        raw_score: rawScore, 
+                        disqualified: false, 
+                        submitted_at: team.case2_submitted_at || '9999-99-99' 
+                    });
+                } catch (e) {}
+            });
+
+            let qualifiedTeams = evaluatedTeams.filter(t => !t.disqualified);
+            let maxRaw = Math.max(1, ...qualifiedTeams.map(t => t.raw_score)); 
+
+            evaluatedTeams.forEach(t => {
+                if(!t.disqualified) t.percentile = parseFloat(((t.raw_score / maxRaw) * 100).toFixed(2));
+                else t.percentile = 0;
+            });
+
+            evaluatedTeams.sort((a, b) => {
+                if (a.percentile !== b.percentile) return b.percentile - a.percentile; 
+                return new Date(a.submitted_at) - new Date(b.submitted_at);
+            });
+
+            let rankCounter = 1;
+            for (let i = 0; i < evaluatedTeams.length; i++) {
+                let t = evaluatedTeams[i];
+                t.ranking = t.disqualified ? null : rankCounter++;
+                await supabaseClient.from('teams').update({ case2_ranking: t.ranking, case2_score: t.raw_score, case2_disqualified: t.disqualified, case2_percentile: t.percentile }).eq('team_number', t.team_number);
+            }
+
+            fetchLeaderboardData();
+            showToast('Case 2 Evaluation complete! Rankings generated.');
         }
 
         function renderLeaderboard(teamsList) {
@@ -2053,24 +2422,31 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="py-4 px-4 font-bold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
                     <td class="py-4 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
-                    <td class="py-4 px-4 text-center font-semibold text-secondary font-sans">₹${t.grand_total.toLocaleString()}</td>
-                    <td class="py-4 px-4 text-center font-bold text-slate-800 font-sans">${t.disqualified ? 'N/A' : (t.raw_score !== undefined ? t.raw_score : t.score)}</td>
+                    <td class="py-4 px-4 text-center font-semibold text-secondary font-sans">${activeEvalTab === 'case1' ? '₹' : 'PnL: ₹'}${t.grand_total.toLocaleString()}</td>
+                    <td class="py-4 px-4 text-center font-bold text-slate-800 font-sans">${t.disqualified ? 'N/A' : (t.raw_score !== undefined ? Math.floor(t.raw_score) : Math.floor(t.score))}</td>
                     <td class="py-4 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : (t.percentile !== undefined ? t.percentile : t.score) + ' %ile'}</td>
                     <td class="py-4 px-4 text-center font-sans">
                         ${t.disqualified ? '<span class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Disqualified</span>' : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold font-sans">Qualified</span>'}
                     </td>
                     <td class="py-4 px-4 text-right">
-                        <button onclick="openAnswerModal(${t.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-2 rounded bg-indigo-50 border border-indigo-200 transition-all font-sans">View Sheet</button>
+                        <button onclick="openAnswerModal(${t.team_number}, '${activeEvalTab}')" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-2 rounded bg-indigo-50 border border-indigo-200 transition-all font-sans">View Sheet</button>
                     </td>
                 </tr>
             `).join('');
         }
 
         async function publishResults() {
-            myConfig.results_published = true;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Error publishing results: ' + error.message);
-            else showToast('Results published successfully to all students!');
+            if(activeEvalTab === 'case1') {
+                myConfig.results_published = true;
+                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                if (error) showToast('Error publishing Case 1 results: ' + error.message);
+                else showToast('Case 1 Results published successfully to all students!');
+            } else {
+                myConfig.results2_published = true;
+                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                if (error) showToast('Error publishing Case 2 results: ' + error.message);
+                else showToast('Case 2 Results published successfully to all students!');
+            }
         }
 
         async function sendVirtualChocolates() {
@@ -2124,17 +2500,45 @@
             modal.classList.remove('flex');
         }
 
-        function toggleSettings() { document.getElementById('org-settings').classList.toggle('hidden'); }
-        function toggleContentPanel() { document.getElementById('org-content-panel').classList.toggle('hidden'); }
-        function toggleEvaluationPanel() { document.getElementById('org-evaluation-panel').classList.toggle('hidden'); fetchLeaderboardData(); }
+        function toggleSettings() { 
+            document.getElementById('org-content-menu').classList.add('hidden');
+            document.getElementById('org-evaluation-panel').classList.add('hidden');
+            document.getElementById('org-subjects-panel').classList.add('hidden');
+            document.getElementById('org-cases-panel').classList.add('hidden');
+            document.getElementById('org-settings').classList.toggle('hidden'); 
+        }
+
+        function toggleEvaluationPanel() { 
+            document.getElementById('org-content-menu').classList.add('hidden');
+            document.getElementById('org-settings').classList.add('hidden');
+            document.getElementById('org-subjects-panel').classList.add('hidden');
+            document.getElementById('org-cases-panel').classList.add('hidden');
+            document.getElementById('org-evaluation-panel').classList.toggle('hidden'); 
+            fetchLeaderboardData(); 
+        }
 
         async function fetchLeaderboardData() {
             const { data } = await supabaseClient.from('teams').select('*').order('ranking', { ascending: true, nullsLast: true });
             if(data) {
                 globalTeamsData = data;
-                let formatted = data.filter(t => t.case_answer).map(t => ({
-                    team_number: t.team_number, grand_total: t.grand_total || 0, raw_score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
-                }));
+                let formatted = [];
+                if(activeEvalTab === 'case1') {
+                    formatted = data.filter(t => t.case_answer).map(t => ({
+                        team_number: t.team_number, grand_total: t.grand_total || 0, raw_score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
+                    }));
+                } else {
+                    // Compute on the fly if case2_score available
+                    formatted = data.filter(t => t.case2_answer).map(t => {
+                        let pnlTotal = 0;
+                        try {
+                            const p = JSON.parse(t.case2_answer);
+                            p.forEach(x => pnlTotal += parseFloat(x.amount)||0);
+                        } catch(e){}
+                        return {
+                            team_number: t.team_number, grand_total: pnlTotal, raw_score: t.case2_score || 0, percentile: t.case2_percentile || 0, disqualified: t.case2_disqualified || false, ranking: t.case2_ranking !== undefined ? t.case2_ranking : null, submitted_at: t.case2_submitted_at || ''
+                        };
+                    });
+                }
                 renderLeaderboard(formatted);
             }
         }
@@ -2159,24 +2563,18 @@
 
             const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
             if (error) showToast('Database Error: ' + error.message);
-            else if(!isSilent) showToast('Content published successfully.');
+            else if(!isSilent) showToast('Content settings saved.');
         }
 
         async function unpublishContent() {
             if(!confirm("Are you sure you want to unpublish all content? This will hide Subjects and Cases from students.")) return;
             
-            adminSubjects = [{title: '', content: ''}];
-            adminCases = [{title: '', content: ''}];
+            adminSubjects.forEach(s => s.published = false);
+            adminCases.forEach(c => c.published = false);
             renderAdminContentBuilder();
-
-            myConfig.subject_title = 'DYNAMIC';
-            myConfig.case_title = 'DYNAMIC';
-            myConfig.subject_content = JSON.stringify([]);
-            myConfig.case_content = JSON.stringify([]);
             
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
-            if (error) showToast('Database Error: ' + error.message);
-            else showToast('Content unpublished successfully.');
+            await saveEventContentOnly(true);
+            showToast('All Content unpublished successfully.');
         }
 
         async function fetchRoster() {
@@ -2184,12 +2582,17 @@
             const { data: teams } = await supabaseClient.from('teams').select('*');
             
             globalStudentsData = students || [];
-            const teamAnswers = {};
-            if (teams) teams.forEach(t => { teamAnswers[t.team_number] = t.case_answer; });
+            const teamAnswers1 = {};
+            const teamAnswers2 = {};
+            if (teams) teams.forEach(t => { 
+                teamAnswers1[t.team_number] = t.case_answer; 
+                teamAnswers2[t.team_number] = t.case2_answer;
+            });
             globalTeamsData = teams || [];
             
             document.getElementById('roster-body').innerHTML = students.map(s => {
-                const hasTeamAnswer = s.team_number && teamAnswers[s.team_number];
+                const hasCase1 = s.team_number && teamAnswers1[s.team_number];
+                const hasCase2 = s.team_number && teamAnswers2[s.team_number];
                 const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
                 return `
                     <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
@@ -2199,11 +2602,12 @@
                             ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${toRoman(s.team_number)}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
                         </td>
                         <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? toRoman(tableNo) : '-'}</td>
+                        <td class="py-3 px-4 sm:px-5 text-center font-sans">${hasCase1 ? '✅' : '⏳'}</td>
+                        <td class="py-3 px-4 sm:px-5 text-center font-sans">${hasCase2 ? '✅' : '⏳'}</td>
                         <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
                             <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-blue-50 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
-                            ${hasTeamAnswer && s.team_number ? `
-                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answer">Clear Answer</button>
-                                <button onclick="openAnswerModal(${s.team_number})" class="text-indigo-700 hover:text-indigo-900 text-xs font-semibold uppercase px-4 py-1.5 rounded bg-indigo-50 border border-indigo-200 transition-all mr-2 shadow-sm">View Sheet</button>
+                            ${(hasCase1 || hasCase2) && s.team_number ? `
+                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answers">Reset Submissions</button>
                             ` : ''}
                             <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm">Revoke</button>
                         </td>
@@ -2213,49 +2617,89 @@
         }
 
         async function clearTeamAnswer(teamNumber) {
-            if(!confirm(`Are you sure you want to completely delete the submission for Team ${toRoman(teamNumber)}? The team will be able to submit a new strategy.`)) return;
-            await supabaseClient.from('teams').update({ case_answer: null, ranking: null, score: null, disqualified: false }).eq('team_number', teamNumber);
-            fetchRoster(); showToast(`Team ${toRoman(teamNumber)} answer cleared.`);
+            if(!confirm(`Are you sure you want to completely delete ALL submissions for Team ${toRoman(teamNumber)}? The team will be able to submit new strategies.`)) return;
+            await supabaseClient.from('teams').update({ 
+                case_answer: null, ranking: null, score: null, disqualified: false,
+                case2_answer: null, case2_ranking: null, case2_score: null, case2_disqualified: false
+            }).eq('team_number', teamNumber);
+            fetchRoster(); showToast(`Team ${toRoman(teamNumber)} answers cleared.`);
         }
 
-        function openAnswerModal(teamNumber) {
+        function openAnswerModal(teamNumber, caseTab) {
             const team = globalTeamsData.find(t => t.team_number === teamNumber);
-            if(team && team.case_answer) {
-                document.getElementById('modal-team-heading').innerText = `Team ${toRoman(team.team_number)} Strategy Submission`;
+            if(team) {
+                document.getElementById('modal-team-heading').innerText = `Team ${toRoman(team.team_number)} Strategy`;
+                document.getElementById('modal-case-indicator').innerText = caseTab === 'case1' ? "Case 1" : "Case 2";
+                
+                let targetAnswerStr = caseTab === 'case1' ? team.case_answer : team.case2_answer;
+                
+                if(!targetAnswerStr) {
+                    document.getElementById('modal-team-answer').innerHTML = `<p class="text-slate-500 text-center italic py-4">No submission yet.</p>`;
+                    document.getElementById('answer-modal').classList.remove('hidden');
+                    return;
+                }
+
                 let displayHTML = '';
                 try {
-                        const parsed = JSON.parse(team.case_answer);
+                        const parsed = JSON.parse(targetAnswerStr);
                         let grandTotal = 0; displayHTML = `<div class="space-y-4">`;
                         
-                        budgetCategories.forEach(cat => {
-                                let catTotal = 0; let rowsHtml = '';
-                                if (parsed[cat]) {
-                                        parsed[cat].forEach(item => {
-                                                if(item.desc || item.amount) {
-                                                        const amt = parseFloat(item.amount) || 0;
-                                                        catTotal += amt;
-                                                        rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600 font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800 font-sans">₹${amt.toLocaleString()}</span></div>`;
-                                                }
-                                        });
-                                }
-                                if(catTotal > 0) {
-                                        displayHTML += `
-                                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                                <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2 font-sans">${cat}</h5>
-                                                ${rowsHtml}
-                                                <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700 font-sans">
-                                                        <span>Subtotal</span><span>₹${catTotal.toLocaleString()}</span>
-                                                </div>
-                                        </div>`;
-                                        grandTotal += catTotal;
-                                }
-                        });
-                        displayHTML += `
-                                <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
-                                        <span>GRAND TOTAL</span><span>₹${grandTotal.toLocaleString()}</span>
+                        if (caseTab === 'case1') {
+                            budgetCategories.forEach(cat => {
+                                    let catTotal = 0; let rowsHtml = '';
+                                    if (parsed[cat]) {
+                                            parsed[cat].forEach(item => {
+                                                    if(item.desc || item.amount) {
+                                                            const amt = parseFloat(item.amount) || 0;
+                                                            catTotal += amt;
+                                                            rowsHtml += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100 last:border-0"><span class="text-slate-600 font-sans">${item.desc || 'Unnamed'}</span><span class="font-semibold text-slate-800 font-sans">₹${amt.toLocaleString()}</span></div>`;
+                                                    }
+                                            });
+                                    }
+                                    if(catTotal > 0) {
+                                            displayHTML += `
+                                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                                    <h5 class="font-bold text-[11px] uppercase tracking-widest text-slate-400 mb-2 font-sans">${cat}</h5>
+                                                    ${rowsHtml}
+                                                    <div class="flex justify-between mt-3 pt-3 border-t border-slate-200 font-bold text-sm text-indigo-700 font-sans">
+                                                            <span>Subtotal</span><span>₹${catTotal.toLocaleString()}</span>
+                                                    </div>
+                                            </div>`;
+                                            grandTotal += catTotal;
+                                    }
+                            });
+                            displayHTML += `
+                                    <div class="bg-gradient-to-r from-slate-800 to-indigo-900 p-4 rounded-xl border border-slate-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
+                                            <span>GRAND TOTAL</span><span>₹${grandTotal.toLocaleString()}</span>
+                                    </div>
+                            </div>`;
+                        } else {
+                            // CASE 2 display
+                            let rowsHtml = '';
+                            if(Array.isArray(parsed)) {
+                                parsed.forEach(item => {
+                                    if(item.desc || item.amount) {
+                                        const pnl = parseFloat(item.amount) || 0;
+                                        grandTotal += pnl;
+                                        let pnlColor = pnl >= 0 ? 'text-emerald-600' : 'text-red-600';
+                                        rowsHtml += `<div class="flex justify-between items-center text-sm py-2 border-b border-slate-100 last:border-0"><span class="text-slate-700 font-sans flex-1">${item.desc || 'Unnamed Investment'}</span><span class="font-bold ${pnlColor} font-sans">₹${pnl.toLocaleString()}</span></div>`;
+                                    }
+                                });
+                            }
+                            displayHTML += `
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <div class="flex justify-between text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-2 pb-2 border-b border-slate-100">
+                                        <span>Investment</span><span>Unrealised PnL</span>
+                                    </div>
+                                    ${rowsHtml}
                                 </div>
-                        </div>`;
-                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200 font-sans">${team.case_answer}</div>`; }
+                                <div class="bg-gradient-to-r from-teal-800 to-teal-900 p-4 rounded-xl border border-teal-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
+                                    <span>TOTAL PnL</span><span>₹${grandTotal.toLocaleString()}</span>
+                                </div>
+                            </div>`;
+                        }
+
+                } catch(e) { displayHTML = `<div class="whitespace-pre-wrap text-sm text-slate-700 p-4 bg-slate-50 rounded-xl border border-slate-200 font-sans">${targetAnswerStr}</div>`; }
 
                 document.getElementById('modal-team-answer').innerHTML = displayHTML;
                 document.getElementById('answer-modal').classList.remove('hidden');
@@ -2278,8 +2722,10 @@
             await supabaseClient.from('teams').delete().neq('team_number', 0);
             
             myConfig.timer_end_time = null;
+            myConfig.timer2_end_time = null;
             myConfig.plot_twist_triggered_at = null;
             myConfig.results_published = false;
+            myConfig.results2_published = false;
             myConfig.chocolates_sent = false;
             myConfig.feedback_published = false;
             
@@ -2294,6 +2740,7 @@
             if (currentlyEditingPrn) supabaseClient.from('students').update({ locked_by: null, lock_expires_at: null }).eq('prn', currentlyEditingPrn);
             if(pollInterval) clearInterval(pollInterval);
             if(adminClockInterval) clearInterval(adminClockInterval);
+            if(adminClock2Interval) clearInterval(adminClock2Interval);
             if(twistTimerInterval) clearInterval(twistTimerInterval);
             supabaseClient.auth.signOut(); 
             
