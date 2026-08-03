@@ -308,8 +308,8 @@
 
                     <form id="admin-form" class="hidden flex-col gap-10 fade-in" onsubmit="handleAdminAuth(event)">
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID" required="" type="number" min="1" max="50">
-                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (1 - 50)</label>
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-id" name="admin_id" placeholder="Master Admin ID" required="" type="text">
+                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="admin-id">Master Admin ID (Anime Name)</label>
                         </div>
                         <div class="relative group">
                             <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors input-glow placeholder-transparent" id="admin-password" name="admin_password" placeholder="Password" required="" type="password" minlength="6">
@@ -834,6 +834,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
         const adminSessionId = 'admin_tab_' + Math.random().toString(36).substr(2, 9);
+        const ALLOWED_ANIMES = ['naruto', 'bleach', 'onepiece', 'dbz', 'aot', 'deathnote', 'jjk', 'demonslayer', 'mha', 'hxh', 'fmab', 'sao', 'tokyoghoul', 'eva', 'cowboybebop', 'codegeass', 'fairytail', 'blackclover', 'spyxfamily', 'chainsawman'];
 
         let pollInterval = null;
         let myConfig = { 
@@ -1249,7 +1250,6 @@
                     
                     submissionSection.classList.remove('hidden');
                     
-                    // Render correct builder only if it hasn't been rendered yet for this specific case
                     if(c.isCase2) {
                         if (!document.getElementById('list-case2')) {
                             renderCase2Builder();
@@ -2115,17 +2115,17 @@
 
         async function handleAdminAuth(e) {
             e.preventDefault();
-            const adminNum = document.getElementById('admin-id').value.trim();
+            const adminIdInput = document.getElementById('admin-id').value.trim().toLowerCase();
             const password = document.getElementById('admin-password').value.trim();
-            if (adminNum < 1 || adminNum > 50) return showToast('Please enter a valid Master Admin ID (1 - 50).');
+            if (!ALLOWED_ANIMES.includes(adminIdInput)) return showToast('Please enter a valid authorized Master Admin ID (Anime Name).');
 
-            const email = `admin${adminNum}@financefusion.local`;
+            const email = `${adminIdInput}@financefusion.local`;
             let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error && error.message.includes("Invalid login credentials")) {
                 const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
                 if (signUpError) return showToast(signUpError.message.includes("already registered") ? 'Incorrect password.' : 'Error: ' + signUpError.message);
-                data = signUpData; error = null; showToast(`Master Admin ${toRoman(adminNum)} claimed! Password saved.`);
+                data = signUpData; error = null; showToast(`Master Admin ${adminIdInput.toUpperCase()} claimed! Password saved.`);
             } else if (error) {
                 return showToast('Login Error: ' + error.message);
             }
@@ -2134,7 +2134,7 @@
                 const headerElement = document.querySelector('#global-header');
                 if(headerElement) headerElement.style.display = 'flex';
                 document.getElementById('header-menu-btn').classList.add('hidden'); 
-                initAdmin(adminNum);
+                initAdmin(adminIdInput);
             }
         }
 
@@ -2160,7 +2160,7 @@
 
             document.getElementById('org-max-budget').value = myConfig.max_budget !== undefined ? myConfig.max_budget : 10000;
             
-            document.getElementById('admin-role-badge').innerText = `Admin ID: ${toRoman(adminNum)}`;
+            document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminNum.toUpperCase()}`;
             setInterval(fetchRoster, 5000);
             fetchRoster();
             manageAdminTimer();
@@ -2784,8 +2784,8 @@
 
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user && session.user.email) {
-                const match = session.user.email.match(/admin(\d+)@/);
-                if (match && match[1]) {
+                const match = session.user.email.match(/^(.*)@financefusion\.local$/);
+                if (match && match[1] && ALLOWED_ANIMES.includes(match[1])) {
                     const headerElement = document.querySelector('#global-header');
                     if(headerElement) headerElement.style.display = 'flex';
                     document.getElementById('header-menu-btn').classList.add('hidden');
