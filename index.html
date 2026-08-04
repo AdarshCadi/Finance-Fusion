@@ -297,8 +297,8 @@
                             <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-name">Full Legal Name</label>
                         </div>
                         <div class="relative group">
-                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors focus:shadow-[0_2px_0_0_#775a19] placeholder-transparent" id="student-prn" name="student_prn" placeholder="Your PRN" required="" type="text">
-                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-prn">Your PRN</label>
+                            <input class="peer w-full bg-transparent border-0 border-b border-outline focus:border-secondary focus:ring-0 px-0 py-2 font-body-lg text-body-lg text-primary transition-colors focus:shadow-[0_2px_0_0_#775a19] placeholder-transparent" id="student-prn" name="student_prn" placeholder="PRN or Mail ID" required="" type="text">
+                            <label class="absolute left-0 -top-4 text-on-surface-variant font-label-md text-label-md transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:font-body-lg peer-placeholder-shown:text-body-lg peer-focus:-top-4 peer-focus:font-label-md peer-focus:text-label-md peer-focus:text-secondary pointer-events-none uppercase tracking-wider" for="student-prn">PRN or Mail ID</label>
                         </div>
                         <button class="mt-2 w-full py-4 px-6 bg-gradient-to-b from-surface-container to-background border border-secondary text-primary font-label-md text-label-md uppercase tracking-widest hover:bg-surface-container-low transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden" type="submit">
                             <span class="relative z-10">Join Activity</span>
@@ -879,8 +879,8 @@
         let scratchCtx = null;
         let scratchIsCleared = false;
 
-        const budgetCategories = ['Needs', 'Wants', 'Investments'];
-        let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], Investments: [{ desc: '', amount: '' }] };
+        const budgetCategories = ['Needs', 'Wants', 'Investments and Savings'];
+        let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], 'Investments and Savings': [{ desc: '', amount: '' }] };
         
         // Static Case 2 State
         let budgetStateCase2 = { capitalInvested: '', unrealisedPnL: '' };
@@ -1861,6 +1861,13 @@
                                     }
                                 }
                                 saveLocalState();
+                                if (isBudgetRendered || true) {
+                                    if(currentIsCase2) {
+                                        if(!document.getElementById('list-case2')) renderCase2Builder();
+                                    } else {
+                                        if(!document.getElementById('list-Needs')) renderBudgetBuilder();
+                                    }
+                                }
                             } catch (e) {}
                             
                             if (btn) {
@@ -2250,9 +2257,6 @@
 
         async function runEvaluation() {
             if(activeEvalTab === 'case2') {
-                if(!myConfig.case1_evaluated || !myConfig.results_published) {
-                    return showToast("Cannot evaluate Case 2: Case 1 rankings must be computed and published first.");
-                }
                 return evaluateCase2();
             }
             return evaluateCase1();
@@ -2274,9 +2278,14 @@
                 if (!team.case_answer) return;
                 try {
                     const parsed = JSON.parse(team.case_answer);
-                    let needsTotal = (parsed.Needs || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
-                    let wantsTotal = (parsed.Wants || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
-                    let investTotal = (parsed.Investments || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+                    
+                    let needsItems = parsed.Needs || [];
+                    let wantsItems = parsed.Wants || [];
+                    let invItems = parsed['Investments and Savings'] || parsed.Investments || [];
+
+                    let needsTotal = needsItems.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+                    let wantsTotal = wantsItems.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+                    let investTotal = invItems.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
                     let grandTotal = needsTotal + wantsTotal + investTotal;
 
                     if (!isNaN(maxBudget) && maxBudget > 0 && grandTotal > maxBudget) {
@@ -2284,44 +2293,64 @@
                         return;
                     }
 
+                    // Macro Allocation
                     let actualNeeds = grandTotal > 0 ? (needsTotal / grandTotal) * 100 : 0;
                     let actualWants = grandTotal > 0 ? (wantsTotal / grandTotal) * 100 : 0;
                     let actualInv = grandTotal > 0 ? (investTotal / grandTotal) * 100 : 0;
                     
                     let macroVariance = Math.abs(actualNeeds - targetNeeds) + Math.abs(actualWants - targetWants) + Math.abs(actualInv - targetInv);
-                    let macroScore = Math.max(0, 40 - (macroVariance * 0.5)); 
+                    let macroScore = Math.max(0, 30 - (macroVariance * 0.4)); 
 
-                    let needsScore = 20;
-                    let hasEMI = false, hasFoodUtil = false, hasHealth = false;
-                    (parsed.Needs || []).forEach(item => {
+                    // Micro Needs Allocation
+                    let needsScore = 0;
+                    let nFood=0, nShelter=0, nCloth=0, nEdu=0, nMed=0, nComm=0, nUtil=0;
+                    needsItems.forEach(item => {
                         let text = item.desc.toLowerCase();
-                        if(/emi|loan/.test(text)) hasEMI = true;
-                        if(/grocer|food|utilit|electric|water|gas|wifi|internet/.test(text)) hasFoodUtil = true;
-                        if(/health|medic|insur/.test(text)) hasHealth = true;
+                        let amt = parseFloat(item.amount) || 0;
+                        if(/food|grocer|ration|diet/.test(text)) { nFood += amt; }
+                        else if(/rent|loan|emi|mortgage|shelter|house|home/.test(text)) { nShelter += amt; }
+                        else if(/cloth|apparel|wear/.test(text)) { nCloth += amt; }
+                        else if(/edu|school|college|tuition|fee|book/.test(text)) { nEdu += amt; }
+                        else if(/health|medic|insur|hospital|doctor|pill/.test(text)) { nMed += amt; }
+                        else if(/commut|transport|travel|fuel|petrol|bus|train|cab|taxi/.test(text)) { nComm += amt; }
+                        else if(/utilit|electric|water|gas|wifi|internet|bill/.test(text)) { nUtil += amt; }
                     });
-                    if(hasEMI) needsScore -= 5; 
-                    if(!hasFoodUtil) needsScore -= 5; 
-                    if(!hasHealth) needsScore -= 5; 
 
-                    let wantsScore = 20;
-                    (parsed.Wants || []).forEach(item => {
+                    if(nFood > 0) needsScore += 5;
+                    if(nShelter > 0) needsScore += 5;
+                    if(nCloth > 0) needsScore += 3;
+                    if(nEdu > 0) needsScore += 5;
+                    if(nMed > 0) needsScore += 5;
+                    if(nComm > 0) needsScore += 3;
+                    if(nUtil > 0) needsScore += 4;
+
+                    if (needsTotal > 0) {
+                        if ((nShelter / needsTotal) > 0.6) needsScore -= 4;
+                        if ((nFood / needsTotal) > 0.4) needsScore -= 2;
+                    }
+
+                    // Micro Wants Allocation
+                    let wantsScore = 10;
+                    wantsItems.forEach(item => {
                         let text = item.desc.toLowerCase();
-                        if(/deliver|zomato|swiggy|gadget|phone|iphone|luxur|vip|bar|club|party/.test(text)) wantsScore -= 4;
+                        if(/deliver|zomato|swiggy|gadget|phone|iphone|luxur|vip|bar|club|party/.test(text)) wantsScore -= 2;
                     });
                     wantsScore = Math.max(0, wantsScore);
 
-                    let invScore = 5; 
+                    // Micro Investments Allocation
+                    let invScore = 0; 
                     let hasT1 = false, hasT2 = false, hasT3 = false;
-                    (parsed.Investments || []).forEach(item => {
+                    invItems.forEach(item => {
                         let text = item.desc.toLowerCase();
-                        if(/saving|liquid|fd|rd|deposit/.test(text)) hasT1 = true;
-                        if(/ppf|vpf|nps|debt|bond|gov/.test(text)) hasT2 = true;
-                        if(/equity|mutual fund|sip|stock|share|market/.test(text)) hasT3 = true;
+                        if(/saving|liquid|fd|rd|deposit|emergenc/.test(text)) hasT1 = true;
+                        if(/ppf|vpf|epf|nps|debt|bond|gov|gold/.test(text)) hasT2 = true;
+                        if(/equity|mutual fund|sip|stock|share|market|crypto/.test(text)) hasT3 = true;
                     });
                     if(hasT1) invScore += 5;
                     if(hasT2) invScore += 5;
                     if(hasT3) invScore += 5;
 
+                    // Twist Logic
                     let twistScore = 0;
                     if (hasTwist) {
                         let assignedTwist = plotTwists[team.team_number % plotTwists.length];
@@ -2335,7 +2364,7 @@
                         });
 
                         if (accommodatedTwist) twistScore = 15; 
-                        else twistScore = -20; 
+                        else twistScore = -15; 
                     }
 
                     let rawScore = Math.max(0, macroScore + needsScore + wantsScore + invScore + twistScore);
