@@ -1813,9 +1813,18 @@
 
                 const { data: syncData, error: syncErr } = await supabaseClient.rpc('get_student_sync_data', { p_prn: prn });
 
-                if (syncErr || !syncData || !syncData.student) {
-                    console.error("Student check failed:", syncErr);
-                    localStorage.removeItem('fp_prn'); switchScreen('login-register-screen'); return;
+                // 1. If it's a network drop or database overload, DO NOT log the student out. Just retry later.
+                if (syncErr) {
+                    console.warn("Connection unstable. Retrying in background...", syncErr);
+                    return; 
+                }
+
+                // 2. Only log them out if the database confirms they were explicitly deleted (e.g., by the Admin)
+                if (!syncData || !syncData.student) {
+                    console.error("Student record no longer exists in database.");
+                    localStorage.removeItem('fp_prn'); 
+                    switchScreen('login-register-screen'); 
+                    return;
                 }
                 
                 const me = syncData.student;
