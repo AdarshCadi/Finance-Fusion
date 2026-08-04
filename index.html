@@ -2288,8 +2288,16 @@
                     let investTotal = invItems.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
                     let grandTotal = needsTotal + wantsTotal + investTotal;
 
-                    if (!isNaN(maxBudget) && maxBudget > 0 && grandTotal > maxBudget) {
-                        evaluatedTeams.push({ team_number: team.team_number, grand_total: grandTotal, raw_score: 0, percentile: 0, disqualified: true, submitted_at: team.submitted_at || '9999-99-99' });
+                    // STRICT BUDGET DISQUALIFICATION: Must use EXACTLY maxBudget (not a rupee more, not a rupee less)
+                    if (!isNaN(maxBudget) && maxBudget > 0 && Math.abs(grandTotal - maxBudget) > 0.01) {
+                        evaluatedTeams.push({ 
+                            team_number: team.team_number, 
+                            grand_total: grandTotal, 
+                            raw_score: 0, 
+                            percentile: 0, 
+                            disqualified: true, 
+                            submitted_at: team.submitted_at || '9999-99-99' 
+                        });
                         return;
                     }
 
@@ -2692,8 +2700,9 @@
                         if (caseTab === 'case1') {
                             budgetCategories.forEach(cat => {
                                     let catTotal = 0; let rowsHtml = '';
-                                    if (parsed[cat]) {
-                                            parsed[cat].forEach(item => {
+                                    let items = parsed[cat] || (cat === 'Investments and Savings' ? parsed.Investments : []);
+                                    if (items) {
+                                            items.forEach(item => {
                                                     if(item.desc || item.amount) {
                                                             const amt = parseFloat(item.amount) || 0;
                                                             catTotal += amt;
