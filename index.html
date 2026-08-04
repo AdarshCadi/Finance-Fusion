@@ -1786,9 +1786,25 @@
 
         function startStudentPolling(prn) {
             loadSettings().then(() => {
-                pollInterval = setInterval(() => checkTeamMatch(prn), 3000);
+                // Reduced polling load to prevent crashes (from 3s to 8s)
+                pollInterval = setInterval(() => checkTeamMatch(prn), 8000);
                 checkTeamMatch(prn);
+                setupRealtimeSubscriptions(prn);
             });
+        }
+        
+        function setupRealtimeSubscriptions(prn) {
+            // Listen to Event Settings changes instantly
+            supabaseClient
+                .channel('public:event_settings')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings' }, payload => {
+                    myConfig = { ...myConfig, ...payload.new };
+                    updateStudentContentUI();
+                })
+                .subscribe();
+
+            // Note: For Teams and Students, we rely primarily on the 8-second polling
+            // to avoid hitting the 100 channel connection limit on free tiers.
         }
 
         async function checkTeamMatch(prn) {
