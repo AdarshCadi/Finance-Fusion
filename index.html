@@ -901,6 +901,11 @@
         document.addEventListener('cut', function(e) { if(studentState !== 'admin') e.preventDefault(); });
         document.addEventListener('paste', function(e) { if(studentState !== 'admin') e.preventDefault(); });
 
+        // Utility to generate safe IDs
+        function getSafeId(str) {
+            return str.replace(/\s+/g, '-');
+        }
+
         // --- LOCAL STORAGE STATE MANAGEMENT ---
         function saveLocalState() {
             if(studentState === 'admin') return; 
@@ -930,7 +935,17 @@
             
             const savedBudget = localStorage.getItem('fp_budgetState');
             if(savedBudget) {
-                try { budgetState = JSON.parse(savedBudget); } catch(e){}
+                try { 
+                    let b = JSON.parse(savedBudget); 
+                    if (b.Investments && !b['Investments and Savings']) {
+                        b['Investments and Savings'] = b.Investments;
+                        delete b.Investments;
+                    }
+                    budgetCategories.forEach(c => {
+                        if(!b[c] || !Array.isArray(b[c])) b[c] = [{desc:'', amount:''}];
+                    });
+                    budgetState = b;
+                } catch(e){}
             }
 
             const savedBudget2 = localStorage.getItem('fp_budgetStateCase2');
@@ -1684,14 +1699,16 @@
                 let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
                 grandTotal += catTotal;
                 
+                const safeCat = getSafeId(cat);
+                
                 html += `
                 <div class="bg-background border border-outline-variant rounded-lg p-5 sm:p-6 shadow-sm relative mb-6">
                     <div class="absolute top-0 left-0 w-full h-0.5 bg-secondary opacity-30"></div>
                     <div class="flex justify-between items-center mb-5 pb-4 border-b border-outline-variant">
                         <h5 class="font-display-lg text-primary tracking-widest text-lg">${cat}</h5>
-                        <span class="font-label-md text-on-surface-variant text-xs sm:text-sm uppercase tracking-widest">Total: <span id="total-${cat}" class="text-secondary font-bold text-base">₹${catTotal.toLocaleString()}</span></span>
+                        <span class="font-label-md text-on-surface-variant text-xs sm:text-sm uppercase tracking-widest">Total: <span id="total-${safeCat}" class="text-secondary font-bold text-base">₹${catTotal.toLocaleString()}</span></span>
                     </div>
-                    <div id="list-${cat}" class="space-y-4">`;
+                    <div id="list-${safeCat}" class="space-y-4">`;
 
                 budgetState[cat].forEach((item, index) => {
                     html += `
@@ -1738,27 +1755,46 @@
         }
 
         function updateBudget(cat, index, field, value) {
+            if(!budgetState[cat]) budgetState[cat] = [{desc:'', amount:''}];
+            if(!budgetState[cat][index]) budgetState[cat][index] = {desc:'', amount:''};
+            
             budgetState[cat][index][field] = value;
+            
             if(field === 'amount') {
                 let catTotal = budgetState[cat].reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-                document.getElementById(`total-${cat}`).innerText = '₹' + catTotal.toLocaleString();
+                const safeCat = getSafeId(cat);
+                const totalEl = document.getElementById(`total-${safeCat}`);
+                if(totalEl) totalEl.innerText = '₹' + catTotal.toLocaleString();
             }
             saveLocalState();
         }
 
         function addBudgetRow(cat, focusIndex = -1) {
+            if(!budgetState[cat]) budgetState[cat] = [];
             budgetState[cat].push({ desc: '', amount: '' }); 
             saveLocalState();
             renderBudgetBuilder();
             if(focusIndex >= 0) {
                 setTimeout(() => {
-                        const inputs = document.getElementById(`list-${cat}`).querySelectorAll('input[type="text"]');
+                        const safeCat = getSafeId(cat);
+                        const inputs = document.getElementById(`list-${safeCat}`).querySelectorAll('input[type="text"]');
                         if(inputs.length > focusIndex + 1) inputs[focusIndex + 1].focus();
                 }, 50);
             }
         }
-        function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); saveLocalState(); renderBudgetBuilder(); }
-        function checkEnter(e, cat, index) { if (e.key === 'Enter') { e.preventDefault(); addBudgetRow(cat, index); } }
+        
+        function removeBudgetRow(cat, index) { 
+            budgetState[cat].splice(index, 1); 
+            saveLocalState(); 
+            renderBudgetBuilder(); 
+        }
+        
+        function checkEnter(e, cat, index) { 
+            if (e.key === 'Enter') { 
+                e.preventDefault(); 
+                addBudgetRow(cat, index); 
+            } 
+        }
 
         function updateBudgetCase2(field, value) {
             budgetStateCase2[field] = value;
@@ -1881,6 +1917,16 @@
                                     }
                                 } else {
                                     if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
+                                        // MIGRATION SAFEGUARD: Handle old DB structures gracefully so it doesn't break memory!
+                                        if (parsedData.Investments && !parsedData['Investments and Savings']) {
+                                            parsedData['Investments and Savings'] = parsedData.Investments;
+                                            delete parsedData.Investments;
+                                        }
+                                        budgetCategories.forEach(c => {
+                                            if (!parsedData[c] || !Array.isArray(parsedData[c])) {
+                                                parsedData[c] = [{ desc: '', amount: '' }];
+                                            }
+                                        });
                                         budgetState = parsedData;
                                     }
                                 }
