@@ -1809,22 +1809,22 @@
 
         async function checkTeamMatch(prn) {
             try {
-                await loadSettings();
-                
-                const { data: students, error: meErr } = await supabaseClient.from('students').select('*').eq('prn', prn).limit(1);
+                // Event settings are updated in real-time, no need to query them here!
 
-                if (meErr || !students || students.length === 0) {
-                    console.error("Student check failed:", meErr);
+                const { data: syncData, error: syncErr } = await supabaseClient.rpc('get_student_sync_data', { p_prn: prn });
+
+                if (syncErr || !syncData || !syncData.student) {
+                    console.error("Student check failed:", syncErr);
                     localStorage.removeItem('fp_prn'); switchScreen('login-register-screen'); return;
                 }
-                const me = students[0];
+                
+                const me = syncData.student;
 
                 if (me.team_number) {
                     myTeamNumber = me.team_number;
                     const tableNo = Math.ceil(me.team_number / 5);
 
-                    const { data: mates } = await supabaseClient.from('students').select('name').eq('team_number', me.team_number);
-                    
+                    const mates = syncData.teammates;
                     const menuHTML = mates ? mates.map(m => `
                         <li class="flex items-center gap-3 bg-background p-3 rounded-lg border border-outline-variant shadow-sm">
                             <div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center text-primary font-bold text-xs font-sans">${m.name.charAt(0).toUpperCase()}</div>
@@ -1850,10 +1850,9 @@
                         switchScreen('student-reveal-screen');
                     }
 
-                    const { data: teamRows } = await supabaseClient.from('teams').select('case_answer, case2_answer').eq('team_number', me.team_number).limit(1);
+                    const teamData = syncData.team_data;
                     
-                    if (teamRows && teamRows.length > 0) {
-                        const teamData = teamRows[0];
+                    if (teamData) {
                         const btn = document.getElementById('submit-answer-btn');
                         const builder = document.getElementById('budget-builder-container');
 
@@ -1908,15 +1907,14 @@
 
                 if (studentState !== 'waiting') { studentState = 'waiting'; saveLocalState(); switchScreen('student-waiting-screen'); }
 
-                const { data: waiting, error: waitErr } = await supabaseClient.from('students').select('*').is('team_number', null).order('created_at', { ascending: true });
-                if (waitErr) return;
                 const targetTeamSize = myConfig.team_size || 2;
+                const waitingCount = syncData.waiting_count || 0;
 
-                if (waiting && waiting.length >= targetTeamSize) {
+                if (waitingCount >= targetTeamSize) {
                     await supabaseClient.rpc('match_students_safely', { target_size: targetTeamSize });
-                } else if (waiting && waiting.length > 0) {
+                } else if (waitingCount > 0) {
                     const waitTime = new Date() - new Date(me.created_at);
-                    if (waitTime > 180000 && waiting[0].prn === prn) {
+                    if (waitTime > 180000 && syncData.first_waiting_prn === prn) {
                         const { data: lastTeam } = await supabaseClient.from('students').select('team_number').not('team_number', 'is', null).order('team_number', { ascending: false }).limit(1);
                         const fallbackTeam = (lastTeam && lastTeam.length && lastTeam[0].team_number) ? lastTeam[0].team_number + 1 : 1;
                         await supabaseClient.from('students').update({ team_number: fallbackTeam }).eq('prn', prn);
