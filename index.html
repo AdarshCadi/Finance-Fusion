@@ -821,14 +821,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        function toRoman(num) {
-            if (!num || isNaN(num)) return num;
-            const lookup = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1};
-            let roman = '', i;
-            for ( i in lookup ) { while ( num >= lookup[i] ) { roman += i; num -= lookup[i]; } }
-            return roman;
-        }
-
         const SUPABASE_URL = 'https://iirmhdhaihrkmeagaugq.supabase.co';
         const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpcm1oZGhhaWhya21lYWdhdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NTMwNzMsImV4cCI6MjEwMTAyOTA3M30.hh2L8XBlaEzGQZuzcbwSs2txJDQcuBi1ZPTheTD6R_Y';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -888,7 +880,9 @@
 
         const budgetCategories = ['Needs', 'Wants', 'Investments'];
         let budgetState = { Needs: [{ desc: '', amount: '' }], Wants: [{ desc: '', amount: '' }], Investments: [{ desc: '', amount: '' }] };
-        let budgetStateCase2 = [{ desc: '', amount: '' }]; // desc = money invested, amount = pnl (though visually custom)
+        
+        // Static Case 2 State
+        let budgetStateCase2 = { capitalInvested: '', unrealisedPnL: '' };
 
         const plotTwists = [
             { icon: '🏥', title: 'Medical Emergency', desc: 'Hospital bill: ₹1,20,000', cost: 120000, key: 'hospital|medical|emergency' },
@@ -941,6 +935,8 @@
             const savedBudget2 = localStorage.getItem('fp_budgetStateCase2');
             if(savedBudget2) {
                 try { budgetStateCase2 = JSON.parse(savedBudget2); } catch(e){}
+            } else {
+                budgetStateCase2 = { capitalInvested: '', unrealisedPnL: '' };
             }
             
             resultsShownThisSession = localStorage.getItem('fp_resultsShown') === 'true';
@@ -1209,7 +1205,7 @@
                     contentDiv.innerHTML = `
                     <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-8 sm:p-10 flex flex-col items-start shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden text-left mb-6">
                         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50"></div>
-                        <span class="text-label-md font-label-md uppercase tracking-widest text-secondary">Subject ${toRoman(currentProgIndex+1)}</span>
+                        <span class="text-label-md font-label-md uppercase tracking-widest text-secondary">Subject ${currentProgIndex+1}</span>
                         <h4 class="text-3xl sm:text-4xl font-display-lg text-primary mt-3 mb-6 leading-tight">${s.title}</h4>
                         <p class="text-body-lg font-body-lg text-on-surface-variant whitespace-pre-wrap leading-relaxed w-full">${s.content}</p>
                     </div>`;
@@ -1235,7 +1231,7 @@
                     submissionSection.classList.add('hidden');
                 } else {
                     let c = studentCasesList[currentCaseIndex];
-                    let displayTitle = c.isCase2 ? "Case Study II" : "Case Study I";
+                    let displayTitle = c.isCase2 ? "Case Study 2" : "Case Study 1";
                     
                     contentDiv.innerHTML = `
                     <div class="w-full bg-surface-container border border-outline-variant rounded-lg p-8 sm:p-10 flex flex-col items-start shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden text-left mb-6">
@@ -1250,6 +1246,7 @@
                     
                     submissionSection.classList.remove('hidden');
                     
+                    // Render correct builder only if it hasn't been rendered yet for this specific case
                     if(c.isCase2) {
                         if (!document.getElementById('list-case2')) {
                             renderCase2Builder();
@@ -1674,45 +1671,30 @@
             container.innerHTML = html;
         }
 
-        // --- CASE 2 BUILDER ---
+        // --- CASE 2 BUILDER (STATIC 2 ROWS) ---
         function renderCase2Builder() {
             const container = document.getElementById('budget-builder-container');
             if(!container) return;
+            
             let html = `
-                <div class="bg-background border border-outline-variant rounded-lg p-5 sm:p-6 shadow-sm relative">
+                <div id="list-case2" class="bg-background border border-outline-variant rounded-lg p-5 sm:p-6 shadow-sm relative">
                     <div class="absolute top-0 left-0 w-full h-0.5 bg-teal-600 opacity-30"></div>
                     <div class="flex justify-between items-center mb-5 pb-4 border-b border-outline-variant">
-                        <h5 class="font-display-lg text-primary tracking-widest text-lg">Investment Portfolio</h5>
+                        <h5 class="font-display-lg text-primary tracking-widest text-lg">Investment Portfolio Data</h5>
                     </div>
-                    <div class="grid grid-cols-12 gap-3 mb-2 px-2 hidden sm:grid">
-                        <div class="col-span-8 text-xs font-bold text-slate-500 uppercase tracking-widest">Money Invested</div>
-                        <div class="col-span-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Unrealised PnL (₹)</div>
-                    </div>
-                    <div id="list-case2" class="space-y-4">
-            `;
-
-            budgetStateCase2.forEach((item, index) => {
-                html += `
-                <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                    <div class="flex-1">
-                        <label class="sm:hidden text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Money Invested</label>
-                        <input type="text" class="w-full p-3 rounded text-sm font-body-md bg-surface-container border border-outline focus:border-teal-600 focus:ring-0 transition-colors" placeholder="Description of Investment" value="${item.desc}" oninput="updateBudgetCase2(${index}, 'desc', this.value)" onkeydown="checkEnterCase2(event, ${index})">
-                    </div>
-                    <div class="flex gap-2 items-center sm:w-48">
-                        <div class="flex-1">
-                             <label class="sm:hidden text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Unrealised PnL</label>
-                             <input type="number" class="w-full p-3 rounded text-sm text-right font-semibold text-primary font-body-md bg-surface-container border border-outline focus:border-teal-600 focus:ring-0 transition-colors" placeholder="₹ +/-" value="${item.amount || ''}" oninput="updateBudgetCase2(${index}, 'amount', this.value)" onkeydown="checkEnterCase2(event, ${index})">
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Capital Invested (₹)</label>
+                            <input type="number" class="w-full p-4 rounded-lg text-base font-bold text-primary font-body-md bg-surface-container-lowest border border-outline focus:border-teal-600 focus:ring-0 transition-colors" placeholder="e.g. 500000" value="${budgetStateCase2.capitalInvested || ''}" oninput="updateBudgetCase2('capitalInvested', this.value)">
                         </div>
-                        <div class="mt-4 sm:mt-0">
-                            ${budgetStateCase2.length > 1 ? `<button onclick="removeBudgetRowCase2(${index})" class="text-on-surface-variant hover:text-error text-2xl font-bold px-2 flex items-center justify-center h-full"><span class="material-symbols-outlined">close</span></button>` : `<div class="w-8"></div>`}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Unrealised P&L (₹)</label>
+                            <input type="number" class="w-full p-4 rounded-lg text-base font-bold text-primary font-body-md bg-surface-container-lowest border border-outline focus:border-teal-600 focus:ring-0 transition-colors" placeholder="e.g. 25000 or -15000" value="${budgetStateCase2.unrealisedPnL || ''}" oninput="updateBudgetCase2('unrealisedPnL', this.value)">
                         </div>
                     </div>
                 </div>`;
-            });
-
-            html += `</div>
-                <button onclick="addBudgetRowCase2()" class="w-full sm:w-auto text-xs text-primary font-label-md uppercase tracking-widest mt-6 hover:text-teal-700 transition-colors bg-surface-container border border-outline-variant px-6 py-3 rounded text-center flex items-center justify-center gap-2 mx-auto shadow-sm"><span class="material-symbols-outlined text-sm">add</span> Add Row</button>
-            </div>`;
+            
             container.innerHTML = html;
         }
 
@@ -1739,23 +1721,10 @@
         function removeBudgetRow(cat, index) { budgetState[cat].splice(index, 1); saveLocalState(); renderBudgetBuilder(); }
         function checkEnter(e, cat, index) { if (e.key === 'Enter') { e.preventDefault(); addBudgetRow(cat, index); } }
 
-        function updateBudgetCase2(index, field, value) {
-            budgetStateCase2[index][field] = value;
+        function updateBudgetCase2(field, value) {
+            budgetStateCase2[field] = value;
             saveLocalState();
         }
-        function addBudgetRowCase2(focusIndex = -1) {
-            budgetStateCase2.push({ desc: '', amount: '' });
-            saveLocalState();
-            renderCase2Builder();
-            if(focusIndex >= 0) {
-                setTimeout(() => {
-                    const inputs = document.getElementById(`list-case2`).querySelectorAll('input[type="text"]');
-                    if(inputs.length > focusIndex + 1) inputs[focusIndex + 1].focus();
-                }, 50);
-            }
-        }
-        function removeBudgetRowCase2(index) { budgetStateCase2.splice(index, 1); saveLocalState(); renderCase2Builder(); }
-        function checkEnterCase2(e, index) { if(e.key === 'Enter') { e.preventDefault(); addBudgetRowCase2(index); } }
 
         /* --- STUDENT FLOW --- */
         async function handleStudentRegistration(e) {
@@ -1810,12 +1779,12 @@
                     const mList = document.getElementById('menu-partners-list');
                     if(mList) mList.innerHTML = menuHTML;
                     
-                    document.getElementById('menu-team-number').innerText = toRoman(me.team_number);
-                    document.getElementById('menu-table-number').innerText = toRoman(tableNo);
+                    document.getElementById('menu-team-number').innerText = me.team_number;
+                    document.getElementById('menu-table-number').innerText = tableNo;
 
                     if (studentState === 'waiting') {
-                        document.getElementById('reveal-team-number').innerText = toRoman(me.team_number);
-                        document.getElementById('reveal-table-number').innerText = toRoman(tableNo);
+                        document.getElementById('reveal-team-number').innerText = me.team_number;
+                        document.getElementById('reveal-table-number').innerText = tableNo;
                         if (mates) {
                             const otherMates = mates.filter(m => m.name !== me.name);
                             const names = otherMates.map(m => m.name).join(' & ');
@@ -1844,7 +1813,9 @@
                             try {
                                 const parsedData = JSON.parse(targetAnswerStr);
                                 if(currentIsCase2) {
-                                    if(Array.isArray(parsedData)) budgetStateCase2 = parsedData;
+                                    if(parsedData && typeof parsedData === 'object' && !Array.isArray(parsedData)) {
+                                        budgetStateCase2 = parsedData;
+                                    }
                                 } else {
                                     if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
                                         budgetState = parsedData;
@@ -1852,7 +1823,11 @@
                                 }
                                 saveLocalState();
                                 if (isBudgetRendered) {
-                                    if(currentIsCase2) renderCase2Builder(); else renderBudgetBuilder();
+                                    if(currentIsCase2) {
+                                        if(!document.getElementById('list-case2')) renderCase2Builder();
+                                    } else {
+                                        if(!document.getElementById('list-Needs')) renderBudgetBuilder();
+                                    }
                                 }
                             } catch (e) {}
                             
@@ -1925,7 +1900,10 @@
             let finalJson = "";
 
             if(currentIsCase2) {
-                budgetStateCase2.forEach(item => { if(item.desc || item.amount) hasData = true; });
+                if(!budgetStateCase2.capitalInvested || !budgetStateCase2.unrealisedPnL) {
+                    return showToast('Please enter both Capital Invested and Unrealised P&L.');
+                }
+                hasData = true;
                 finalJson = JSON.stringify(budgetStateCase2);
             } else {
                 budgetCategories.forEach(cat => { budgetState[cat].forEach(item => { if (item.desc || item.amount) hasData = true; }); });
@@ -1989,7 +1967,7 @@
                 subHtml += `
                 <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 relative mb-4 transition-all ${sub.published ? 'border-l-4 border-l-emerald-500 bg-white' : ''}">
                     <div class="flex justify-between items-center">
-                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Subject ${toRoman(i+1)} ${sub.published ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded ml-2">Published</span>' : ''}</h4>
+                        <h4 class="font-semibold text-sm uppercase tracking-wide text-slate-800">Subject ${i+1} ${sub.published ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded ml-2">Published</span>' : ''}</h4>
                         <div class="flex gap-2">
                             ${sub.published ? 
                                 `<button type="button" onclick="togglePublishSubject(${i})" class="text-xs font-semibold text-amber-600 hover:text-amber-800 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200 shadow-sm">Unpublish</button>` :
@@ -2138,7 +2116,7 @@
             }
         }
 
-        async function initAdmin(adminNum) {
+        async function initAdmin(adminIdInput) {
             studentState = 'admin';
             
             const headerElement = document.querySelector('#global-header');
@@ -2160,7 +2138,7 @@
 
             document.getElementById('org-max-budget').value = myConfig.max_budget !== undefined ? myConfig.max_budget : 10000;
             
-            document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminNum.toUpperCase()}`;
+            document.getElementById('admin-role-badge').innerText = `Admin ID: ${adminIdInput.toUpperCase()}`;
             setInterval(fetchRoster, 5000);
             fetchRoster();
             manageAdminTimer();
@@ -2232,7 +2210,7 @@
             } else {
                 t2.className = "px-4 py-2 text-xs font-bold rounded bg-indigo-600 text-white shadow-sm transition-all";
                 t1.className = "px-4 py-2 text-xs font-bold rounded text-indigo-700 hover:bg-indigo-100 transition-all";
-                document.getElementById('table-head-total').innerText = "Total Invested";
+                document.getElementById('table-head-total').innerText = "Total P&L";
             }
             fetchLeaderboardData();
         }
@@ -2369,19 +2347,14 @@
             teams.forEach(team => {
                 if (!team.case2_answer) return;
                 try {
-                    const parsed = JSON.parse(team.case2_answer); // Array of {desc, amount(pnl)}
-                    let totalInvested = 0; // we don't have invested amount parsing explicitly as float from desc easily if it's text, but let's just score based on PnL
-                    let totalPnL = 0;
-
-                    parsed.forEach(item => {
-                        totalPnL += parseFloat(item.amount) || 0;
-                    });
+                    const parsed = JSON.parse(team.case2_answer); // expects {capitalInvested, unrealisedPnL}
+                    let pnl = parseFloat(parsed.unrealisedPnL) || 0;
                     
-                    let rawScore = Math.max(0, 50 + (totalPnL * 0.01)); // Arbitrary scoring logic for Case 2
+                    let rawScore = pnl; // Score based entirely on highest PnL
                     
                     evaluatedTeams.push({ 
                         team_number: team.team_number, 
-                        grand_total: totalPnL, // mapping total to display field
+                        grand_total: pnl, 
                         raw_score: rawScore, 
                         disqualified: false, 
                         submitted_at: team.case2_submitted_at || '9999-99-99' 
@@ -2390,16 +2363,22 @@
             });
 
             let qualifiedTeams = evaluatedTeams.filter(t => !t.disqualified);
+
+            // Sort by rawScore (P&L) descending, highest profit gets rank 1
+            evaluatedTeams.sort((a, b) => {
+                if (a.raw_score !== b.raw_score) return b.raw_score - a.raw_score; 
+                return new Date(a.submitted_at) - new Date(b.submitted_at);
+            });
+
+            // For percentile, compare against max profit
             let maxRaw = Math.max(1, ...qualifiedTeams.map(t => t.raw_score)); 
 
             evaluatedTeams.forEach(t => {
-                if(!t.disqualified) t.percentile = parseFloat(((t.raw_score / maxRaw) * 100).toFixed(2));
-                else t.percentile = 0;
-            });
-
-            evaluatedTeams.sort((a, b) => {
-                if (a.percentile !== b.percentile) return b.percentile - a.percentile; 
-                return new Date(a.submitted_at) - new Date(b.submitted_at);
+                if(!t.disqualified && t.raw_score > 0) {
+                    t.percentile = parseFloat(((t.raw_score / maxRaw) * 100).toFixed(2));
+                } else {
+                    t.percentile = 0;
+                }
             });
 
             let rankCounter = 1;
@@ -2410,7 +2389,7 @@
             }
 
             fetchLeaderboardData();
-            showToast('Case 2 Evaluation complete! Rankings generated.');
+            showToast('Case 2 Evaluation complete! Rankings generated based on P&L.');
         }
 
         function renderLeaderboard(teamsList) {
@@ -2424,8 +2403,8 @@
 
             tbody.innerHTML = teamsList.map(t => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="py-4 px-4 font-bold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + toRoman(t.ranking)}</td>
-                    <td class="py-4 px-4 font-medium text-slate-800 font-sans">Team ${toRoman(t.team_number)}</td>
+                    <td class="py-4 px-4 font-bold text-center text-indigo-700 font-sans">${t.disqualified || t.ranking === null ? '-' : '#' + t.ranking}</td>
+                    <td class="py-4 px-4 font-medium text-slate-800 font-sans">Team ${t.team_number}</td>
                     <td class="py-4 px-4 text-center font-semibold text-secondary font-sans">${activeEvalTab === 'case1' ? '₹' : 'PnL: ₹'}${t.grand_total.toLocaleString()}</td>
                     <td class="py-4 px-4 text-center font-bold text-slate-800 font-sans">${t.disqualified ? 'N/A' : (t.raw_score !== undefined ? Math.floor(t.raw_score) : Math.floor(t.score))}</td>
                     <td class="py-4 px-4 text-center font-bold text-indigo-600 font-sans">${t.disqualified ? 'N/A' : (t.percentile !== undefined ? t.percentile : t.score) + ' %ile'}</td>
@@ -2491,7 +2470,7 @@
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2">
                         <span class="font-bold text-slate-800">${s.name}</span>
-                        <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-1 rounded">Team ${s.team_number ? toRoman(s.team_number) : '?'}</span>
+                        <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-1 rounded">Team ${s.team_number ? s.team_number : '?'}</span>
                     </div>
                     <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${s.feedback}</p>
                 </div>
@@ -2536,7 +2515,7 @@
                         let pnlTotal = 0;
                         try {
                             const p = JSON.parse(t.case2_answer);
-                            p.forEach(x => pnlTotal += parseFloat(x.amount)||0);
+                            pnlTotal = parseFloat(p.unrealisedPnL) || 0;
                         } catch(e){}
                         return {
                             team_number: t.team_number, grand_total: pnlTotal, raw_score: t.case2_score || 0, percentile: t.case2_percentile || 0, disqualified: t.case2_disqualified || false, ranking: t.case2_ranking !== undefined ? t.case2_ranking : null, submitted_at: t.case2_submitted_at || ''
@@ -2603,9 +2582,9 @@
                         <td class="py-3 px-4 sm:px-5 font-medium text-slate-800 font-sans">${s.name}</td>
                         <td class="py-3 px-4 sm:px-5 text-slate-500 font-sans">${s.prn}</td>
                         <td class="py-3 px-4 sm:px-5 text-center font-sans">
-                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${toRoman(s.team_number)}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
+                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
                         </td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? toRoman(tableNo) : '-'}</td>
+                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? tableNo : '-'}</td>
                         <td class="py-3 px-4 sm:px-5 text-center font-sans">${hasCase1 ? '✅' : '⏳'}</td>
                         <td class="py-3 px-4 sm:px-5 text-center font-sans">${hasCase2 ? '✅' : '⏳'}</td>
                         <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
@@ -2621,18 +2600,18 @@
         }
 
         async function clearTeamAnswer(teamNumber) {
-            if(!confirm(`Are you sure you want to completely delete ALL submissions for Team ${toRoman(teamNumber)}? The team will be able to submit new strategies.`)) return;
+            if(!confirm(`Are you sure you want to completely delete ALL submissions for Team ${teamNumber}? The team will be able to submit new strategies.`)) return;
             await supabaseClient.from('teams').update({ 
                 case_answer: null, ranking: null, score: null, disqualified: false,
                 case2_answer: null, case2_ranking: null, case2_score: null, case2_disqualified: false
             }).eq('team_number', teamNumber);
-            fetchRoster(); showToast(`Team ${toRoman(teamNumber)} answers cleared.`);
+            fetchRoster(); showToast(`Team ${teamNumber} answers cleared.`);
         }
 
         function openAnswerModal(teamNumber, caseTab) {
             const team = globalTeamsData.find(t => t.team_number === teamNumber);
             if(team) {
-                document.getElementById('modal-team-heading').innerText = `Team ${toRoman(team.team_number)} Strategy`;
+                document.getElementById('modal-team-heading').innerText = `Team ${team.team_number} Strategy`;
                 document.getElementById('modal-case-indicator').innerText = caseTab === 'case1' ? "Case 1" : "Case 2";
                 
                 let targetAnswerStr = caseTab === 'case1' ? team.case_answer : team.case2_answer;
@@ -2679,26 +2658,20 @@
                             </div>`;
                         } else {
                             // CASE 2 display
-                            let rowsHtml = '';
-                            if(Array.isArray(parsed)) {
-                                parsed.forEach(item => {
-                                    if(item.desc || item.amount) {
-                                        const pnl = parseFloat(item.amount) || 0;
-                                        grandTotal += pnl;
-                                        let pnlColor = pnl >= 0 ? 'text-emerald-600' : 'text-red-600';
-                                        rowsHtml += `<div class="flex justify-between items-center text-sm py-2 border-b border-slate-100 last:border-0"><span class="text-slate-700 font-sans flex-1">${item.desc || 'Unnamed Investment'}</span><span class="font-bold ${pnlColor} font-sans">₹${pnl.toLocaleString()}</span></div>`;
-                                    }
-                                });
-                            }
+                            let capital = parseFloat(parsed.capitalInvested) || 0;
+                            let pnl = parseFloat(parsed.unrealisedPnL) || 0;
+                            let pnlColor = pnl >= 0 ? 'text-emerald-600' : 'text-red-600';
+                            
                             displayHTML += `
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <div class="flex justify-between text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-2 pb-2 border-b border-slate-100">
-                                        <span>Investment</span><span>Unrealised PnL</span>
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                                    <div class="flex justify-between items-center text-sm py-2 border-b border-slate-100">
+                                        <span class="text-slate-700 font-sans font-bold">Capital Invested</span>
+                                        <span class="font-bold text-slate-800 font-sans">₹${capital.toLocaleString()}</span>
                                     </div>
-                                    ${rowsHtml}
-                                </div>
-                                <div class="bg-gradient-to-r from-teal-800 to-teal-900 p-4 rounded-xl border border-teal-700 flex justify-between font-bold text-lg text-white mt-4 shadow-md font-sans">
-                                    <span>TOTAL PnL</span><span>₹${grandTotal.toLocaleString()}</span>
+                                    <div class="flex justify-between items-center text-sm py-2 border-b border-slate-100">
+                                        <span class="text-slate-700 font-sans font-bold">Unrealised P&L</span>
+                                        <span class="font-bold ${pnlColor} font-sans">₹${pnl.toLocaleString()}</span>
+                                    </div>
                                 </div>
                             </div>`;
                         }
