@@ -1863,6 +1863,12 @@
                     return;
                 }
                 
+                // 3. Fallback sync for Event Settings (in case WebSockets fail)
+                if (syncData.settings) {
+                    myConfig = { ...myConfig, ...syncData.settings };
+                    updateStudentContentUI();
+                }
+                
                 const me = syncData.student;
 
                 if (me.team_number) {
@@ -2143,7 +2149,7 @@
             if(!confirm("Are you sure? This will lock all students out of their interface for 30 seconds and assign them a random Surprise Event Card! (Applies to Case 1)")) return;
             const twistTime = new Date().toISOString();
             myConfig.plot_twist_triggered_at = twistTime;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            const { error } = await supabaseClient.from('event_settings').update({ plot_twist_triggered_at: twistTime }).eq('id', 1);
             if(error) showToast("Error: " + error.message);
             else showToast("🚨 Plot Twist Triggered for Case 1!");
         }
@@ -2151,7 +2157,7 @@
         async function unpublishPlotTwist() {
             if(!confirm("Are you sure you want to reset and unpublish the Plot Twist?")) return;
             myConfig.plot_twist_triggered_at = null;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            const { error } = await supabaseClient.from('event_settings').update({ plot_twist_triggered_at: null }).eq('id', 1);
             if(error) showToast("Error: " + error.message);
             else showToast("Plot Twist has been reset.");
         }
@@ -2163,14 +2169,14 @@
                 const endTime = new Date(Date.now() + mins * 60000).toISOString();
                 myConfig.timer_end_time = endTime;
                 myConfig.max_budget = maxBgt;
-                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                const { error } = await supabaseClient.from('event_settings').update({ timer_end_time: endTime, max_budget: maxBgt }).eq('id', 1);
                 if (error) showToast('Database Error: ' + error.message);
                 else { showToast(`Case 1 Timer started for ${mins} mins! Max Budget set to ₹${maxBgt.toLocaleString()}`); manageAdminTimer(); }
             } else {
                 const mins = parseInt(document.getElementById('org-timer-mins-case2').value) || 10;
                 const endTime = new Date(Date.now() + mins * 60000).toISOString();
                 myConfig.timer2_end_time = endTime;
-                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                const { error } = await supabaseClient.from('event_settings').update({ timer2_end_time: endTime }).eq('id', 1);
                 if (error) showToast('Database Error: ' + error.message);
                 else { showToast(`Case 2 Timer started for ${mins} mins!`); manageAdminTimer(); }
             }
@@ -2183,8 +2189,9 @@
                 const currentEnd = new Date(myConfig.timer_end_time).getTime();
                 const now = Date.now();
                 const baseTime = Math.max(now, currentEnd); 
-                myConfig.timer_end_time = new Date(baseTime + addMins * 60000).toISOString();
-                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                const newEndStr = new Date(baseTime + addMins * 60000).toISOString();
+                myConfig.timer_end_time = newEndStr;
+                const { error } = await supabaseClient.from('event_settings').update({ timer_end_time: newEndStr }).eq('id', 1);
                 if (error) showToast('Database Error: ' + error.message);
                 else { showToast(`Added ${addMins} minutes buffer to Case 1!`); manageAdminTimer(); }
             } else {
@@ -2193,8 +2200,9 @@
                 const currentEnd = new Date(myConfig.timer2_end_time).getTime();
                 const now = Date.now();
                 const baseTime = Math.max(now, currentEnd); 
-                myConfig.timer2_end_time = new Date(baseTime + addMins * 60000).toISOString();
-                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                const newEndStr = new Date(baseTime + addMins * 60000).toISOString();
+                myConfig.timer2_end_time = newEndStr;
+                const { error } = await supabaseClient.from('event_settings').update({ timer2_end_time: newEndStr }).eq('id', 1);
                 if (error) showToast('Database Error: ' + error.message);
                 else { showToast(`Added ${addMins} minutes buffer to Case 2!`); manageAdminTimer(); }
             }
@@ -2471,7 +2479,7 @@
             }
 
             myConfig.case1_evaluated = true;
-            await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            await supabaseClient.from('event_settings').update({ case1_evaluated: true }).eq('id', 1);
 
             fetchLeaderboardData();
             showToast('Case 1 Evaluation complete! Percentiles calculated.');
@@ -2560,12 +2568,12 @@
         async function publishResults() {
             if(activeEvalTab === 'case1') {
                 myConfig.results_published = true;
-                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                const { error } = await supabaseClient.from('event_settings').update({ results_published: true }).eq('id', 1);
                 if (error) showToast('Error publishing Case 1 results: ' + error.message);
                 else showToast('Case 1 Results published successfully to all students!');
             } else {
                 myConfig.results2_published = true;
-                const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+                const { error } = await supabaseClient.from('event_settings').update({ results2_published: true }).eq('id', 1);
                 if (error) showToast('Error publishing Case 2 results: ' + error.message);
                 else showToast('Case 2 Results published successfully to all students!');
             }
@@ -2573,14 +2581,14 @@
 
         async function sendVirtualChocolates() {
             myConfig.chocolates_sent = true;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            const { error } = await supabaseClient.from('event_settings').update({ chocolates_sent: true }).eq('id', 1);
             if (error) showToast('Error sending chocolates: ' + error.message);
             else showToast('🍫 Virtual chocolates sent successfully!');
         }
 
         async function publishFeedbackForm() {
             myConfig.feedback_published = true;
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            const { error } = await supabaseClient.from('event_settings').update({ feedback_published: true }).eq('id', 1);
             if (error) showToast('Error publishing feedback form: ' + error.message);
             else showToast('Feedback form published to all students!');
         }
@@ -2673,7 +2681,14 @@
             myConfig.target_wants = parseFloat(document.getElementById('cfg-target-wants').value) || 20;
             myConfig.target_inv = parseFloat(document.getElementById('cfg-target-inv').value) || 30;
 
-            await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            await supabaseClient.from('event_settings').update({ 
+                team_size: myConfig.team_size,
+                total_tables: myConfig.total_tables,
+                teams_per_table: myConfig.teams_per_table,
+                target_needs: myConfig.target_needs,
+                target_wants: myConfig.target_wants,
+                target_inv: myConfig.target_inv
+            }).eq('id', 1);
             showToast('Event settings updated successfully.');
         }
 
@@ -2683,7 +2698,13 @@
             myConfig.subject_content = JSON.stringify(adminSubjects);
             myConfig.case_content = JSON.stringify(adminCases);
 
-            const { error } = await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            const { error } = await supabaseClient.from('event_settings').update({ 
+                subject_title: 'DYNAMIC',
+                case_title: 'DYNAMIC',
+                subject_content: myConfig.subject_content,
+                case_content: myConfig.case_content
+            }).eq('id', 1);
+            
             if (error) showToast('Database Error: ' + error.message);
             else if(!isSilent) showToast('Content settings saved.');
         }
@@ -2845,8 +2866,18 @@
             myConfig.results2_published = false;
             myConfig.chocolates_sent = false;
             myConfig.feedback_published = false;
+            myConfig.case1_evaluated = false;
             
-            await supabaseClient.from('event_settings').upsert({ id: 1, ...myConfig });
+            await supabaseClient.from('event_settings').update({ 
+                timer_end_time: null,
+                timer2_end_time: null,
+                plot_twist_triggered_at: null,
+                results_published: false,
+                results2_published: false,
+                chocolates_sent: false,
+                feedback_published: false,
+                case1_evaluated: false
+            }).eq('id', 1);
 
             fetchRoster(); 
             manageAdminTimer();
