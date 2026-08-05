@@ -5,6 +5,10 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Academic Enrollment Portal - FinFusion</title>
     
+    <!-- Preload Fonts & Icons for Performance -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap">
+    
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     
@@ -13,7 +17,8 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (Development CDN) -->
+    <!-- Note: For production, replace this CDN with your compiled style.css -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
     <!-- Tailwind Configuration -->
@@ -748,6 +753,14 @@
                         <tbody id="roster-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
+                <!-- Pagination Controls -->
+                <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-sm text-slate-600">
+                    <span id="roster-page-info">Showing 0 students</span>
+                    <div class="flex gap-2">
+                        <button onclick="changeRosterPage(-1)" id="btn-roster-prev" class="px-3 py-1 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 transition-all font-medium shadow-sm">Previous</button>
+                        <button onclick="changeRosterPage(1)" id="btn-roster-next" class="px-3 py-1 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 transition-all font-medium shadow-sm">Next</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -852,6 +865,15 @@
         let globalStudentsData = [];
         let activeEvalTab = 'case1';
         
+        // Roster Pagination Variables
+        let currentRosterPage = 1;
+        const rosterRowsPerPage = 25;
+        let globalRosterList = [];
+        
+        // Debounce Variables
+        let debounceTimer;
+        let contentDebounceTimer;
+        
         let myTeamNumber = null;
         let studentState = 'login'; 
         let studentDashView = 'home'; 
@@ -907,6 +929,13 @@
         }
 
         // --- LOCAL STORAGE STATE MANAGEMENT ---
+        function debouncedSaveLocalState() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                saveLocalState();
+            }, 400); // 400ms delay to prevent rapid-fire saving on older devices
+        }
+
         function saveLocalState() {
             if(studentState === 'admin') return; 
             localStorage.setItem('fp_studentState', studentState);
@@ -1773,13 +1802,13 @@
                 const totalEl = document.getElementById(`total-${safeCat}`);
                 if(totalEl) totalEl.innerText = '₹' + catTotal.toLocaleString();
             }
-            saveLocalState();
+            debouncedSaveLocalState();
         }
 
         function addBudgetRow(cat, focusIndex = -1) {
             if(!budgetState[cat]) budgetState[cat] = [];
             budgetState[cat].push({ desc: '', amount: '' }); 
-            saveLocalState();
+            debouncedSaveLocalState();
             renderBudgetBuilder();
             if(focusIndex >= 0) {
                 setTimeout(() => {
@@ -1792,7 +1821,7 @@
         
         function removeBudgetRow(cat, index) { 
             budgetState[cat].splice(index, 1); 
-            saveLocalState(); 
+            debouncedSaveLocalState(); 
             renderBudgetBuilder(); 
         }
         
@@ -1805,7 +1834,7 @@
 
         function updateBudgetCase2(field, value) {
             budgetStateCase2[field] = value;
-            saveLocalState();
+            debouncedSaveLocalState();
         }
 
         /* --- STUDENT FLOW --- */
@@ -1829,7 +1858,6 @@
 
         function startStudentPolling(prn) {
             loadSettings().then(() => {
-                // Reduced polling load to prevent crashes (from 3s to 8s)
                 pollInterval = setInterval(() => checkTeamMatch(prn), 8000);
                 checkTeamMatch(prn);
                 setupRealtimeSubscriptions(prn);
@@ -1837,7 +1865,6 @@
         }
         
         function setupRealtimeSubscriptions(prn) {
-            // Listen to Event Settings changes instantly
             supabaseClient
                 .channel('public:event_settings')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings' }, payload => {
@@ -1845,24 +1872,17 @@
                     updateStudentContentUI();
                 })
                 .subscribe();
-
-            // Note: For Teams and Students, we rely primarily on the 8-second polling
-            // to avoid hitting the 100 channel connection limit on free tiers.
         }
 
         async function checkTeamMatch(prn) {
             try {
-                // Event settings are updated in real-time, no need to query them here!
-
                 const { data: syncData, error: syncErr } = await supabaseClient.rpc('get_student_sync_data', { p_prn: prn });
 
-                // 1. If it's a network drop or database overload, DO NOT log the student out. Just retry later.
                 if (syncErr) {
                     console.warn("Connection unstable. Retrying in background...", syncErr);
                     return; 
                 }
 
-                // 2. Only log them out if the database confirms they were explicitly deleted (e.g., by the Admin)
                 if (!syncData || !syncData.student) {
                     console.error("Student record no longer exists in database.");
                     localStorage.removeItem('fp_prn'); 
@@ -1870,7 +1890,6 @@
                     return;
                 }
                 
-                // 3. Fallback sync for Event Settings (in case WebSockets fail)
                 if (syncData.settings) {
                     myConfig = { ...myConfig, ...syncData.settings };
                     updateStudentContentUI();
@@ -1930,7 +1949,6 @@
                                     }
                                 } else {
                                     if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
-                                        // MIGRATION SAFEGUARD: Handle old DB structures gracefully so it doesn't break memory!
                                         if (parsedData.Investments && !parsedData['Investments and Savings']) {
                                             parsedData['Investments and Savings'] = parsedData.Investments;
                                             delete parsedData.Investments;
@@ -2101,10 +2119,10 @@
                         </div>
                     </div>
                     <div>
-                        <input type="text" class="admin-input font-medium" placeholder="Subject Title" value="${sub.title}" oninput="adminSubjects[${i}].title = this.value" />
+                        <input type="text" class="admin-input font-medium" placeholder="Subject Title" value="${sub.title}" oninput="adminSubjects[${i}].title = this.value; debouncedSaveEventContentOnly();" />
                     </div>
                     <div>
-                        <textarea rows="3" class="admin-input font-medium" placeholder="Subject Content..." oninput="adminSubjects[${i}].content = this.value">${sub.content}</textarea>
+                        <textarea rows="3" class="admin-input font-medium" placeholder="Subject Content..." oninput="adminSubjects[${i}].content = this.value; debouncedSaveEventContentOnly();">${sub.content}</textarea>
                     </div>
                 </div>`;
             });
@@ -2129,7 +2147,7 @@
 
         function updateCaseContent(idx, field, val) {
             adminCases[idx][field] = val;
-            saveEventContentOnly(true);
+            debouncedSaveEventContentOnly();
         }
 
         function addAdminSubject() { adminSubjects.push({title:'', content:'', published: false}); renderAdminContentBuilder(); }
@@ -2693,6 +2711,13 @@
             fetchLeaderboardData(); 
         }
 
+        function debouncedSaveEventContentOnly() {
+            clearTimeout(contentDebounceTimer);
+            contentDebounceTimer = setTimeout(() => {
+                saveEventContentOnly(true);
+            }, 600);
+        }
+
         async function saveSettings() {
             myConfig.team_size = parseInt(document.getElementById('cfg-team-size').value);
             myConfig.total_tables = parseInt(document.getElementById('cfg-total-tables').value);
@@ -2753,30 +2778,57 @@
             });
             globalTeamsData = teams || [];
             
-            document.getElementById('roster-body').innerHTML = students.map(s => {
-                const hasCase1 = s.team_number && teamAnswers1[s.team_number];
-                const hasCase2 = s.team_number && teamAnswers2[s.team_number];
-                const tableNo = s.team_number ? Math.ceil(s.team_number / 5) : '-';
-                return `
-                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                        <td class="py-3 px-4 sm:px-5 font-medium text-slate-800 font-sans">${s.name}</td>
-                        <td class="py-3 px-4 sm:px-5 text-slate-500 font-sans">${s.prn}</td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-sans">
-                            ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
-                        </td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.team_number ? tableNo : '-'}</td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-sans">${hasCase1 ? '✅' : '⏳'}</td>
-                        <td class="py-3 px-4 sm:px-5 text-center font-sans">${hasCase2 ? '✅' : '⏳'}</td>
-                        <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
-                            <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-blue-50 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
-                            ${(hasCase1 || hasCase2) && s.team_number ? `
-                                <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answers">Reset Submissions</button>
-                            ` : ''}
-                            <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm">Revoke</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            globalRosterList = globalStudentsData.map(s => {
+                return {
+                    ...s,
+                    hasCase1: s.team_number && teamAnswers1[s.team_number],
+                    hasCase2: s.team_number && teamAnswers2[s.team_number],
+                    tableNo: s.team_number ? Math.ceil(s.team_number / 5) : '-'
+                };
+            });
+            
+            renderRoster();
+        }
+
+        function renderRoster() {
+            const tbody = document.getElementById('roster-body');
+            if(!tbody) return;
+
+            const totalPages = Math.max(1, Math.ceil(globalRosterList.length / rosterRowsPerPage));
+            if(currentRosterPage > totalPages) currentRosterPage = totalPages;
+
+            const startIdx = (currentRosterPage - 1) * rosterRowsPerPage;
+            const endIdx = startIdx + rosterRowsPerPage;
+            const pageData = globalRosterList.slice(startIdx, endIdx);
+
+            tbody.innerHTML = pageData.map(s => `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                    <td class="py-3 px-4 sm:px-5 font-medium text-slate-800 font-sans">${s.name}</td>
+                    <td class="py-3 px-4 sm:px-5 text-slate-500 font-sans">${s.prn}</td>
+                    <td class="py-3 px-4 sm:px-5 text-center font-sans">
+                        ${s.team_number ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold">Team ${s.team_number}</span>` : `<span class="text-slate-400 italic text-xs">Waiting...</span>`}
+                    </td>
+                    <td class="py-3 px-4 sm:px-5 text-center font-medium text-slate-600 font-sans">${s.tableNo}</td>
+                    <td class="py-3 px-4 sm:px-5 text-center font-sans">${s.hasCase1 ? '✅' : '⏳'}</td>
+                    <td class="py-3 px-4 sm:px-5 text-center font-sans">${s.hasCase2 ? '✅' : '⏳'}</td>
+                    <td class="py-3 px-4 sm:px-5 text-right whitespace-nowrap font-sans">
+                        <button onclick="openEditModal('${s.prn}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-blue-50 border border-blue-200 transition-all mr-2 shadow-sm">Edit</button>
+                        ${(s.hasCase1 || s.hasCase2) && s.team_number ? `
+                            <button onclick="clearTeamAnswer(${s.team_number})" class="text-amber-600 hover:text-amber-800 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all mr-2 shadow-sm" title="Delete Team Answers">Reset Submissions</button>
+                        ` : ''}
+                        <button onclick="deleteStudent('${s.prn}')" class="text-red-500 hover:text-red-700 text-xs font-semibold uppercase px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm">Revoke</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('roster-page-info').innerText = `Page ${currentRosterPage} of ${totalPages} (${globalRosterList.length} students)`;
+            document.getElementById('btn-roster-prev').disabled = currentRosterPage === 1;
+            document.getElementById('btn-roster-next').disabled = currentRosterPage === totalPages;
+        }
+
+        function changeRosterPage(dir) {
+            currentRosterPage += dir;
+            renderRoster();
         }
 
         async function clearTeamAnswer(teamNumber) {
