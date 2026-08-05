@@ -1841,7 +1841,8 @@
         async function handleStudentRegistration(e) {
             e.preventDefault();
             const name = document.getElementById('student-name').value.trim();
-            const prn = document.getElementById('student-prn').value.trim();
+            // FIX: Normalize PRN to be uppercase and spaceless to prevent duplicate user creation
+            const prn = document.getElementById('student-prn').value.trim().toUpperCase().replace(/\s+/g, '');
             
             const { error } = await supabaseClient.from('students').upsert({ prn, name }, { onConflict: 'prn' });
             if(error) return showToast('Error: ' + error.message);
@@ -1858,6 +1859,7 @@
 
         function startStudentPolling(prn) {
             loadSettings().then(() => {
+                // Reduced polling load to prevent crashes (from 3s to 8s)
                 pollInterval = setInterval(() => checkTeamMatch(prn), 8000);
                 checkTeamMatch(prn);
                 setupRealtimeSubscriptions(prn);
@@ -1865,6 +1867,7 @@
         }
         
         function setupRealtimeSubscriptions(prn) {
+            // Listen to Event Settings changes instantly
             supabaseClient
                 .channel('public:event_settings')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings' }, payload => {
@@ -1872,17 +1875,24 @@
                     updateStudentContentUI();
                 })
                 .subscribe();
+
+            // Note: For Teams and Students, we rely primarily on the 8-second polling
+            // to avoid hitting the 100 channel connection limit on free tiers.
         }
 
         async function checkTeamMatch(prn) {
             try {
+                // Event settings are updated in real-time, no need to query them here!
+
                 const { data: syncData, error: syncErr } = await supabaseClient.rpc('get_student_sync_data', { p_prn: prn });
 
+                // 1. If it's a network drop or database overload, DO NOT log the student out. Just retry later.
                 if (syncErr) {
                     console.warn("Connection unstable. Retrying in background...", syncErr);
                     return; 
                 }
 
+                // 2. Only log them out if the database confirms they were explicitly deleted (e.g., by the Admin)
                 if (!syncData || !syncData.student) {
                     console.error("Student record no longer exists in database.");
                     localStorage.removeItem('fp_prn'); 
@@ -1890,6 +1900,7 @@
                     return;
                 }
                 
+                // 3. Fallback sync for Event Settings (in case WebSockets fail)
                 if (syncData.settings) {
                     myConfig = { ...myConfig, ...syncData.settings };
                     updateStudentContentUI();
@@ -1949,6 +1960,7 @@
                                     }
                                 } else {
                                     if (parsedData && parsedData.Needs && Array.isArray(parsedData.Needs)) {
+                                        // MIGRATION SAFEGUARD: Handle old DB structures gracefully so it doesn't break memory!
                                         if (parsedData.Investments && !parsedData['Investments and Savings']) {
                                             parsedData['Investments and Savings'] = parsedData.Investments;
                                             delete parsedData.Investments;
@@ -2320,7 +2332,8 @@
         async function saveStudentEdits() {
             const originalPrn = document.getElementById('edit-original-prn').value;
             const newName = document.getElementById('edit-student-name').value.trim();
-            const newPrn = document.getElementById('edit-student-prn').value.trim();
+            // FIX: Normalize PRN to be uppercase and spaceless to prevent duplicate user creation
+            const newPrn = document.getElementById('edit-student-prn').value.trim().toUpperCase().replace(/\s+/g, '');
             const teamInput = document.getElementById('edit-student-team').value.trim();
             const newTeam = teamInput ? parseInt(teamInput) : null;
 
