@@ -1612,6 +1612,13 @@
                         clock.className = "text-base font-extrabold text-error font-mono";
                     }
                     if (notice) notice.classList.add('hidden');
+                    
+                    // AUTO SUBMIT
+                    if(submitBtn && !submitBtn.classList.contains('bg-secondary') && !submitBtn.disabled) {
+                        showToast("Time is up! Auto-submitting...");
+                        submitCaseAnswer(true);
+                    }
+                    
                     if(builder && submitBtn && !submitBtn.classList.contains('bg-secondary')) {
                         builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
                         builder.classList.add('opacity-50', 'pointer-events-none');
@@ -2001,34 +2008,34 @@
             switchScreen('student-dashboard-screen');
         }
 
-        async function submitCaseAnswer() {
-            if (!myTeamNumber) return showToast('Team assignment is still pending.');
+        async function submitCaseAnswer(isAutoSubmit = false) {
+            if (!myTeamNumber) return !isAutoSubmit && showToast('Team assignment is still pending.');
             
             let currentIsCase2 = false;
             if(studentCasesList.length > 0) currentIsCase2 = studentCasesList[currentCaseIndex]?.isCase2;
 
             const { data: currentTeam } = await supabaseClient.from('teams').select('*').eq('team_number', myTeamNumber).single();
-            if (currentIsCase2 && currentTeam && currentTeam.case2_answer) return showToast('Your team has already submitted a strategy for Case 2!');
-            if (!currentIsCase2 && currentTeam && currentTeam.case_answer) return showToast('Your team has already submitted a strategy for Case 1!');
+            if (currentIsCase2 && currentTeam && currentTeam.case2_answer) return !isAutoSubmit && showToast('Your team has already submitted a strategy for Case 2!');
+            if (!currentIsCase2 && currentTeam && currentTeam.case_answer) return !isAutoSubmit && showToast('Your team has already submitted a strategy for Case 1!');
 
             let hasData = false;
             let finalJson = "";
 
             if(currentIsCase2) {
-                if(!budgetStateCase2.capitalInvested || !budgetStateCase2.unrealisedPnL) {
+                if(!isAutoSubmit && (!budgetStateCase2.capitalInvested || !budgetStateCase2.unrealisedPnL)) {
                     return showToast('Please enter both Capital Invested and Unrealised P&L.');
                 }
-                hasData = true;
+                if (budgetStateCase2.capitalInvested || budgetStateCase2.unrealisedPnL) hasData = true;
                 finalJson = JSON.stringify(budgetStateCase2);
             } else {
                 budgetCategories.forEach(cat => { budgetState[cat].forEach(item => { if (item.desc || item.amount) hasData = true; }); });
                 finalJson = JSON.stringify(budgetState);
             }
 
-            if (!hasData) return showToast('Please add at least one component before submitting.');
+            if (!hasData && !isAutoSubmit) return showToast('Please add at least one component before submitting.');
 
             const btn = document.getElementById('submit-answer-btn');
-            btn.innerText = 'Submitting...'; btn.disabled = true;
+            if(btn) { btn.innerText = 'Submitting...'; btn.disabled = true; }
             const submissionTime = new Date().toISOString();
 
             let updatePayload = { team_number: myTeamNumber };
@@ -2044,11 +2051,13 @@
             
             if (error) {
                 showToast('Error saving answer: ' + error.message);
-                btn.innerText = 'Submit Strategy'; btn.disabled = false;
+                if(btn && !isAutoSubmit) { btn.innerText = 'Submit Strategy'; btn.disabled = false; }
             } else {
-                showToast('Team strategy submitted successfully!');
-                btn.innerText = 'Submitted by Team ✓';
-                btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-md cursor-not-allowed font-sans';
+                showToast(isAutoSubmit ? 'Auto-submitted successfully!' : 'Team strategy submitted successfully!');
+                if(btn) {
+                    btn.innerText = 'Submitted by Team ✓';
+                    btn.className = 'w-full sm:w-auto bg-secondary text-on-primary px-12 py-3 rounded font-label-md uppercase transition-all shadow-md cursor-not-allowed font-sans';
+                }
                 const builder = document.getElementById('budget-builder-container');
                 if(builder) builder.querySelectorAll('input, button').forEach(el => el.disabled = true);
                 saveLocalState();
