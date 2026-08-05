@@ -2548,6 +2548,43 @@
             showToast('Case 2 Evaluation complete! Rankings generated based on P&L.');
         }
 
+        async function fetchLeaderboardData() {
+            // Remove the Supabase order, handle it purely in JS so we can sort Case 1 and Case 2 independently
+            const { data } = await supabaseClient.from('teams').select('*');
+            if(data) {
+                globalTeamsData = data;
+                let formatted = [];
+                if(activeEvalTab === 'case1') {
+                    formatted = data.filter(t => t.case_answer).map(t => ({
+                        team_number: t.team_number, grand_total: t.grand_total || 0, raw_score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== null ? t.ranking : null, submitted_at: t.submitted_at || ''
+                    }));
+                } else {
+                    // Compute on the fly if case2_score available
+                    formatted = data.filter(t => t.case2_answer).map(t => {
+                        let pnlTotal = 0;
+                        try {
+                            const p = JSON.parse(t.case2_answer);
+                            pnlTotal = parseFloat(p.unrealisedPnL) || 0;
+                        } catch(e){}
+                        return {
+                            team_number: t.team_number, grand_total: pnlTotal, raw_score: t.case2_score || 0, percentile: t.case2_percentile || 0, disqualified: t.case2_disqualified || false, ranking: t.case2_ranking !== null ? t.case2_ranking : null, submitted_at: t.case2_submitted_at || ''
+                        };
+                    });
+                }
+                
+                // EXPLICIT SORTING FIX:
+                formatted.sort((a, b) => {
+                    if (a.disqualified && !b.disqualified) return 1;
+                    if (!a.disqualified && b.disqualified) return -1;
+                    let rankA = a.ranking !== null ? a.ranking : 99999;
+                    let rankB = b.ranking !== null ? b.ranking : 99999;
+                    return rankA - rankB;
+                });
+
+                renderLeaderboard(formatted);
+            }
+        }
+
         function renderLeaderboard(teamsList) {
             const tbody = document.getElementById('leaderboard-body');
             if(!tbody) return;
@@ -2654,32 +2691,6 @@
             document.getElementById('org-cases-panel').classList.add('hidden');
             document.getElementById('org-evaluation-panel').classList.toggle('hidden'); 
             fetchLeaderboardData(); 
-        }
-
-        async function fetchLeaderboardData() {
-            const { data } = await supabaseClient.from('teams').select('*').order('ranking', { ascending: true, nullsLast: true });
-            if(data) {
-                globalTeamsData = data;
-                let formatted = [];
-                if(activeEvalTab === 'case1') {
-                    formatted = data.filter(t => t.case_answer).map(t => ({
-                        team_number: t.team_number, grand_total: t.grand_total || 0, raw_score: t.score || 0, percentile: t.percentile || t.score || 0, disqualified: t.disqualified || false, ranking: t.ranking !== undefined ? t.ranking : null, submitted_at: t.submitted_at || ''
-                    }));
-                } else {
-                    // Compute on the fly if case2_score available
-                    formatted = data.filter(t => t.case2_answer).map(t => {
-                        let pnlTotal = 0;
-                        try {
-                            const p = JSON.parse(t.case2_answer);
-                            pnlTotal = parseFloat(p.unrealisedPnL) || 0;
-                        } catch(e){}
-                        return {
-                            team_number: t.team_number, grand_total: pnlTotal, raw_score: t.case2_score || 0, percentile: t.case2_percentile || 0, disqualified: t.case2_disqualified || false, ranking: t.case2_ranking !== undefined ? t.case2_ranking : null, submitted_at: t.case2_submitted_at || ''
-                        };
-                    });
-                }
-                renderLeaderboard(formatted);
-            }
         }
 
         async function saveSettings() {
